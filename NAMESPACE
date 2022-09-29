@@ -1,1 +1,4 @@
 import(jaspBase)
+export(OCCurves)
+export(AssessSamplingPlan)
+export(FindSamplingPlan)
