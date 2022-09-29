@@ -25,6 +25,7 @@ Form
 	Section
 	{
 		title: qsTr("Assess Sampling Plan")
+		// Random comment
 		
 		FormulaField { name: "lotSize"; label: qsTr("Lot size (N): "); value: "100" ; min: 1; max: Infinity; Layout.columnSpan: 2; enabled: hypergeom.checked }
 		FormulaField { name: "sampleSize"; label: qsTr("Sample size (n): "); value: "10" ; min: 1; max: Infinity; Layout.columnSpan: 2 }
