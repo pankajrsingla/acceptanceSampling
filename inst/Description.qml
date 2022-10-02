@@ -27,19 +27,19 @@ Description
 		func:	"OCCurves"
 	}
 
-	Analysis
-	{
-		title:	qsTr("Assess Plan")
-		// icon:	"analysis-classical-crosstabs.svg"
-		func:	"AssessSamplingPlan"
-	}
+	// Analysis
+	// {
+	// 	title:	qsTr("Assess Plan")
+	// 	// icon:	"analysis-classical-crosstabs.svg"
+	// 	func:	"AssessSamplingPlan"
+	// }
 	
-	Analysis
-	{
-		title:	qsTr("Find Plan")
-		// icon:	"analysis-classical-crosstabs.svg"
-		func:	"FindSamplingPlan"
-	}
+	// Analysis
+	// {
+	// 	title:	qsTr("Find Plan")
+	// 	// icon:	"analysis-classical-crosstabs.svg"
+	// 	func:	"FindSamplingPlan"
+	// }
 
 	Separator {}
 

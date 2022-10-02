@@ -22,14 +22,14 @@ import JASP.Controls 1.0
 
 Form
 {
-	Section
+	Group
 	{
 		title: qsTr("First OC Curve")
 		
-		FormulaField { name: "lotSize1"; label: qsTr("Lot size (N): "); value: "100" ; min: 1; max: Infinity; Layout.columnSpan: 2; enabled: hypergeom1.checked }
-		FormulaField { name: "sampleSize1"; label: qsTr("Sample size (n): "); value: "10" ; min: 1; max: Infinity; Layout.columnSpan: 2 }
-		FormulaField { name: "acceptNumber1"; label: qsTr("Acceptance number (c): "); value: "4" ; min: 0; max: Infinity; Layout.columnSpan: 2 }
-		FormulaField { name: "rejectNumber1"; label: qsTr("Rejection number (r): "); value: "5" ; min: 0; max: Infinity; Layout.columnSpan: 2 }
+		IntegerField { name: "lotSize1"; label: qsTr("Lot size (N): "); value: "100" ; min: 1; max: Infinity; Layout.columnSpan: 2; enabled: hypergeom1.checked }
+		IntegerField { name: "sampleSize1"; label: qsTr("Sample size (n): "); value: "10" ; min: 1; max: Infinity; Layout.columnSpan: 2 }
+		IntegerField { name: "acceptNumber1"; label: qsTr("Acceptance number (c): "); value: "4" ; min: 0; max: Infinity; Layout.columnSpan: 2 }
+		IntegerField { name: "rejectNumber1"; label: qsTr("Rejection number (r): "); value: "5" ; min: 0; max: Infinity; Layout.columnSpan: 2 }
 
 		RadioButtonGroup
 		{
@@ -40,14 +40,14 @@ Form
 			RadioButton { value: "poisson";		label: qsTr("Poisson"); id: poisson1					}
 		}
 	}
-	Section
+	Group
 	{
 		title: qsTr("Second OC Curve")
 
-		FormulaField { name: "lotSize2"; label: qsTr("Lot size (N): "); value: "0" ; min: 1; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false; enabled: hypergeom2.checked }
-		FormulaField { name: "sampleSize2"; label: qsTr("Sample size (n): "); value: "0" ; min: 1; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
-		FormulaField { name: "acceptNumber2"; label: qsTr("Acceptance number (c): "); value: "0" ; min: 0; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
-		FormulaField { name: "rejectNumber2"; label: qsTr("Rejection number (r): "); value: "0" ; min: 0; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
+		IntegerField { name: "lotSize2"; label: qsTr("Lot size (N): "); value: "0" ; min: 1; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false; enabled: hypergeom2.checked }
+		IntegerField { name: "sampleSize2"; label: qsTr("Sample size (n): "); value: "0" ; min: 1; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
+		IntegerField { name: "acceptNumber2"; label: qsTr("Acceptance number (c): "); value: "0" ; min: 0; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
+		IntegerField { name: "rejectNumber2"; label: qsTr("Rejection number (r): "); value: "0" ; min: 0; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
 
 		RadioButtonGroup
 		{
@@ -59,14 +59,14 @@ Form
 		}
 	}
 
-	Section
+	Group
 	{
 		title: qsTr("Third OC Curve")
 
-		FormulaField { name: "lotSize3"; label: qsTr("Lot size (N): "); value: "0" ; min: 1; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false; enabled: hypergeom3.checked }
-		FormulaField { name: "sampleSize3"; label: qsTr("Sample size (n): "); value: "0" ; min: 1; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
-		FormulaField { name: "acceptNumber3"; label: qsTr("Acceptance number (c): "); value: "0" ; min: 0; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
-		FormulaField { name: "rejectNumber3"; label: qsTr("Rejection number (r): "); value: "0" ; min: 0; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
+		IntegerField { name: "lotSize3"; label: qsTr("Lot size (N): "); value: "0" ; min: 1; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false; enabled: hypergeom3.checked }
+		IntegerField { name: "sampleSize3"; label: qsTr("Sample size (n): "); value: "0" ; min: 1; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
+		IntegerField { name: "acceptNumber3"; label: qsTr("Acceptance number (c): "); value: "0" ; min: 0; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
+		IntegerField { name: "rejectNumber3"; label: qsTr("Rejection number (r): "); value: "0" ; min: 0; max: Infinity; Layout.columnSpan: 2; parseDefaultValue: false }
 
 		RadioButtonGroup
 		{
