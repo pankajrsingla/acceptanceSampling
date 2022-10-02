@@ -46,7 +46,7 @@ Form
 			RadioButton { value: "known";	label: qsTr("Known")						}
 		}
 
-		FormulaField { name: "lotSize"; label: qsTr("Lot size (N): "); value: "0" ; min: 1; max: Infinity; Layout.columnSpan: 2; enabled: hypergeom.checked }
+		IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 0; min: 1; Layout.columnSpan: 2; enabled: hypergeom.checked }
 		
 		Group
 		{
@@ -56,9 +56,9 @@ Form
 			{
 				columns: 2
 				Text { text: qsTr("Quality Level: [P(defect)]") }
-				DoubleField{ name: "pd_prp"; label: qsTr(""); id: pd_prp; negativeValues: false; defaultValue: 0.1 }
+				DoubleField{ name: "pd_prp"; label: qsTr(""); id: pd_prp; negativeValues: false; defaultValue: 0.1; min: 0; max: 1 }
 				Text { text: qsTr("Acceptance Probability: [Least P(accept)]") }
-				DoubleField{ name: "pa_prp";  label: qsTr(""); id: pa_prp; negativeValues: false; defaultValue: 1 }
+				DoubleField{ name: "pa_prp";  label: qsTr(""); id: pa_prp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
 			}
 		}
 		Group
@@ -69,9 +69,9 @@ Form
 			{
 				columns: 2
 				Text { text: qsTr("Quality Level: [P(defect)]") }
-				DoubleField{ name: "pd_crp"; label: qsTr(""); id: pd_crp; negativeValues: false; defaultValue: 0.2 }
+				DoubleField{ name: "pd_crp"; label: qsTr(""); id: pd_crp; negativeValues: false; defaultValue: 0.2; min: 0; max: 1 }
 				Text { text: qsTr("Acceptance Probability: [Maximum P(accept)]") }
-				DoubleField{ name: "pa_crp";  label: qsTr(""); id: pa_crp; negativeValues: false; defaultValue: 1 }
+				DoubleField{ name: "pa_crp";  label: qsTr(""); id: pa_crp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
 			}
 		}
 	}

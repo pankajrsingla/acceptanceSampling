@@ -25,12 +25,11 @@ Form
 	Section
 	{
 		title: qsTr("Assess Sampling Plan")
-		// Random comment
 		
-		FormulaField { name: "lotSize"; label: qsTr("Lot size (N): "); value: "100" ; min: 1; max: Infinity; Layout.columnSpan: 2; enabled: hypergeom.checked }
-		FormulaField { name: "sampleSize"; label: qsTr("Sample size (n): "); value: "10" ; min: 1; max: Infinity; Layout.columnSpan: 2 }
-		FormulaField { name: "acceptNumber"; label: qsTr("Acceptance number (c): "); value: "4" ; min: 0; max: Infinity; Layout.columnSpan: 2 }
-		FormulaField { name: "rejectNumber"; label: qsTr("Rejection number (r): "); value: "5" ; min: 0; max: Infinity; Layout.columnSpan: 2 }
+		IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1; Layout.columnSpan: 2; enabled: hypergeom1.checked }
+		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 10; min: 1; Layout.columnSpan: 2 }
+		IntegerField { name: "acceptNumber"; label: qsTr("Acceptance number (c): "); defaultValue: 4; Layout.columnSpan: 2 }
+		IntegerField { name: "rejectNumber"; label: qsTr("Rejection number (r): "); defaultValue: 5; Layout.columnSpan: 2 }
 
 		RadioButtonGroup
 		{
@@ -51,9 +50,9 @@ Form
 			{
 				columns: 2
 				Text { text: qsTr("Quality Level: [P(defect)]") }
-				DoubleField{ name: "pd_prp"; label: qsTr(""); id: pd_prp; negativeValues: false; defaultValue: 0.1 }
+				DoubleField{ name: "pd_prp"; label: qsTr(""); id: pd_prp; negativeValues: false; defaultValue: 0.1; min: 0; max: 1 }
 				Text { text: qsTr("Acceptance Probability: [Least P(accept)]") }
-				DoubleField{ name: "pa_prp";  label: qsTr(""); id: pa_prp; negativeValues: false; defaultValue: 1 }
+				DoubleField{ name: "pa_prp";  label: qsTr(""); id: pa_prp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
 			}
 		}
 		Group
@@ -64,9 +63,9 @@ Form
 			{
 				columns: 2
 				Text { text: qsTr("Quality Level: [P(defect)]") }
-				DoubleField{ name: "pd_crp"; label: qsTr(""); id: pd_crp; negativeValues: false; defaultValue: 0.2 }
+				DoubleField{ name: "pd_crp"; label: qsTr(""); id: pd_crp; negativeValues: false; defaultValue: 0.2; min: 0; max: 1 }
 				Text { text: qsTr("Acceptance Probability: [Maximum P(accept)]") }
-				DoubleField{ name: "pa_crp";  label: qsTr(""); id: pa_crp; negativeValues: false; defaultValue: 1 }
+				DoubleField{ name: "pa_crp";  label: qsTr(""); id: pa_crp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
 			}
 		}
 	}

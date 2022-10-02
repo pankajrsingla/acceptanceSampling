@@ -48,7 +48,7 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
       return(gettext("Acceptance number cannot be greater than the sample size."))
     else if (rejectNumber > sampleSize)
       return(gettext("Rejection number cannot be greater than the sample size."))
-    else if (options$rejectNumber1 < options$acceptNumber1)
+    else if (rejectNumber < acceptNumber)
       return(gettext("Rejection number cannot be smaller than the acceptance number."))
   }
   
@@ -66,6 +66,7 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
 # Results functions ----
 
 .generateOCCurves <- function(jaspResults, options) {
+  # if (0) {
   # OC Plot 1:
   ######################
   ggplot1 <- NULL
@@ -133,4 +134,5 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
     ggplot3 <- ggplot2 + ggplot2::geom_point(data = df_x3, ggplot2::aes(x = PD, y = PA), colour = "blue")
     ocPlot3$plotObject <- ggplot3                        
   }
+  # }
 }

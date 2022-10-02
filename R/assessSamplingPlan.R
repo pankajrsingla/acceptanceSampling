@@ -105,7 +105,7 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     table1 <- createJaspTable(title = paste0("Acceptance Sampling Plan (", as.character(dist), ")"))
     table1$dependOn(c(names))
     table1$addColumnInfo(name = "table_1_col_1", title = "", type = "string")
-    table1$addColumnInfo(name = "table_1_col_2", title = "Value", type = "number")
+    table1$addColumnInfo(name = "table_1_col_2", title = "Value", type = "integer")
     table1$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = as.numeric(options$sampleSize)))
     table1$addRows(list("table_1_col_1" = "Acc. Number(s)", "table_1_col_2" = as.numeric(options$acceptNumber)))
     table1$addRows(list("table_1_col_1" = "Rej. Number(s)", "table_1_col_2" = as.numeric(options$rejectNumber)))
