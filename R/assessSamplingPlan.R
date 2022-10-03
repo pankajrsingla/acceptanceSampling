@@ -36,14 +36,14 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
 .assessSampleCheckErrors <- function(dataset = NULL, options) {
   # perform a check on the hypothesis
 
-  sanityCheckAssess <- function() {
-    if (options$sampleSize > options$lotSize)
+  sanityCheckAssess <- function(lotSize, sampleSize, acceptNumber, rejectNumber) {
+    if (sampleSize > lotSize)
       return(gettext("Sample size cannot be greater than the lot size."))
-    else if (options$acceptNumber > options$sampleSize)
+    else if (acceptNumber > sampleSize)
       return(gettext("Acceptance number cannot be greater than the sample size."))
-    else if (options$rejectNumber > options$sampleSize)
+    else if (rejectNumber > sampleSize)
       return(gettext("Rejection number cannot be greater than the sample size."))
-    else if (options$rejectNumber < options$acceptNumber)
+    else if (rejectNumber < acceptNumber)
       return(gettext("Rejection number cannot be smaller than the acceptance number."))
   }
   
@@ -78,7 +78,7 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     ocPlot$dependOn(c("showOCCurve", "lotSize", "sampleSize", "acceptNumber", "rejectNumber", "distribution"))
     jaspResults[["ocPlot"]] <- ocPlot
     ggplot <- ggplot2::ggplot(data = df_x, ggplot2::aes(x = PD, y = PA)) + 
-                        ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
+                        ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
     ocPlot$plotObject <- ggplot
   }
 }
@@ -113,15 +113,33 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     jaspResults[["table1"]] <- table1
 
     # 2. Table with the specified and actual acceptance probabilities
-    table3 <- createJaspTable(title = as.character(assess[8]))
-    table3$dependOn(c(names))
-    table3$addColumnInfo(name = "table_3_col_1", title = "", type = "string")
-    table3$addColumnInfo(name = "table_3_col_2", title = "Quality", type = "number")
-    table3$addColumnInfo(name = "table_3_col_3", title = "RP P(accept)", type = "number")
-    table3$addColumnInfo(name = "table_3_col_4", title = "Plan P(accept)", type = "number")
-    table3$addRows(list("table_3_col_1" = "PRP", "table_3_col_2" = as.numeric(options$pd_prp), "table_3_col_3" = as.numeric(options$pa_prp), "table_3_col_4" = as.numeric(unlist(strsplit(assess[11], " +"))[4])))
-    table3$addRows(list("table_3_col_1" = "CRP", "table_3_col_2" = as.numeric(options$pd_crp), "table_3_col_3" = as.numeric(options$pa_crp), "table_3_col_4" = as.numeric(unlist(strsplit(assess[12], " +"))[4])))
-    table3$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[["table3"]] <- table3
+    table2 <- createJaspTable(title = as.character(assess[8]))
+    table2$dependOn(c(names))
+    table2$addColumnInfo(name = "table_2_col_1", title = "", type = "string")
+    table2$addColumnInfo(name = "table_2_col_2", title = "Quality", type = "number")
+    table2$addColumnInfo(name = "table_2_col_3", title = "RP P(accept)", type = "number")
+    table2$addColumnInfo(name = "table_2_col_4", title = "Plan P(accept)", type = "number")
+    table2$addRows(list("table_2_col_1" = "PRP", "table_2_col_2" = as.numeric(options$pd_prp), "table_2_col_3" = as.numeric(options$pa_prp), "table_2_col_4" = as.numeric(unlist(strsplit(assess[11], " +"))[4])))
+    table2$addRows(list("table_2_col_1" = "CRP", "table_2_col_2" = as.numeric(options$pd_crp), "table_2_col_3" = as.numeric(options$pa_crp), "table_2_col_4" = as.numeric(unlist(strsplit(assess[12], " +"))[4])))
+    table2$showSpecifiedColumnsOnly <- TRUE
+    jaspResults[["table2"]] <- table2
+
+    if (options$showSummary) {
+      df_x = data.frame(PD = x@pd, PA = x@paccept)
+      .printSummary(jaspResults, names, df_x)
+    }
   }
+}
+
+# Sampling plan summary table
+.printSummary <- function(jaspResults, names, df_x) {
+    table <- createJaspTable(title = "Detailed acceptance probabilities:")
+    names <- c(names, "showSummary")
+    # names <- paste0(names, index)
+    table$dependOn(c(names))
+    table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
+    table$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
+    table$setData(list(col_1 = df_x["PD"], col_2 = df_x["PA"]))
+    table$showSpecifiedColumnsOnly <- TRUE
+    jaspResults[["table"]] <- table
 }

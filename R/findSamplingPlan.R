@@ -64,10 +64,11 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
       # Need to provide the lot size (N) for hypergeometric distribution.
       plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
     } else if (dist == "normal") {
+      # For now, the selection of normal distribution is disabled.
       # Need to specify standard deviation (whether known or unknown) for normal distribution.
       ## A value of known results in a sampling plan based on the population standard deviation, 
       ## while a value of unknown results in the use of the sample standard deviation.
-      plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, s.type = options$stdev)
+      # plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, s.type = options$stdev)
     } else {
       # Binomial and Poisson distributions don't require lot size (N) or standard deviation.
       plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist)
@@ -75,7 +76,9 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     
     # Create and fill the output table(s)
     table <- createJaspTable(title = "Sampling plan meeting the specified risk points")
-    table$dependOn(c(names, "stdev", "distribution"))
+    # table$dependOn(c(names, "stdev", "distribution"))
+    names <- c(names, "distribution")
+    table$dependOn(names)
     table$addColumnInfo(name = "col_1", title = "", type = "string")
     table$addColumnInfo(name = "col_2", title = "Value", type = "integer")
     table$addRows(list("col_1" = "Sample size (n)", "col_2" = plan$n))
@@ -83,5 +86,45 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     table$addRows(list("col_1" = "Rej. Number (r)", "col_2" = plan$r))
     table$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["table"]] <- table
+
+    if (options$showSummary || options$showOCCurve) {
+      x <- NULL
+      if (dist == "hypergeom") {
+        # Need to provide the lot size (N) only for hypergeometric distribution.
+        x <- AcceptanceSampling::OC2c(N = options$lotSize, n = plan$n, c = plan$c, r = plan$r, type = dist)
+      } else {
+        # Binomial and Poisson distributions don't require lot size (N).
+        x <- AcceptanceSampling::OC2c(n = plan$n, c = plan$c, r = plan$r, type = dist)
+      }
+      df_x = data.frame(PD = x@pd, PA = x@paccept)
+      
+      # Summary
+      if (options$showSummary) {
+        .printSummary(jaspResults, names, df_x)
+      }
+
+      # OC Curve
+      if (options$showOCCurve) {
+        # Generate plot
+        ocPlot <- createJaspPlot(title = "OC curve for the sampling plan",  width = 320, height = 320)
+        ocPlot$dependOn(c(names, "showOCCurve"))
+        jaspResults[["ocPlot"]] <- ocPlot
+        ggplot <- ggplot2::geom_point(data = df_x, ggplot2::aes(x = PD, y = PA), colour = "black", shape = 24)
+        ocPlot$plotObject <- ggplot
+      }
+    }
   }
+}
+
+# Sampling plan summary table
+.printSummary <- function(jaspResults, names, df_x) {
+    table <- createJaspTable(title = "Detailed acceptance probabilities:")
+    names <- c(names, "showSummary")
+    # names <- paste0(names, index)
+    table$dependOn(c(names))
+    table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
+    table$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
+    table$setData(list(col_1 = df_x["PD"], col_2 = df_x["PA"]))
+    table$showSpecifiedColumnsOnly <- TRUE
+    jaspResults[["table"]] <- table
 }

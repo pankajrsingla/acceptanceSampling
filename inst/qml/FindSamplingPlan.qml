@@ -25,28 +25,8 @@ Form
 	Section
 	{
 		title: qsTr("Find Sampling Plan")
-		
-		RadioButtonGroup
-		{
-			title: qsTr("Distribution")
-			name: "distribution"
-			id: distribution
-			RadioButton { value: "binom";		label: qsTr("Binomial"); id: binom; checked: true	}
-			RadioButton { value: "hypergeom";	label: qsTr("Hypergeometric"); id: hypergeom		}
-			RadioButton { value: "poisson";		label: qsTr("Poisson"); id: poisson					}
-			RadioButton { value: "normal";		label: qsTr("Normal"); id: normal					}
-		}
 
-		RadioButtonGroup
-		{
-			title: qsTr("Standard Deviation")
-			name: "stdev"
-			enabled: normal.checked
-			RadioButton { value: "unknown";		label: qsTr("Unknown"); checked: true	}
-			RadioButton { value: "known";	label: qsTr("Known")						}
-		}
-
-		IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 0; min: 1; Layout.columnSpan: 2; enabled: hypergeom.checked }
+		IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 1; min: 1; Layout.columnSpan: 2; enabled: hypergeom.checked }
 		
 		Group
 		{
@@ -61,6 +41,7 @@ Form
 				DoubleField{ name: "pa_prp";  label: qsTr(""); id: pa_prp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
 			}
 		}
+
 		Group
 		{
 			Layout.columnSpan: 2
@@ -74,5 +55,32 @@ Form
 				DoubleField{ name: "pa_crp";  label: qsTr(""); id: pa_crp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
 			}
 		}
+
+		RadioButtonGroup
+		{
+			title: qsTr("Distribution")
+			name: "distribution"
+			id: distribution
+			RadioButton { value: "binom";		label: qsTr("Binomial"); id: binom; checked: true	}
+			RadioButton { value: "hypergeom";	label: qsTr("Hypergeometric"); id: hypergeom		}
+			RadioButton { value: "poisson";		label: qsTr("Poisson"); id: poisson					}
+			// RadioButton { value: "normal";		label: qsTr("Normal"); id: normal					}
+		}
+
+		// RadioButtonGroup
+		// {
+		// 	title: qsTr("Standard Deviation")
+		// 	name: "stdev"
+		// 	enabled: normal.checked
+		// 	RadioButton { value: "unknown";		label: qsTr("Unknown"); checked: true	}
+		// 	RadioButton { value: "known";	label: qsTr("Known")						}
+		// }
+
+		Group
+		{
+			Layout.rowSpan: 2
+			CheckBox{ label: qsTr("Show OC Curve"); name: "showOCCurve"}
+			CheckBox{ label: qsTr("Show summary"); name: "showSummary"}
+		}	
 	}
 }

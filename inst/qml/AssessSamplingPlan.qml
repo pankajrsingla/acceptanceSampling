@@ -26,21 +26,10 @@ Form
 	{
 		title: qsTr("Assess Sampling Plan")
 		
-		IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1; Layout.columnSpan: 2; enabled: hypergeom1.checked }
+		IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1; Layout.columnSpan: 2; enabled: hypergeom.checked }
 		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 10; min: 1; Layout.columnSpan: 2 }
 		IntegerField { name: "acceptNumber"; label: qsTr("Acceptance number (c): "); defaultValue: 4; Layout.columnSpan: 2 }
 		IntegerField { name: "rejectNumber"; label: qsTr("Rejection number (r): "); defaultValue: 5; Layout.columnSpan: 2 }
-
-		RadioButtonGroup
-		{
-			title: qsTr("Distribution")
-			name: "distribution"
-			RadioButton { value: "binom";		label: qsTr("Binomial"); id: binom; checked: true	}
-			RadioButton { value: "hypergeom";	label: qsTr("Hypergeometric"); id: hypergeom		}
-			RadioButton { value: "poisson";		label: qsTr("Poisson"); id: poisson					}
-		}
-
-		CheckBox{ label: qsTr("Show OC Curve"); name: "showOCCurve"}
 
 		Group
 		{
@@ -55,6 +44,7 @@ Form
 				DoubleField{ name: "pa_prp";  label: qsTr(""); id: pa_prp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
 			}
 		}
+		
 		Group
 		{
 			Layout.columnSpan: 2
@@ -67,6 +57,21 @@ Form
 				Text { text: qsTr("Acceptance Probability: [Maximum P(accept)]") }
 				DoubleField{ name: "pa_crp";  label: qsTr(""); id: pa_crp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
 			}
+		}
+
+		RadioButtonGroup
+		{
+			title: qsTr("Distribution")
+			name: "distribution"
+			RadioButton { value: "binom";		label: qsTr("Binomial"); id: binom; checked: true	}
+			RadioButton { value: "hypergeom";	label: qsTr("Hypergeometric"); id: hypergeom		}
+			RadioButton { value: "poisson";		label: qsTr("Poisson"); id: poisson					}
+		}
+		Group
+		{
+			Layout.rowSpan: 2
+			CheckBox{ label: qsTr("Show OC Curve"); name: "showOCCurve"}
+			CheckBox{ label: qsTr("Show summary"); name: "showSummary"}
 		}
 	}
 }
