@@ -25,9 +25,9 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
   # ready <- length(options$variables) > 0
 
   # lotSize, sampleSize, ... are formulaFields: parse them and save the result in the state
-  optionVals1 <- c("lotSize1", "sampleSize1", "acceptNumber1", "rejectNumber1")
-  optionVals2 <- c("lotSize2", "sampleSize2", "acceptNumber2", "rejectNumber2")
-  optionVals3 <- c("lotSize3", "sampleSize3", "acceptNumber3", "rejectNumber3")
+  optionVals1 <- c("lotSize1", "sampleSize1", "acceptNumber1", "rejectNumber1", "showSummary1")
+  optionVals2 <- c("lotSize2", "sampleSize2", "acceptNumber2", "rejectNumber2", "showSummary2")
+  optionVals3 <- c("lotSize3", "sampleSize3", "acceptNumber3", "rejectNumber3", "showSummary3")
   options <- .parseAndStoreFormulaOptions(jaspResults, options, names = c(optionVals1, optionVals2, optionVals3))
 
   .ocCheckErrors(dataset, options)
@@ -66,7 +66,6 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
 # Results functions ----
 
 .generateOCCurves <- function(jaspResults, options) {
-  # if (0) {
   # OC Plot 1:
   ######################
   ggplot1 <- NULL
@@ -75,7 +74,7 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
     draw_first = TRUE
     # Create sampling plan
     x1 <- NULL
-    if (options$distribution1 == "hypergeoom") {
+    if (options$distribution1 == "hypergeom") {
       x1 <- AcceptanceSampling::OC2c(N = options$lotSize1, n = options$sampleSize1, c = options$acceptNumber1, r = options$rejectNumber1, type = options$distribution1)
     } else {
       x1 <- AcceptanceSampling::OC2c(n = options$sampleSize1, c = options$acceptNumber1, r = options$rejectNumber1, type = options$distribution1)
@@ -87,8 +86,13 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
     ocPlot1$dependOn(c("lotSize1", "sampleSize1", "acceptNumber1", "rejectNumber1", "distribution1"))
     jaspResults[["ocPlot1"]] <- ocPlot1
     ggplot1 <- ggplot2::ggplot(data = df_x1, ggplot2::aes(x = PD, y = PA)) + 
-                        ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
+                        ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
     ocPlot1$plotObject <- ggplot1
+    
+    # Sampling plan summary, if requested
+    if (options$showSummary1) {
+      .printSummary(jaspResults, df_x1, index = 1)
+    }
   }
 
   # OC Plot 2:
@@ -99,7 +103,7 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
     draw_second = TRUE
     # Create sampling plan  
     x2 <- NULL
-    if (options$distribution2 == "hypergeoom") {
+    if (options$distribution2 == "hypergeom") {
       x2 <- AcceptanceSampling::OC2c(N = options$lotSize2, n = options$sampleSize2, c = options$acceptNumber2, r = options$rejectNumber2, type = options$distribution2)
     } else {
       x2 <- AcceptanceSampling::OC2c(n = options$sampleSize2, c = options$acceptNumber2, r = options$rejectNumber2, type = options$distribution2)
@@ -110,8 +114,13 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
     ocPlot2 <- createJaspPlot(title = "OC curve for first and second sampling plans",  width = 320, height = 320)
     ocPlot2$dependOn(c("lotSize2", "sampleSize2", "acceptNumber2", "rejectNumber2", "distribution2"))
     jaspResults[["ocPlot2"]] <- ocPlot2
-    ggplot2 <- ggplot1 + ggplot2::geom_point(data = df_x2, ggplot2::aes(x = PD, y = PA), colour = "green")
-    ocPlot2$plotObject <- ggplot2                
+    ggplot2 <- ggplot1 + ggplot2::geom_point(data = df_x2, ggplot2::aes(x = PD, y = PA), colour = "green", shape = 25)
+    ocPlot2$plotObject <- ggplot2    
+    
+    # Sampling plan summary, if requested
+    if (options$showSummary2) {
+      .printSummary(jaspResults, df_x2, index = 2)
+    }           
   }
 
   # OC Plot 3:
@@ -120,7 +129,7 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
   if (draw_second && (options$sampleSize3 > 0) && (options$acceptNumber3 > 0) && (options$rejectNumber3 > 0)) {
     # Create sampling plan  
     x3 <- NULL
-    if (options$distribution3 == "hypergeoom") {
+    if (options$distribution3 == "hypergeom") {
       x3 <- AcceptanceSampling::OC2c(N = options$lotSize3, n = options$sampleSize3, c = options$acceptNumber3, r = options$rejectNumber3, type = options$distribution3)
     } else {
       x3 <- AcceptanceSampling::OC2c(n = options$sampleSize3, c = options$acceptNumber3, r = options$rejectNumber3, type = options$distribution3)
@@ -131,8 +140,25 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
     ocPlot3 <- createJaspPlot(title = "OC curve for all three sampling plans",  width = 320, height = 320)
     ocPlot3$dependOn(c("lotSize3", "sampleSize3", "acceptNumber3", "rejectNumber3", "distribution3"))
     jaspResults[["ocPlot3"]] <- ocPlot3
-    ggplot3 <- ggplot2 + ggplot2::geom_point(data = df_x3, ggplot2::aes(x = PD, y = PA), colour = "blue")
-    ocPlot3$plotObject <- ggplot3                        
+    ggplot3 <- ggplot2 + ggplot2::geom_point(data = df_x3, ggplot2::aes(x = PD, y = PA), colour = "blue", shape = 0)
+    ocPlot3$plotObject <- ggplot3
+    
+    # Sampling plan summary, if requested
+    if (options$showSummary3) {
+      .printSummary(jaspResults, df_x3, index = 3)
+    }                        
   }
-  # }
+}
+
+# Sampling plan summary table
+.printSummary <- function(jaspResults, df_x, index) {
+    table <- createJaspTable(title = "Detailed acceptance probabilities:")
+    names <- c("lotSize", "sampleSize", "acceptNumber", "rejectNumber", "distribution", "showSummary")
+    names <- paste0(names, index)
+    table$dependOn(c(names))
+    table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
+    table$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
+    table$setData(list(col_1 = df_x$PD, col_2 = df_x$PA))
+    table$showSpecifiedColumnsOnly <- TRUE
+    jaspResults[[paste0("table", index)]] <- table
 }

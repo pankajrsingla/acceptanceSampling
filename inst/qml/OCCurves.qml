@@ -40,6 +40,8 @@ Form
 			RadioButton { value: "hypergeom";	label: qsTr("Hypergeometric"); id: hypergeom1 }
 			RadioButton { value: "poisson";		label: qsTr("Poisson"); id: poisson1 }
 		}
+
+		CheckBox{ label: qsTr("Show summary (first plan)"); name: "showSummary1"}
 	}
 
 	Section
@@ -60,6 +62,8 @@ Form
 			RadioButton { value: "hypergeom";	label: qsTr("Hypergeometric"); id: hypergeom2 }
 			RadioButton { value: "poisson";		label: qsTr("Poisson"); id: poisson2 }
 		}
+
+		CheckBox{ label: qsTr("Show summary (second plan)"); name: "showSummary2"}
 	}
 
 	Section
@@ -80,5 +84,7 @@ Form
 			RadioButton { value: "hypergeom";	label: qsTr("Hypergeometric"); id: hypergeom3 }
 			RadioButton { value: "poisson";		label: qsTr("Poisson"); id: poisson3 }
 		}
+
+		CheckBox{ label: qsTr("Show summary (third plan)"); name: "showSummary3"}
 	}
 }
