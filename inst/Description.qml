@@ -6,7 +6,7 @@ Description
 	name		: "jaspAcceptanceSampling"
 	title		: qsTr("Acceptance Sampling")
 	description	: qsTr("Sampling for acceptance")
-	icon		: "choice-svgrepo-com.svg"
+	icon		: "choice.png"
 	version		: "0.16.4"
 	author		: "JASP Team"
 	maintainer	: "JASP Team <info@jasp-stats.org>"
@@ -17,35 +17,32 @@ Description
 	GroupTitle
 	{
 		title:	qsTr("Attribute Plans")
-		icon:	"analysis-classical-crosstabs.svg"
+		// icon:	"analysis-classical-crosstabs.svg"
 	}
 
 	Analysis
 	{
 		title:	qsTr("OC Curves")
-		// icon:	"analysis-classical-crosstabs.svg"
 		func:	"OCCurves"
 	}
 
 	Analysis
 	{
-		title:	qsTr("Assess Plan")
-		// icon:	"analysis-classical-crosstabs.svg"
+		title:	qsTr("Assess Sampling Plan")
 		func:	"AssessSamplingPlan"
 	}
 	
 	Analysis
 	{
-		title:	qsTr("Find Plan")
-		// icon:	"analysis-classical-crosstabs.svg"
+		title:	qsTr("Find Sampling Plan")
 		func:	"FindSamplingPlan"
 	}
 
-	Separator {}
+	// Separator {}
 
-	GroupTitle
-	{
-		title:	qsTr("Variable Plans")
-		icon:	"analysis-bayesian-crosstabs.svg"
-	}
+	// GroupTitle
+	// {
+	// 	title:	qsTr("Variable Plans")
+	// 	icon:	"analysis-bayesian-crosstabs.svg"
+	// }
 }

@@ -109,7 +109,8 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
         ocPlot <- createJaspPlot(title = "OC curve for the sampling plan",  width = 320, height = 320)
         ocPlot$dependOn(c(names, "showOCCurve"))
         jaspResults[["ocPlot"]] <- ocPlot
-        ggplot <- ggplot2::geom_point(data = df_x, ggplot2::aes(x = PD, y = PA), colour = "black", shape = 24)
+        ggplot <- ggplot2::ggplot(data = df_x, ggplot2::aes(x = PD, y = PA)) + 
+                        ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
         ocPlot$plotObject <- ggplot
       }
     }
@@ -124,7 +125,7 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     table$dependOn(c(names))
     table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
     table$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
-    table$setData(list(col_1 = df_x["PD"], col_2 = df_x["PA"]))
+    table$setData(list(col_1 = df_x$PD, col_2 = df_x$PA))
     table$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["table"]] <- table
 }
