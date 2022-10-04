@@ -69,9 +69,9 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
   # OC Plot 1:
   ######################
   ggplot1 <- NULL
-  draw_first = FALSE
+  # draw_first = FALSE
   if ((options$sampleSize1 > 0) && (options$acceptNumber1 > 0) && (options$rejectNumber1 > 0)) {
-    draw_first = TRUE
+    # draw_first = TRUE
     # Create sampling plan
     x1 <- NULL
     if (options$distribution1 == "hypergeom") {
@@ -99,8 +99,9 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
   ######################
   ggplot2 <- NULL
   draw_second = FALSE
-  if (draw_first && (options$sampleSize2 > 0) && (options$acceptNumber2 > 0) && (options$rejectNumber2 > 0)) {
-    draw_second = TRUE
+  # if (draw_first && (options$sampleSize2 > 0) && (options$acceptNumber2 > 0) && (options$rejectNumber2 > 0)) {
+  if ((options$sampleSize2 > 0) && (options$acceptNumber2 > 0) && (options$rejectNumber2 > 0)) {
+    # draw_second = TRUE
     # Create sampling plan  
     x2 <- NULL
     if (options$distribution2 == "hypergeom") {
@@ -126,7 +127,8 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
   # OC Plot 3:
   ######################
   ggplot3 <- NULL
-  if (draw_second && (options$sampleSize3 > 0) && (options$acceptNumber3 > 0) && (options$rejectNumber3 > 0)) {
+  # if (draw_second && (options$sampleSize3 > 0) && (options$acceptNumber3 > 0) && (options$rejectNumber3 > 0)) {
+  if ((options$sampleSize3 > 0) && (options$acceptNumber3 > 0) && (options$rejectNumber3 > 0)) {
     # Create sampling plan  
     x3 <- NULL
     if (options$distribution3 == "hypergeom") {

@@ -29,8 +29,8 @@ Form
 		{
 			Layout.columnSpan: 2			
 			IntegerField { name: "sampleSize1"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
-			IntegerField { name: "acceptNumber1"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
-			IntegerField { name: "rejectNumber1"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
+			IntegerField { id: acceptNumber1; name: "acceptNumber1"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
+			IntegerField { id: rejectNumber1; name: "rejectNumber1"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
 		}
 
 		RadioButtonGroup
@@ -52,14 +52,14 @@ Form
 	Section
 	{
 		title: qsTr("Second OC Curve")
-		enabled: (acceptNumber1.value > 0 && rejectNumber1.value > 0)
+		enabled: acceptNumber1.value > 0 && rejectNumber1.value > 0
 
 		Group
 		{
 			Layout.columnSpan: 2
 			IntegerField { name: "sampleSize2"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
-			IntegerField { name: "acceptNumber2"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
-			IntegerField { name: "rejectNumber2"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
+			IntegerField { id: acceptNumber2; name: "acceptNumber2"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
+			IntegerField { id: rejectNumber2; name: "rejectNumber2"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
 		}
 	
 		RadioButtonGroup
@@ -86,7 +86,6 @@ Form
 		Group
 		{
 			Layout.columnSpan: 2
-			
 			IntegerField { name: "sampleSize3"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
 			IntegerField { name: "acceptNumber3"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
 			IntegerField { name: "rejectNumber3"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
