@@ -96,6 +96,7 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
       # Binomial and Poisson distributions don't require lot size (N).
       x <- AcceptanceSampling::OC2c(n = options$sampleSize, c = options$acceptNumber, r = options$rejectNumber, type = dist)
     }
+    df_x = data.frame(PD = x@pd, PA = x@paccept)
     
     # Assessment of the sampling plan
     assess <- capture.output(AcceptanceSampling::assess(x, PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp)))
@@ -125,7 +126,7 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     jaspResults[["table2"]] <- table2
 
     if (options$showSummary) {
-      df_x = data.frame(PD = x@pd, PA = x@paccept)
+      # df_x = data.frame(PD = x@pd, PA = x@paccept)
       .printSummary(jaspResults, names, df_x)
     }
   }
@@ -139,7 +140,7 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     table$dependOn(c(names))
     table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
     table$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
-    table$setData(list(col_1 = df_x["PD"], col_2 = df_x["PA"]))
+    table$setData(list(col_1 = df_x$PD, col_2 = df_x$PA))
     table$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["table"]] <- table
 }
