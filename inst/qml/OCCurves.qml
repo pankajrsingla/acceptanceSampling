@@ -29,53 +29,53 @@ Form
 		{
 			Layout.columnSpan: 2			
 			IntegerField { name: "sampleSize1"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
-			IntegerField { name: "acceptNumber1"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
-			IntegerField { name: "rejectNumber1"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
+			IntegerField { id: acceptNumber1; name: "acceptNumber1"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
+			IntegerField { id: rejectNumber1; name: "rejectNumber1"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
 		}
 
 		RadioButtonGroup
 		{
 			title: qsTr("Distribution")
 			name: "distribution1"
-			RadioButton { value: "binom"; label: qsTr("Binomial"); id: binom1; checked: true }
+			RadioButton { value: "binom"; label: qsTr("Binomial"); checked: true }
 			Group
 			{
 				RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom1 }
 				IntegerField { name: "lotSize1"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1; enabled: hypergeom1.checked }				
 			}
-			RadioButton { value: "poisson"; label: qsTr("Poisson"); id: poisson1 }
+			RadioButton { value: "poisson"; label: qsTr("Poisson") }
 		}
 
-		CheckBox{ label: qsTr("Show summary (first plan)"); name: "showSummary1"}
+		CheckBox{ name: "showSummary1"; label: qsTr("Show summary (first plan)") }
 	}
 
 	Section
 	{
 		title: qsTr("Second OC Curve")
-		enabled: (acceptNumber1.value > 0 && rejectNumber1.value > 0)
+		enabled: acceptNumber1.value > 0 && rejectNumber1.value > 0
 
 		Group
 		{
 			Layout.columnSpan: 2
 			IntegerField { name: "sampleSize2"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
-			IntegerField { name: "acceptNumber2"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
-			IntegerField { name: "rejectNumber2"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
+			IntegerField { id: acceptNumber2; name: "acceptNumber2"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
+			IntegerField { id: rejectNumber2; name: "rejectNumber2"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
 		}
 	
 		RadioButtonGroup
 		{
 			title: qsTr("Distribution")
 			name: "distribution2"
-			RadioButton { value: "binom"; label: qsTr("Binomial"); id: binom2; checked: false }
+			RadioButton { value: "binom"; label: qsTr("Binomial"); checked: false }
 			Group
 			{
 				RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom2 }
 				IntegerField { name: "lotSize2"; label: qsTr("Lot size (N): "); defaultValue: 1; min: 1; enabled: hypergeom2.checked }
 			}
-			RadioButton { value: "poisson"; label: qsTr("Poisson"); id: poisson2 }
+			RadioButton { value: "poisson"; label: qsTr("Poisson") }
 		}
 
-		CheckBox{ label: qsTr("Show summary (second plan)"); name: "showSummary2"}
+		CheckBox{ name: "showSummary2"; label: qsTr("Show summary (second plan)") }
 	}
 
 	Section
@@ -86,7 +86,6 @@ Form
 		Group
 		{
 			Layout.columnSpan: 2
-			
 			IntegerField { name: "sampleSize3"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
 			IntegerField { name: "acceptNumber3"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
 			IntegerField { name: "rejectNumber3"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
@@ -96,15 +95,43 @@ Form
 		{
 			title: qsTr("Distribution")
 			name: "distribution3"
-			RadioButton { value: "binom"; label: qsTr("Binomial"); id: binom3; checked: false }
+			RadioButton { value: "binom"; label: qsTr("Binomial"); checked: false }
 			Group
 			{
 				RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom3 }
 				IntegerField { name: "lotSize3"; label: qsTr("Lot size (N): "); defaultValue: 1; min: 1; enabled: hypergeom3.checked }
 			}
-			RadioButton { value: "poisson"; label: qsTr("Poisson"); id: poisson3 }
+			RadioButton { value: "poisson"; label: qsTr("Poisson") }
 		}
 
-		CheckBox{ label: qsTr("Show summary (third plan)"); name: "showSummary3"}
+		CheckBox{ name: "showSummary3"; label: qsTr("Show summary (third plan)") }
+	}
+
+	Section
+	{
+		title: qsTr("Multiple Sampling Plan")
+
+		Group
+		{
+			Layout.columnSpan: 2
+			TextField { name: "sampleSize_mult"; label: qsTr("Sample sizes (n1,n2,...): "); inputType: "integerArray"; fieldWidth: 60 }
+			TextField { name: "acceptNumber_mult"; label: qsTr("Acceptance numbers (c1,c2,...): "); inputType: "integerArray"; fieldWidth: 60 }
+			TextField { name: "rejectNumber_mult"; label: qsTr("Rejection numbers (r1,r2,...): "); inputType: "integerArray"; fieldWidth: 60 }
+		}
+
+		RadioButtonGroup
+		{
+			title: qsTr("Distribution")
+			name: "distribution_mult"
+			RadioButton { value: "binom"; label: qsTr("Binomial"); checked: false }
+			Group
+			{
+				RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom_mult }
+				IntegerField { name: "lotSize_mult"; label: qsTr("Lot size (N): "); defaultValue: 1; min: 1; enabled: hypergeom_mult.checked }
+			}
+			RadioButton { value: "poisson"; label: qsTr("Poisson") }
+		}
+
+		CheckBox{ name: "showSummary_mult"; label: qsTr("Show summary") }
 	}
 }
