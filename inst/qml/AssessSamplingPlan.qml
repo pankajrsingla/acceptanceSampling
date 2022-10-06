@@ -22,58 +22,64 @@ import JASP.Controls 1.0
 
 Form
 {
-	Group
+	Section
 	{
-		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 10; min: 1 }
-		IntegerField { name: "acceptNumber"; label: qsTr("Acceptance number (c): "); defaultValue: 4 }
-		IntegerField { name: "rejectNumber"; label: qsTr("Rejection number (r): "); defaultValue: 5 }
-	}
+		title: qsTr("Assess Single Sampling Plan")
 
-	Group
-	{
-		Layout.columnSpan: 2
-		title: qsTr("PRP (Producer Risk Point)")
 		Group
 		{
-			columns: 2
-			Text { text: qsTr("Quality Level: [P(defect)]") }
-			DoubleField{ name: "pd_prp"; label: qsTr(""); negativeValues: false; defaultValue: 0.1; min: 0; max: 1 }
-			Text { text: qsTr("Acceptance Probability: [Least P(accept)]") }
-			DoubleField{ name: "pa_prp"; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
+			IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 10; min: 1 }
+			IntegerField { name: "acceptNumber"; label: qsTr("Acceptance number (c): "); defaultValue: 4 }
+			IntegerField { name: "rejectNumber"; label: qsTr("Rejection number (r): "); defaultValue: 5 }
 		}
-	}
-	
-	Group
-	{
-		Layout.columnSpan: 2
-		title: qsTr("CRP (Consumer Risk Point)")
-		Group
-		{
-			columns: 2
-			Text { text: qsTr("Quality Level: [P(defect)]") }
-			DoubleField { name: "pd_crp"; label: qsTr(""); negativeValues: false; defaultValue: 0.2; min: 0; max: 1 }
-			Text { text: qsTr("Acceptance Probability: [Maximum P(accept)]") }
-			DoubleField { name: "pa_crp"; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
-		}
-	}
 
-	RadioButtonGroup
-	{
-		title: qsTr("Distribution")
-		name: "distribution"
-		RadioButton { value: "binom"; label: qsTr("Binomial"); checked: true }
 		Group
 		{
-			RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom }
-			IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1; enabled: hypergeom.checked }
+			Layout.columnSpan: 2
+			title: qsTr("PRP (Producer Risk Point)")
+			Group
+			{
+				columns: 2
+				Text { text: qsTr("Quality Level: [P(defect)]") }
+				DoubleField{ name: "pd_prp"; label: qsTr(""); negativeValues: false; defaultValue: 0.1; min: 0; max: 1 }
+				Text { text: qsTr("Acceptance Probability: [Least P(accept)]") }
+				DoubleField{ name: "pa_prp"; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
+			}
 		}
-		RadioButton { value: "poisson"; label: qsTr("Poisson") }
-	}
-	Group
-	{
-		Layout.rowSpan: 2
-		CheckBox { label: qsTr("Show OC Curve"); name: "showOCCurveSingle" }
-		CheckBox { label: qsTr("Show summary"); name: "showSummarySingle" }
+		
+		Group
+		{
+			Layout.columnSpan: 2
+			title: qsTr("CRP (Consumer Risk Point)")
+			Group
+			{
+				columns: 2
+				Text { text: qsTr("Quality Level: [P(defect)]") }
+				DoubleField { name: "pd_crp"; label: qsTr(""); negativeValues: false; defaultValue: 0.2; min: 0; max: 1 }
+				Text { text: qsTr("Acceptance Probability: [Maximum P(accept)]") }
+				DoubleField { name: "pa_crp"; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
+			}
+		}
+
+		RadioButtonGroup
+		{
+			title: qsTr("Distribution")
+			name: "distribution"
+			RadioButton { value: "binom"; label: qsTr("Binomial"); checked: true }
+			Group
+			{
+				RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom }
+				IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1; enabled: hypergeom.checked }
+			}
+			RadioButton { value: "poisson"; label: qsTr("Poisson") }
+		}
+		
+		Group
+		{
+			Layout.rowSpan: 2
+			CheckBox { label: qsTr("Show OC Curve"); name: "showOCCurveSingle" }
+			CheckBox { label: qsTr("Show summary"); name: "showSummarySingle" }
+		}
 	}
 
 	Section

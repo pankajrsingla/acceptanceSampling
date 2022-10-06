@@ -96,9 +96,9 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     x_mult <- NULL
     if (options$distribution_mult == "hypergeom") {
       # Need to provide the lot size (N) for hypergeometric distribution.
-      x <- AcceptanceSampling::OC2c(N = options$lotSize_mult, n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = options$distribution_mult)
+      x_mult <- AcceptanceSampling::OC2c(N = options$lotSize_mult, n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = options$distribution_mult)
     } else {
-      x <- AcceptanceSampling::OC2c(n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = options$distribution_mult)
+      x_mult <- AcceptanceSampling::OC2c(n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = options$distribution_mult)
     }
     # res1 <- summary(x1, full = FALSE)
     df_x_mult <- data.frame(PD = x_mult@pd, PA = x_mult@paccept)
@@ -156,7 +156,7 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
 
     if (options$showSummarySingle) {
       # df_x = data.frame(PD = x@pd, PA = x@paccept)
-      .printSummary(jaspResults, names, df_x, FALSE)
+      .printSummaryAssess(jaspResults, names, df_x, FALSE)
     }
   }
 }
@@ -179,50 +179,60 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     # Assessment of the sampling plan
     assess_mult <- capture.output(AcceptanceSampling::assess(x_mult, PRP = c(options$pd_prp_mult, options$pa_prp_mult), CRP = c(options$pd_crp_mult, options$pa_crp_mult)))
 
+    rows <- length(options$sampleSize_mult)
+    table_df_mult <- data.frame(sample = 1:rows, sample_size = options$sampleSize_mult, cum_sample_size = cumsum(options$sampleSize_mult),
+                                acc_num = options$acceptNumber_mult, rej_num = options$rejectNumber_mult)
     # Create and fill the output table(s)
     # 1. Sampling plan table
     table1 <- createJaspTable(title = paste0("Acceptance Sampling Plan (", as.character(dist_mult), ")"))
     table1$dependOn(c(names))
-    table1$addColumnInfo(name = "table_1_col_1", title = "", type = "string")
-    table1$addColumnInfo(name = "table_1_col_2", title = "Value", type = "integer")
-    table1$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = as.numeric(options$sampleSize_mult)))
-    table1$addRows(list("table_1_col_1" = "Acc. Number(s)", "table_1_col_2" = as.numeric(options$acceptNumber_mult)))
-    table1$addRows(list("table_1_col_1" = "Rej. Number(s)", "table_1_col_2" = as.numeric(options$rejectNumber_mult)))
+    table1$addColumnInfo(name = "table_1_col_1", title = "Sample", type = "integer")
+    table1$addColumnInfo(name = "table_1_col_2", title = "Sample Size", type = "integer")
+    table1$addColumnInfo(name = "table_1_col_3", title = "Cum. Sample Size", type = "integer")
+    table1$addColumnInfo(name = "table_1_col_4", title = "Acc. Number", type = "integer")
+    table1$addColumnInfo(name = "table_1_col_5", title = "Rej. Number", type = "integer")
+    table1$setData(list(table_1_col_1 = table_df_mult$sample, table_1_col_2 = table_df_mult$sample_size, table_1_col_3 = table_df_mult$cum_sample_size,
+                   table_1_col_4 = table_df_mult$acc_num, table_1_col_5 = table_df_mult$rej_num))
+    # table1$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = as.numeric(options$sampleSize_mult)))
+    # table1$addRows(list("table_1_col_1" = "Acc. Number(s)", "table_1_col_2" = as.numeric(options$acceptNumber_mult)))
+    # table1$addRows(list("table_1_col_1" = "Rej. Number(s)", "table_1_col_2" = as.numeric(options$rejectNumber_mult)))
     table1$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["table1"]] <- table1
 
     # 2. Table with the specified and actual acceptance probabilities
-    table2 <- createJaspTable(title = as.character(assess[8]))
+    table2 <- createJaspTable(title = as.character(assess_mult[8]))
     table2$dependOn(c(names))
     table2$addColumnInfo(name = "table_2_col_1", title = "", type = "string")
     table2$addColumnInfo(name = "table_2_col_2", title = "Quality", type = "number")
     table2$addColumnInfo(name = "table_2_col_3", title = "RP P(accept)", type = "number")
     table2$addColumnInfo(name = "table_2_col_4", title = "Plan P(accept)", type = "number")
-    table2$addRows(list("table_2_col_1" = "PRP", "table_2_col_2" = as.numeric(options$pd_prp_mult), "table_2_col_3" = as.numeric(options$pa_prp_mult), "table_2_col_4" = as.numeric(unlist(strsplit(assess[11], " +"))[4])))
-    table2$addRows(list("table_2_col_1" = "CRP", "table_2_col_2" = as.numeric(options$pd_crp_mult), "table_2_col_3" = as.numeric(options$pa_crp_mult), "table_2_col_4" = as.numeric(unlist(strsplit(assess[12], " +"))[4])))
+    table2$addRows(list("table_2_col_1" = "PRP", "table_2_col_2" = as.numeric(options$pd_prp_mult), "table_2_col_3" = as.numeric(options$pa_prp_mult), 
+                        "table_2_col_4" = as.numeric(unlist(strsplit(assess_mult[11], " +"))[4])))
+    table2$addRows(list("table_2_col_1" = "CRP", "table_2_col_2" = as.numeric(options$pd_crp_mult), "table_2_col_3" = as.numeric(options$pa_crp_mult), 
+                        "table_2_col_4" = as.numeric(unlist(strsplit(assess_mult[12], " +"))[4])))
     table2$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["table2"]] <- table2
 
     if (options$showSummaryMult) {
       # df_x = data.frame(PD = x@pd, PA = x@paccept)
-      .printSummary(jaspResults, names, df_x_mult, TRUE)
+      .printSummaryAssess(jaspResults, names, df_x_mult, TRUE)
     }
   }
 }
 
 # Sampling plan summary table
-.printSummary <- function(jaspResults, names, df_x, is_mult = FALSE) {
+.printSummaryAssess <- function(jaspResults, names, df_x, is_mult) {
     table <- createJaspTable(title = "Detailed acceptance probabilities:")
-    if (!is_mult) {
-      names <- c(names, "showSummarySingle")
-    } else {
+    if (is_mult) {
       names <- c(names, "showSummaryMult")
+    } else {
+      names <- c(names, "showSummarySingle")
     }
-    # names <- paste0(names, index)
     table$dependOn(c(names))
     table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
     table$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
-    table$setData(list(col_1 = df_x$PD, col_2 = df_x$PA))
+    jaspResults["debug"] <- createJaspHtml(text=as.character(df_x))
+    # table$setData(list(col_1 = df_x$PD, col_2 = df_x$PA))
     table$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["table"]] <- table
 }

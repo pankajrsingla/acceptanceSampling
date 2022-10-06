@@ -173,7 +173,7 @@ OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
 # Sampling plan summary table
 .printSummary <- function(jaspResults, df_x, index) {
     table <- createJaspTable(title = "Detailed acceptance probabilities:")
-    names <- c("lotSize", "sampleSize", "acceptNumber", "rejectNumber", "distribution", "showSummary")
+    names <- c("lotSize", "sampleSize", "acceptNumber", "rejectNumber", "distribution", "showSummary_mult")
     names <- paste0(names, index)
     table$dependOn(c(names))
     table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
