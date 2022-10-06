@@ -19,7 +19,6 @@ import QtQuick 2.8
 import QtQuick.Layouts 1.3
 import JASP.Controls 1.0
 
-
 Form
 {
 	Section
@@ -73,7 +72,7 @@ Form
 			}
 			RadioButton { value: "poisson"; label: qsTr("Poisson") }
 		}
-		
+
 		Group
 		{
 			Layout.rowSpan: 2
