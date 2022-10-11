@@ -19,13 +19,10 @@ import QtQuick 2.8
 import QtQuick.Layouts 1.3
 import JASP.Controls 1.0
 
-Form
+Group
 {
-	Group
-    {
-        Layout.columnSpan: 2
-        TextField { name: "sampleSize_mult"; label: qsTr("Sample sizes (n1,n2,...): "); inputType: "integerArray"; fieldWidth: 60 }
-        TextField { name: "acceptNumber_mult"; label: qsTr("Acceptance numbers (c1,c2,...): "); inputType: "integerArray"; fieldWidth: 60 }
-        TextField { name: "rejectNumber_mult"; label: qsTr("Rejection numbers (r1,r2,...): "); inputType: "integerArray"; fieldWidth: 60 }
-    }
+    property string suffix: ""
+    IntegerField { name: "sampleSize" + suffix; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
+    IntegerField { id: acceptNumber; name: "acceptNumber" + suffix; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
+    IntegerField { id: rejectNumber; name: "rejectNumber" + suffix; label: qsTr("Rejection number (r): "); defaultValue: 0 }
 }

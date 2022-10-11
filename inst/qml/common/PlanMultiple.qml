@@ -19,20 +19,10 @@ import QtQuick 2.8
 import QtQuick.Layouts 1.3
 import JASP.Controls 1.0
 
-Form
+Group
 {
-	RadioButtonGroup
-    {
-        title: qsTr("Distribution")
-        name: "distribution"
-        RadioButton { value: "binom"; label: qsTr("Binomial"); checked: true }
-        Group
-        {
-            RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom }
-            IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1; enabled: hypergeom.checked }				
-        }
-        RadioButton { value: "poisson"; label: qsTr("Poisson") }
-    }
+    // Layout.columnSpan: 2
+    TextField { name: "sampleSizeMult"; label: qsTr("Sample sizes (n1,n2,...): "); inputType: "integerArray"; fieldWidth: 60 }
+    TextField { name: "acceptNumberMult"; label: qsTr("Acceptance numbers (c1,c2,...): "); inputType: "integerArray"; fieldWidth: 60 }
+    TextField { name: "rejectNumberMult"; label: qsTr("Rejection numbers (r1,r2,...): "); inputType: "integerArray"; fieldWidth: 60 }
 }
-
-		

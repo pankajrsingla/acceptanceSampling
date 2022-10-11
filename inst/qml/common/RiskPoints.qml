@@ -19,33 +19,34 @@ import QtQuick 2.8
 import QtQuick.Layouts 1.3
 import JASP.Controls 1.0
 
-Form
+Group
 {
+    property string suffix: ""
     Group
     {
-        Layout.columnSpan: 2
+        // Layout.columnSpan: 2
         title: qsTr("PRP (Producer Risk Point)")
         Group
         {
             columns: 2
             Text { text: qsTr("Quality Level: [P(defect)]") }
-            DoubleField{ name: "pd_prp"; label: qsTr(""); negativeValues: false; defaultValue: 0.1; min: 0; max: 1 }
+            DoubleField{ name: "pd_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.1; min: 0; max: 1 }
             Text { text: qsTr("Acceptance Probability: [Least P(accept)]") }
-            DoubleField{ name: "pa_prp"; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
+            DoubleField{ name: "pa_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
         }
     }
     
     Group
     {
-        Layout.columnSpan: 2
+        // Layout.columnSpan: 2
         title: qsTr("CRP (Consumer Risk Point)")
         Group
         {
             columns: 2
             Text { text: qsTr("Quality Level: [P(defect)]") }
-            DoubleField { name: "pd_crp"; label: qsTr(""); negativeValues: false; defaultValue: 0.2; min: 0; max: 1 }
+            DoubleField { name: "pd_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.2; min: 0; max: 1 }
             Text { text: qsTr("Acceptance Probability: [Maximum P(accept)]") }
-            DoubleField { name: "pa_crp"; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
+            DoubleField { name: "pa_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
         }
     }
 }
