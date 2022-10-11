@@ -15,52 +15,45 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This is a temporary fix
-# TODO: remove it when R solves this problem!
-gettextf <- function(fmt, ..., domain = NULL)  {
-  return(sprintf(gettext(fmt, domain = domain), ...))
-}
-
-AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
-  optionNames <- c("lotSize", "sampleSize", "acceptNumber", "rejectNumber", "pd_prp", "pa_prp", "pd_crp", "pa_crp")
-  optionNames_mult <- c("lotSize_mult", "sampleSize_mult", "acceptNumber_mult", "rejectNumber_mult", "pd_prp_mult", "pa_prp_mult", "pd_crp_mult", "pa_crp_mult")
-  options <- .parseAndStoreFormulaOptions(jaspResults, options, names = optionNames)
-
+AssessSamplingPlan <- function(jaspResults, options, ...) {
   .assessSampleCheckErrors(dataset, options)
   # Single
   if (options$showOCCurveSingle) {
     .createOCCurveAssessSingle(jaspResults, options)
   }
-  .assessPlanSingle(jaspResults, options, optionNames)
+  .assessPlanSingle(jaspResults, options)
   # Multiple
   if (options$showOCCurveMult) {
     .createOCCurveAssessMult(jaspResults, options)
   }
-  .assessPlanMult(jaspResults, options, optionNames_mult)
+  .assessPlanMult(jaspResults, options)
 }
 
 
 .assessSampleCheckErrors <- function(dataset = NULL, options) {
   # perform a check on the hypothesis
 
-  sanityCheckAssess <- function(lotSize, sampleSize, acceptNumber, rejectNumber) {
-    if (sampleSize > lotSize)
-      return(gettext("Sample size cannot be greater than the lot size."))
-    else if (acceptNumber > sampleSize)
-      return(gettext("Acceptance number cannot be greater than the sample size."))
-    else if (rejectNumber > sampleSize)
-      return(gettext("Rejection number cannot be greater than the sample size."))
-    else if (rejectNumber < acceptNumber)
-      return(gettext("Rejection number cannot be smaller than the acceptance number."))
+  # Check option values
+  checkPlan <- function(options) {
+    variables <- c("lotSize", "sampleSize", "acceptNumber", "rejectNumber")
+    for (index in list("Single","Mult")) {
+      variables_indexed <- paste0(variables, index)
+      if (options[[variables_indexed[2]]] > options[[variables_indexed[1]]]) {
+        return(gettextf("Sample size cannot be greater than the lot size."))
+      } else if (options[[variables_indexed[3]]] > options[[variables_indexed[2]]]) {
+        return(gettextf("Acceptance number cannot be greater than the sample size."))
+      } else if (options[[variables_indexed[4]]] > options[[variables_indexed[2]]]) {
+        return(gettextf("Rejection number cannot be greater than the sample size."))
+      } else if (options[[variables_indexed[4]]] < options[[variables_indexed[3]]]) {
+        return(gettextf("Rejection number cannot be smaller than the acceptance number."))
+      }
+    }
   }
   
   # Error Check 1: Number of levels of the variables and the hypothesis
   .hasErrors(
-    dataset              = dataset,
-    custom               = sanityCheckAssess,
-    type                 = "factorLevels",
-    factorLevels.target  = options$sampleSize,
-    factorLevels.amount  = "< 1",
+    dataset              = NULL,
+    custom               = checkPlan,
     exitAnalysisIfErrors = TRUE
   )
 }
@@ -69,123 +62,78 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
 
 # Generate OC Curve:
 .createOCCurveAssessSingle <- function(jaspResults, options) {
-  if ((options$sampleSize > 0) && (options$acceptNumber > 0) && (options$rejectNumber > 0)) {
+  if ((options$sampleSizeSingle > 0) && (options$acceptNumberSingle > 0) && (options$rejectNumberSingle > 0)) {
     # Create sampling plan
-    x <- NULL
-    if (options$distribution == "hypergeom") {
-      # Need to provide the lot size (N) for hypergeometric distribution.
-      x <- AcceptanceSampling::OC2c(N = options$lotSize, n = options$sampleSize, c = options$acceptNumber, r = options$rejectNumber, type = options$distribution)
-    } else {
-      x <- AcceptanceSampling::OC2c(n = options$sampleSize, c = options$acceptNumber, r = options$rejectNumber, type = options$distribution)
-    }
-    # res1 <- summary(x1, full = FALSE)
-    df_x <- data.frame(PD = x@pd, PA = x@paccept)
+    df_x <- getPlanDf(options$sampleSizeSingle, options$acceptNumberSingle, options$rejectNumberSingle, options$distributionSingle, options$lotSizeSingle)
     # Generate plot
-    ocPlot_single <- createJaspPlot(title = "OC curve for single sampling plan",  width = 320, height = 320)
-    ocPlot_single$dependOn(c("showOCCurveSingle", "lotSize", "sampleSize", "acceptNumber", "rejectNumber", "distribution"))
-    jaspResults[["ocPlot_single"]] <- ocPlot_single
-    plot_single <- ggplot2::ggplot(data = df_x, ggplot2::aes(x = PD, y = PA)) + 
-                        ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
-    ocPlot_single$plotObject <- plot_single
+    variable_names <- c("lotSizeSingle", "sampleSizeSingle", "acceptNumberSingle", "rejectNumberSingle", "distributionSingle", "showOCCurveSingle"))
+    ocPlot_single <- getPlot(jaspResults, df_x, variable_names, "single")
   }
 }
 
 .createOCCurveAssessMult <- function(jaspResults, options) {
-  if (length(options$sampleSize_mult) > 0 && length(options$acceptNumber_mult) > 0 && length(options$rejectNumber_mult) > 0) {
+  if (length(options$sampleSizeMult) > 0 && length(options$acceptNumberMult) > 0 && length(options$rejectNumberMult) > 0) {
     # Create sampling plan
-    x_mult <- NULL
-    if (options$distribution_mult == "hypergeom") {
-      # Need to provide the lot size (N) for hypergeometric distribution.
-      x_mult <- AcceptanceSampling::OC2c(N = options$lotSize_mult, n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = options$distribution_mult)
-    } else {
-      x_mult <- AcceptanceSampling::OC2c(n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = options$distribution_mult)
-    }
-    # res1 <- summary(x1, full = FALSE)
-    df_x_mult <- data.frame(PD = x_mult@pd, PA = x_mult@paccept)
+    df_x <- getPlanDf(options$sampleSizeMult, options$acceptNumberMult, options$rejectNumberMult, options$distributionMult, options$lotSizeMult)
     # Generate plot
-    ocPlot_mult <- createJaspPlot(title = "OC curve for multiple sampling plan",  width = 320, height = 320)
-    ocPlot_mult$dependOn(c("showOCCurve_mult", "lotSize_mult", "sampleSize_mult", "acceptNumber_mult", "rejectNumber_mult", "distribution_mult"))
-    jaspResults[["ocPlot_mult"]] <- ocPlot_mult
-    plot_mult <- ggplot2::ggplot(data = df_x_mult, ggplot2::aes(x = PD, y = PA)) + 
-                        ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
-    ocPlot_mult$plotObject <- plot_mult
+    variable_names <- c("lotSizeMult", "sampleSizeMult", "acceptNumberMult", "rejectNumberMult", "distributionMult", "showOCCurveMult"))
+    ocPlot_mult <- getPlot(jaspResults, df_x, variable_names, "multiple")
   }
 }
 
-.assessPlanSingle <- function(jaspResults, options, names) {
-  if (options$pd_prp && options$pa_prp && options$pd_crp && options$pa_crp) {
+.assessPlanSingle <- function(jaspResults, options) {
+  if (options$pd_prpSingle && options$pa_prpSingle && options$pd_crpSingle && options$pa_crpSingle) {
     x <- NULL
-    dist = options$distribution
-
-    # Create sampling plan with the specified values
-    if (dist == "hypergeom") {
-      # Need to provide the lot size (N) only for hypergeometric distribution.
-      x <- AcceptanceSampling::OC2c(N = options$lotSize, n = options$sampleSize, c = options$acceptNumber, r = options$rejectNumber, type = dist)
-    } else {
-      # Binomial and Poisson distributions don't require lot size (N).
-      x <- AcceptanceSampling::OC2c(n = options$sampleSize, c = options$acceptNumber, r = options$rejectNumber, type = dist)
-    }
-    df_x = data.frame(PD = x@pd, PA = x@paccept)
+    dist <- options$distributionSingle
+    output <- getPlanDf(options$sampleSizeSingle, options$acceptNumberSingle, options$rejectNumberSingle, dist, options$lotSizeSingle, TRUE)
+    x <- output[1]
+    df_x <- output[2]
     
     # Assessment of the sampling plan
-    assess <- capture.output(AcceptanceSampling::assess(x, PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp)))
+    assess <- capture.output(AcceptanceSampling::assess(x, PRP = c(options$pd_prpSingle, options$pa_prpSingle), CRP = c(options$pd_crpSingle, options$pa_crpSingle)))
 
     # Create and fill the output table(s)
     # 1. Sampling plan table
     table1 <- createJaspTable(title = paste0("Acceptance Sampling Plan (", as.character(dist), ")"))
-    table1$dependOn(c(names))
+    table1$dependOn(c("sampleSizeSingle", "acceptNumberSingle", "rejectNumberSingle"))
     table1$addColumnInfo(name = "table_1_col_1", title = "", type = "string")
     table1$addColumnInfo(name = "table_1_col_2", title = "Value", type = "integer")
-    table1$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = as.numeric(options$sampleSize)))
-    table1$addRows(list("table_1_col_1" = "Acc. Number(s)", "table_1_col_2" = as.numeric(options$acceptNumber)))
-    table1$addRows(list("table_1_col_1" = "Rej. Number(s)", "table_1_col_2" = as.numeric(options$rejectNumber)))
+    table1$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = as.numeric(options$sampleSizeSingle)))
+    table1$addRows(list("table_1_col_1" = "Acc. Number(s)", "table_1_col_2" = as.numeric(options$acceptNumberSingle)))
+    table1$addRows(list("table_1_col_1" = "Rej. Number(s)", "table_1_col_2" = as.numeric(options$rejectNumberSingle)))
     table1$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["table1"]] <- table1
 
     # 2. Table with the specified and actual acceptance probabilities
-    table2 <- createJaspTable(title = as.character(assess[8]))
-    table2$dependOn(c(names))
-    table2$addColumnInfo(name = "table_2_col_1", title = "", type = "string")
-    table2$addColumnInfo(name = "table_2_col_2", title = "Quality", type = "number")
-    table2$addColumnInfo(name = "table_2_col_3", title = "RP P(accept)", type = "number")
-    table2$addColumnInfo(name = "table_2_col_4", title = "Plan P(accept)", type = "number")
-    table2$addRows(list("table_2_col_1" = "PRP", "table_2_col_2" = as.numeric(options$pd_prp), "table_2_col_3" = as.numeric(options$pa_prp), "table_2_col_4" = as.numeric(unlist(strsplit(assess[11], " +"))[4])))
-    table2$addRows(list("table_2_col_1" = "CRP", "table_2_col_2" = as.numeric(options$pd_crp), "table_2_col_3" = as.numeric(options$pa_crp), "table_2_col_4" = as.numeric(unlist(strsplit(assess[12], " +"))[4])))
-    table2$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[["table2"]] <- table2
+    variable_names <- c("sampleSizeSingle", "acceptNumberSingle", "rejectNumberSingle", "distributionSingle", "pd_prpSingle", "pa_prpSingle", "pd_crpSingle", "pa_crpSingle")
+    table2 <- getRiskPointTable(jaspResults, variable_names, assess, options$pd_prpSingle, options$pa_prpSingle, options$pd_crpSingle, options$pa_crpSingle)
 
     if (options$showSummarySingle) {
-      # df_x = data.frame(PD = x@pd, PA = x@paccept)
-      .printSummaryAssess(jaspResults, names, df_x, FALSE)
+      printSummary(jaspResults, df_x, c(variable_names, "showSummarySingle"))
     }
   }
 }
 
-.assessPlanMult <- function(jaspResults, options, names) {
-  if (options$pd_prp_mult && options$pa_prp_mult && options$pd_crp_mult && options$pa_crp_mult) {
+.assessPlanMult <- function(jaspResults, options) {
+  if (options$pd_prpMult && options$pa_prpMult && options$pd_crpMult && options$pa_crpMult) {
     x_mult <- NULL
-    dist_mult = options$distribution_mult
+    dist_mult = options$distributionMult
 
-    # Create sampling plan with the specified values
-    if (dist_mult == "hypergeom") {
-      # Need to provide the lot size (N) only for hypergeometric distribution.
-      x_mult <- AcceptanceSampling::OC2c(N = options$lotSize_mult, n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = dist_mult)
-    } else {
-      # Binomial and Poisson distributions don't require lot size (N).
-      x_mult <- AcceptanceSampling::OC2c(n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = dist_mult)
-    }
-    df_x_mult = data.frame(PD = x_mult@pd, PA = x_mult@paccept)
+    # Get plan
+    output <- getPlanDf(options$sampleSizeMult, options$acceptNumberMult, options$rejectNumberMult, dist_mult, options$lotSizeMult)
+    x_mult <- output[1]
+    df_x_mult <- output[2]
     
     # Assessment of the sampling plan
-    assess_mult <- capture.output(AcceptanceSampling::assess(x_mult, PRP = c(options$pd_prp_mult, options$pa_prp_mult), CRP = c(options$pd_crp_mult, options$pa_crp_mult)))
+    assess_mult <- capture.output(AcceptanceSampling::assess(x_mult, PRP = c(options$pd_prpMult, options$pa_prpMult), CRP = c(options$pd_crpMult, options$pa_crpMult)))
 
-    rows <- length(options$sampleSize_mult)
-    table_df_mult <- data.frame(sample = 1:rows, sample_size = options$sampleSize_mult, cum_sample_size = cumsum(options$sampleSize_mult),
-                                acc_num = options$acceptNumber_mult, rej_num = options$rejectNumber_mult)
+    rows <- length(options$sampleSizeMult)
+    table_df_mult <- data.frame(sample = 1:rows, sample_size = options$sampleSizeMult, cum_sample_size = cumsum(options$sampleSizeMult),
+                                acc_num = options$acceptNumberMult, rej_num = options$rejectNumberMult)
     # Create and fill the output table(s)
     # 1. Sampling plan table
     table1 <- createJaspTable(title = paste0("Acceptance Sampling Plan (", as.character(dist_mult), ")"))
-    table1$dependOn(c(names))
+    table1$dependOn(c("sampleSizeMult", "acceptNumberMult", "rejectNumberMult"))
     table1$addColumnInfo(name = "table_1_col_1", title = "Sample", type = "integer")
     table1$addColumnInfo(name = "table_1_col_2", title = "Sample Size", type = "integer")
     table1$addColumnInfo(name = "table_1_col_3", title = "Cum. Sample Size", type = "integer")
@@ -193,46 +141,15 @@ AssessSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     table1$addColumnInfo(name = "table_1_col_5", title = "Rej. Number", type = "integer")
     table1$setData(list(table_1_col_1 = table_df_mult$sample, table_1_col_2 = table_df_mult$sample_size, table_1_col_3 = table_df_mult$cum_sample_size,
                    table_1_col_4 = table_df_mult$acc_num, table_1_col_5 = table_df_mult$rej_num))
-    # table1$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = as.numeric(options$sampleSize_mult)))
-    # table1$addRows(list("table_1_col_1" = "Acc. Number(s)", "table_1_col_2" = as.numeric(options$acceptNumber_mult)))
-    # table1$addRows(list("table_1_col_1" = "Rej. Number(s)", "table_1_col_2" = as.numeric(options$rejectNumber_mult)))
     table1$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["table1"]] <- table1
 
     # 2. Table with the specified and actual acceptance probabilities
-    table2 <- createJaspTable(title = as.character(assess_mult[8]))
-    table2$dependOn(c(names))
-    table2$addColumnInfo(name = "table_2_col_1", title = "", type = "string")
-    table2$addColumnInfo(name = "table_2_col_2", title = "Quality", type = "number")
-    table2$addColumnInfo(name = "table_2_col_3", title = "RP P(accept)", type = "number")
-    table2$addColumnInfo(name = "table_2_col_4", title = "Plan P(accept)", type = "number")
-    table2$addRows(list("table_2_col_1" = "PRP", "table_2_col_2" = as.numeric(options$pd_prp_mult), "table_2_col_3" = as.numeric(options$pa_prp_mult), 
-                        "table_2_col_4" = as.numeric(unlist(strsplit(assess_mult[11], " +"))[4])))
-    table2$addRows(list("table_2_col_1" = "CRP", "table_2_col_2" = as.numeric(options$pd_crp_mult), "table_2_col_3" = as.numeric(options$pa_crp_mult), 
-                        "table_2_col_4" = as.numeric(unlist(strsplit(assess_mult[12], " +"))[4])))
-    table2$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[["table2"]] <- table2
+    variable_names <- c("sampleSizeMult", "acceptNumberMult", "rejectNumberMult", "distributionMult", "pd_prpMult", "pa_prpMult", "pd_crpMult", "pa_crpMult")
+    table2 <- getRiskPointTable(jaspResults, variable_names, assess_mult, options$pd_prpMult, options$pa_prpMult, options$pd_crpMult, options$pa_crpMult)
 
     if (options$showSummaryMult) {
-      # df_x = data.frame(PD = x@pd, PA = x@paccept)
-      .printSummaryAssess(jaspResults, names, df_x_mult, TRUE)
+      printSummary(jaspResults, df_x_mult, c(variable_names, "showSummaryMult"))
     }
   }
-}
-
-# Sampling plan summary table
-.printSummaryAssess <- function(jaspResults, names, df_x, is_mult) {
-    table <- createJaspTable(title = "Detailed acceptance probabilities:")
-    if (is_mult) {
-      names <- c(names, "showSummaryMult")
-    } else {
-      names <- c(names, "showSummarySingle")
-    }
-    table$dependOn(c(names))
-    table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
-    table$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
-    jaspResults["debug"] <- createJaspHtml(text=as.character(df_x))
-    # table$setData(list(col_1 = df_x$PD, col_2 = df_x$PA))
-    table$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[["table"]] <- table
 }

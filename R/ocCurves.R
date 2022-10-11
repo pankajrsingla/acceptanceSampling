@@ -15,170 +15,76 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This is a temporary fix
-# TODO: remove it when R solves this problem!
-gettextf <- function(fmt, ..., domain = NULL)  {
-  return(sprintf(gettext(fmt, domain = domain), ...))
-}
-
-OCCurves <- function(jaspResults, dataset = NULL, options, ...) {
-  # ready <- length(options$variables) > 0
-
-  # lotSize, sampleSize, ... are formulaFields: parse them and save the result in the state
-  optionVals1 <- c("lotSize1", "sampleSize1", "acceptNumber1", "rejectNumber1", "showSummary1")
-  optionVals2 <- c("lotSize2", "sampleSize2", "acceptNumber2", "rejectNumber2", "showSummary2")
-  optionVals3 <- c("lotSize3", "sampleSize3", "acceptNumber3", "rejectNumber3", "showSummary3")
-  # optionValsM <- c("lotSize_mult", "sampleSize_mult", "acceptNumber_mult", "rejectNumber_mult", "showSummary_mult")
-  options <- .parseAndStoreFormulaOptions(jaspResults, options, names = c(optionVals1, optionVals2, optionVals3))
-
-  .ocCheckErrors(dataset, options)
-  .generateOCCurvesSingle(jaspResults, options)
-  .generateOCCurvesMultiple(jaspResults, options)
-  # .binomTableMain(       jaspResults, dataset, options, 1)
-  # .binomPlotsDescriptive(jaspResults, dataset, options, 0)
-}
-
-
-.ocCheckErrors <- function(dataset = NULL, options) {
-  # perform a check on the hypothesis
-
-  # Need to extend to all three curves, currently check only for the first.
-  ocSanityCheck <- function(lotSize, sampleSize, acceptNumber, rejectNumber) {
-    if (sampleSize > lotSize)
-      return(gettext("Sample size cannot be greater than the lot size."))
-    else if (acceptNumber > sampleSize)
-      return(gettext("Acceptance number cannot be greater than the sample size."))
-    else if (rejectNumber > sampleSize)
-      return(gettext("Rejection number cannot be greater than the sample size."))
-    else if (rejectNumber < acceptNumber)
-      return(gettext("Rejection number cannot be smaller than the acceptance number."))
-  }
+OCCurves <- function(jaspResults, options, ...) {
+  .ocCheckErrors(options)
+  variable_names <- c("lotSize", "sampleSize", "acceptNumber", "rejectNumber", "distribution")
   
-  # Error Check 1: Number of levels of the variables and the hypothesis
-  .hasErrors(
-    dataset              = dataset,
-    custom               = ocSanityCheck,
-    type                 = "factorLevels",
-    factorLevels.target  = options$sampleSize1,
-    factorLevels.amount  = "< 1",
-    exitAnalysisIfErrors = TRUE
-  )
-}
-
-# Results functions ----
-
-.generateOCCurvesSingle <- function(jaspResults, options) {
-  # OC Plot 1:
-  ######################
+  # First plan
   plot1 <- NULL
   if ((options$sampleSize1 > 0) && (options$acceptNumber1 > 0) && (options$rejectNumber1 > 0)) {
-    # Create sampling plan
-    x1 <- NULL
-    if (options$distribution1 == "hypergeom") {
-      x1 <- AcceptanceSampling::OC2c(N = options$lotSize1, n = options$sampleSize1, c = options$acceptNumber1, r = options$rejectNumber1, type = options$distribution1)
-    } else {
-      x1 <- AcceptanceSampling::OC2c(n = options$sampleSize1, c = options$acceptNumber1, r = options$rejectNumber1, type = options$distribution1)
-    }
-    df_x1 <- data.frame(PD = x1@pd, PA = x1@paccept)
-    # Generate plot
-    ocPlot1 <- createJaspPlot(title = "OC curve for first sampling plan",  width = 320, height = 320)
-    ocPlot1$dependOn(c("lotSize1", "sampleSize1", "acceptNumber1", "rejectNumber1", "distribution1"))
-    jaspResults[["ocPlot1"]] <- ocPlot1
-    plot1 <- ggplot2::ggplot(data = df_x1, ggplot2::aes(x = PD, y = PA)) + 
-                        ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
-    ocPlot1$plotObject <- plot1
-    
-    # Sampling plan summary, if requested
+    df_plan1 <- getPlanDf(options$sampleSize1, options$acceptNumber1, options$rejectNumber1, options$distribution1, options$lotSize1)
+    plot1 <- getPlot(jaspResults, df_plan1, paste0(variable_names, 1), "first", 1)
     if (options$showSummary1) {
-      .printSummary(jaspResults, df_x1, index = 1)
+      printSummary(jaspResults, df_plan1, c(paste0(variable_names, 1), "showSummary1"))
     }
   }
 
-  # OC Plot 2:
-  ######################
+  # Second plan
   plot2 <- NULL
   if ((options$sampleSize2 > 0) && (options$acceptNumber2 > 0) && (options$rejectNumber2 > 0)) {
-    # Create sampling plan  
-    x2 <- NULL
-    if (options$distribution2 == "hypergeom") {
-      x2 <- AcceptanceSampling::OC2c(N = options$lotSize2, n = options$sampleSize2, c = options$acceptNumber2, r = options$rejectNumber2, type = options$distribution2)
-    } else {
-      x2 <- AcceptanceSampling::OC2c(n = options$sampleSize2, c = options$acceptNumber2, r = options$rejectNumber2, type = options$distribution2)
-    }
-    df_x2 <- data.frame(PD = x2@pd, PA = x2@paccept)
-    # Generate plot
-    ocPlot2 <- createJaspPlot(title = "OC curve for first and second sampling plans",  width = 320, height = 320)
-    ocPlot2$dependOn(c("lotSize2", "sampleSize2", "acceptNumber2", "rejectNumber2", "distribution2"))
-    jaspResults[["ocPlot2"]] <- ocPlot2
-    plot2 <- plot1 + ggplot2::geom_point(data = df_x2, ggplot2::aes(x = PD, y = PA), colour = "green", shape = 25)
-    ocPlot2$plotObject <- plot2    
-    
-    # Sampling plan summary, if requested
+    df_plan2 <- getPlanDf(options$sampleSize2, options$acceptNumber2, options$rejectNumber2, options$distribution2, options$lotSize2)
+    plot2 <- getPlot(jaspResults, df_plan2, paste0(variable_names, 2), "second", 2)
     if (options$showSummary2) {
-      .printSummary(jaspResults, df_x2, index = 2)
-    }           
+      printSummary(jaspResults, df_plan2, c(paste0(variable_names, 2), "showSummary2"))
+    }
+    p2 <- plot1$plotObject + plot2$plotObject
+    plot2$plotObject <- p2
   }
 
-  # OC Plot 3:
-  ######################
+  # Third plan
   plot3 <- NULL
   if ((options$sampleSize3 > 0) && (options$acceptNumber3 > 0) && (options$rejectNumber3 > 0)) {
-    # Create sampling plan  
-    x3 <- NULL
-    if (options$distribution3 == "hypergeom") {
-      x3 <- AcceptanceSampling::OC2c(N = options$lotSize3, n = options$sampleSize3, c = options$acceptNumber3, r = options$rejectNumber3, type = options$distribution3)
-    } else {
-      x3 <- AcceptanceSampling::OC2c(n = options$sampleSize3, c = options$acceptNumber3, r = options$rejectNumber3, type = options$distribution3)
-    }
-    df_x3 <- data.frame(PD = x3@pd, PA = x3@paccept)
-    # Generate plot
-    ocPlot3 <- createJaspPlot(title = "OC curve for all three sampling plans",  width = 320, height = 320)
-    ocPlot3$dependOn(c("lotSize3", "sampleSize3", "acceptNumber3", "rejectNumber3", "distribution3"))
-    jaspResults[["ocPlot3"]] <- ocPlot3
-    plot3 <- plot2 + ggplot2::geom_point(data = df_x3, ggplot2::aes(x = PD, y = PA), colour = "blue", shape = 0)
-    ocPlot3$plotObject <- plot3
-    
-    # Sampling plan summary, if requested
+    df_plan3 <- getPlanDf(options$sampleSize3, options$acceptNumber3, options$rejectNumber3, options$distribution3, options$lotSize3)
+    plot3 <- getPlot(jaspResults, df_plan3, paste0(variable_names, 3), "third", 3)
     if (options$showSummary3) {
-      .printSummary(jaspResults, df_x3, index = 3)
-    }                        
-  }
-}
-
-.generateOCCurvesMultiple <- function(jaspResults, options) {
-  if (length(options$sampleSize_mult) > 0 && length(options$acceptNumber_mult) > 0 && length(options$rejectNumber_mult > 0)) {
-    # Create sampling plan
-    x_mult <- NULL
-    if (options$distribution_mult == "hypergeom") {
-      x_mult <- AcceptanceSampling::OC2c(N = options$lotSize_mult, n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = options$distribution_mult)
-    } else {
-      x_mult <- AcceptanceSampling::OC2c(n = options$sampleSize_mult, c = options$acceptNumber_mult, r = options$rejectNumber_mult, type = options$distribution_mult)
+      printSummary(jaspResults, df_plan3, c(paste0(variable_names, 3), "showSummary3"))
     }
-    df_x_mult <- data.frame(PD = x_mult@pd, PA = x_mult@paccept)
-    # Generate plot
-    ocPlot_mult <- createJaspPlot(title = "OC curve for multiple sampling plan",  width = 320, height = 320)
-    ocPlot_mult$dependOn(c("lotSize_mult", "sampleSize_mult", "acceptNumber_mult", "rejectNumber_mult", "distribution_mult"))
-    jaspResults[["ocPlot_mult"]] <- ocPlot_mult
-    plot_mult <- ggplot2::ggplot(data = df_x_mult, ggplot2::aes(x = PD, y = PA)) + 
-                        ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
-    ocPlot_mult$plotObject <- plot_mult
-    
-    # Sampling plan summary, if requested
-    if (options$showSummary_mult) {
-      .printSummary(jaspResults, df_x_mult, index = "mult")
+    p3 <- plot2$plotObject + plot3$plotObject
+    plot3$plotObject <- p3
+  }
+
+  # Multiple sampling plan
+  if (length(options$sampleSizeMult) > 0 && length(options$acceptNumberMult) > 0 && length(options$rejectNumberMult > 0)) {
+    df_planMult <- getPlanDf(options$sampleSizeMult, options$acceptNumberMult, options$rejectNumberMult, options$distributionMult, options$lotSizeMult)
+    plotMult <- getPlot(jaspResults, df_planMult, paste0(variable_names, "Mult"), "multiple")
+    if (options$showSummaryMult) {
+      printSummary(jaspResults, df_planMult, c(paste0(variable_names, "Mult"), "showSummaryMult"))
     }
   }
 }
 
-# Sampling plan summary table
-.printSummary <- function(jaspResults, df_x, index) {
-    table <- createJaspTable(title = "Detailed acceptance probabilities:")
-    names <- c("lotSize", "sampleSize", "acceptNumber", "rejectNumber", "distribution", "showSummary_mult")
-    names <- paste0(names, index)
-    table$dependOn(c(names))
-    table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
-    table$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
-    table$setData(list(col_1 = df_x$PD, col_2 = df_x$PA))
-    table$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[[paste0("table", index)]] <- table
+.ocCheckErrors <- function(options) {
+  # Error Check
+
+  checkPlan <- function(options) {
+    variables <- c("lotSize", "sampleSize", "acceptNumber", "rejectNumber")
+    for (index in list(1,2,3,"Mult")) {
+      variables_indexed <- paste0(variables, index)
+      if (options[[variables_indexed[2]]] > options[[variables_indexed[1]]]) {
+        return(gettextf("Sample size cannot be greater than the lot size."))
+      } else if (options[[variables_indexed[3]]] > options[[variables_indexed[2]]]) {
+        return(gettextf("Acceptance number cannot be greater than the sample size."))
+      } else if (options[[variables_indexed[4]]] > options[[variables_indexed[2]]]) {
+        return(gettextf("Rejection number cannot be greater than the sample size."))
+      } else if (options[[variables_indexed[4]]] < options[[variables_indexed[3]]]) {
+        return(gettextf("Rejection number cannot be smaller than the acceptance number."))
+      }
+    }
+  }
+
+  .hasErrors(
+    dataset              = NULL,
+    custom               = checkPlan,
+    exitAnalysisIfErrors = FALSE
+  )
 }

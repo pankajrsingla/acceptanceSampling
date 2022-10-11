@@ -15,16 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This is a temporary fix
-# TODO: remove it when R solves this problem!
-gettextf <- function(fmt, ..., domain = NULL)  {
-  return(sprintf(gettext(fmt, domain = domain), ...))
-}
-
 FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
   optionNames <- c("lotSize", "pd_prp", "pa_prp", "pd_crp", "pa_crp")
-  options <- .parseAndStoreFormulaOptions(jaspResults, options, names = optionNames)
-
   .findSampleCheckErrors(dataset, options)
   .findPlan(jaspResults, options, optionNames)
 }
@@ -33,10 +25,8 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
 .findSampleCheckErrors <- function(dataset = NULL, options) {
   # perform a check on the hypothesis
 
-  sanityCheckFind <- function() {
-    if (options$distribution == "hypergeom" && options$lotSize < 1) {
-      return(gettext("Lot size needs to be specified for hypergeometric distribution."))
-    } else if (options$pd_prp > options$pd_crp) {
+  sanityCheck <- function() {
+    if (options$pd_prp > options$pd_crp) {
       return(gettext("CRP should have worse quality (higher proportion defective) than PRP."))
     }
   }
@@ -44,10 +34,7 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Error Check 1: Number of levels of the variables and the hypothesis
   .hasErrors(
     dataset              = dataset,
-    custom               = sanityCheckFind,
-    type                 = "factorLevels",
-    factorLevels.target  = options$lotSize,
-    factorLevels.amount  = "< 1",
+    custom               = sanityCheck,
     exitAnalysisIfErrors = TRUE
   )
 }
@@ -88,44 +75,18 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     jaspResults[["table"]] <- table
 
     if (options$showSummary || options$showOCCurve) {
-      x <- NULL
-      if (dist == "hypergeom") {
-        # Need to provide the lot size (N) only for hypergeometric distribution.
-        x <- AcceptanceSampling::OC2c(N = options$lotSize, n = plan$n, c = plan$c, r = plan$r, type = dist)
-      } else {
-        # Binomial and Poisson distributions don't require lot size (N).
-        x <- AcceptanceSampling::OC2c(n = plan$n, c = plan$c, r = plan$r, type = dist)
-      }
-      df_x = data.frame(PD = x@pd, PA = x@paccept)
+      df_x <- getPlanDf(plan$n, plan$c, plan$r, dist, options$lotSize)
       
       # Summary
       if (options$showSummary) {
-        .printSummary(jaspResults, names, df_x)
+        printSummary(jaspResults, df_x, c(names, "showSummary"))
       }
 
       # OC Curve
       if (options$showOCCurve) {
         # Generate plot
-        ocPlot <- createJaspPlot(title = "OC curve for the sampling plan",  width = 320, height = 320)
-        ocPlot$dependOn(c(names, "showOCCurve"))
-        jaspResults[["ocPlot"]] <- ocPlot
-        ggplot <- ggplot2::ggplot(data = df_x, ggplot2::aes(x = PD, y = PA)) + 
-                        ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
-        ocPlot$plotObject <- ggplot
+        ocPlot <- getPlot(jaspResults, df_x, c(names, "showOCCurve"), "the")
       }
     }
   }
-}
-
-# Sampling plan summary table
-.printSummary <- function(jaspResults, names, df_x) {
-    table <- createJaspTable(title = "Detailed acceptance probabilities:")
-    names <- c(names, "showSummary")
-    # names <- paste0(names, index)
-    table$dependOn(c(names))
-    table$addColumnInfo(name = "col_1", title = "Prop. defective", type = "number")
-    table$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
-    table$setData(list(col_1 = df_x$PD, col_2 = df_x$PA))
-    table$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[["table"]] <- table
 }

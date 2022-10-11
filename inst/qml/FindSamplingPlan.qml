@@ -24,72 +24,18 @@ Form
 {
 	Common.RiskPoints
 	{
-		// something
+		Layout.columnSpan: 2
 	}
 
 	Common.Distribution
 	{
-		// something
+		Layout.columnSpan: 2
 	}
 	
-	// Group
-	// {
-	// 	Layout.columnSpan: 2
-	// 	title: qsTr("PRP (Producer Risk Point)")
-	// 	Group
-	// 	{
-	// 		columns: 2
-	// 		Text { text: qsTr("Quality Level: [P(defect)]") }
-	// 		DoubleField { name: "pd_prp"; label: qsTr(""); id: pd_prp; negativeValues: false; defaultValue: 0.1; min: 0; max: 1 }
-	// 		Text { text: qsTr("Acceptance Probability: [Least P(accept)]") }
-	// 		DoubleField { name: "pa_prp"; label: qsTr(""); id: pa_prp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
-	// 	}
-	// }
-
-	// Group
-	// {
-	// 	Layout.columnSpan: 2
-	// 	title: qsTr("CRP (Consumer Risk Point)")
-	// 	Group
-	// 	{
-	// 		columns: 2
-	// 		Text { text: qsTr("Quality Level: [P(defect)]") }
-	// 		DoubleField { name: "pd_crp"; label: qsTr(""); id: pd_crp; negativeValues: false; defaultValue: 0.2; min: 0; max: 1 }
-	// 		Text { text: qsTr("Acceptance Probability: [Maximum P(accept)]") }
-	// 		DoubleField { name: "pa_crp"; label: qsTr(""); id: pa_crp; negativeValues: false; defaultValue: 1; min: 0; max: 1 }
-	// 	}
-	// }
-
-	// RadioButtonGroup
-	// {
-	// 	title: qsTr("Distribution")
-	// 	name: "distribution"
-	// 	id: distribution
-
-	// 	RadioButton { value: "binom"; label: qsTr("Binomial"); id: binom; checked: true }
-	// 	Group
-	// 	{
-	// 		RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom }
-	// 		IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 1; min: 1; enabled: hypergeom.checked }
-	// 	}
-	// 	RadioButton { value: "poisson"; label: qsTr("Poisson"); id: poisson }
-	// 	// RadioButton { value: "normal"; label: qsTr("Normal"); id: normal }
-	// }
-
-	// RadioButtonGroup
-	// {
-	// 	title: qsTr("Standard Deviation")
-	// 	name: "stdev"
-	// 	enabled: normal.checked
-	// 	RadioButton { value: "unknown"; label: qsTr("Unknown"); checked: true }
-	// 	RadioButton { value: "known"; label: qsTr("Known") }
-	// }
-
 	Group
 	{
 		Layout.rowSpan: 2
 		CheckBox { label: qsTr("Show OC Curve"); name: "showOCCurve"}
 		CheckBox { label: qsTr("Show summary"); name: "showSummary"}
 	}	
-//}
 }
