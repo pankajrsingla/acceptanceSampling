@@ -97,5 +97,6 @@ Form
 		}
 
 		CheckBox{ name: "showSummaryMult"; label: qsTr("Show summary (multiple sampling plan)") }
+		CheckBox{ name: "showASNCurve"; label: qsTr("Show ASN Curve") }
 	}
 }
