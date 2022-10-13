@@ -15,12 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This is a temporary fix
-# TODO: remove it when R solves this problem!
-gettextf <- function(fmt, ..., domain = NULL)  {
-  return(sprintf(gettext(fmt, domain = domain), ...))
-}
-
 getPlanDf <- function(sampleSize, acceptNumber, rejectNumber, distribution, lotSize=NULL, returnPlan=FALSE) {
     plan <- NULL
     if (distribution == "hypergeom") {
@@ -37,13 +31,13 @@ getPlanDf <- function(sampleSize, acceptNumber, rejectNumber, distribution, lotS
 }
 
 getPlot <- function(jaspResults, df_plan, variables, identity, index=NULL) {
-    ocPlot <- createJaspPlot(title = paste0("OC curve for ", identity, " sampling plan"),  width = 320, height = 320)
+    ocPlot <- createJaspPlot(title = paste0("OC curve for ", identity, " sampling plan(s)"),  width = 320, height = 320)
     ocPlot$dependOn(variables)
     jaspResults[[paste0("ocPlot", index)]] <- ocPlot
-    plot <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
+    plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
                         ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion defective", y = "P(accept)")
-    plot <- jaspGraphs::themeJasp(plot)
-    ocPlot$plotObject <- plot
+    plt <- jaspGraphs::themeJasp(plt)
+    ocPlot$plotObject <- plt
     return (ocPlot)
 }
 
@@ -70,4 +64,51 @@ getRiskPointTable <- function(jaspResults, variables, assess, pd_prp, pa_prp, pd
   table$showSpecifiedColumnsOnly <- TRUE
   jaspResults[["table"]] <- table
   return (table)
+}
+
+getASNCurve <- function(jaspResults, options, variables) {
+    # Parse option values
+    n <- options$sampleSizeMult
+    c <- options$acceptNumberMult
+    r <- options$rejectNumberMult
+    dist <- options$distributionMult
+    N <- options$lotSizeMult
+
+    pd <- seq(0,1,0.01) # To-do: Add option to specify pd
+    stages <- length(n)
+    num_values <- length(pd)
+    ASN <- numeric(num_values)
+    probs_prod <- 1
+    cum_n <- 0
+    for (i in 1:(stages-1)) {
+        cum_n <- cum_n + n[i]
+        pacc_i <- numeric(num_values)
+        prej_i <- numeric(num_values)
+        if (dist == "binom") {
+            pacc_i <- pbinom(c(c[i]), size = n[i], prob = pd, lower.tail = TRUE)
+            prej_i <- pbinom(c(r[i] - 1), size = n[i], prob = pd, lower.tail = FALSE)
+        } else if (dist == "hypergeom") {
+            n_def <- pd * N
+            pacc_i <- phyper(c(c[i]), m = n_def, n = N - n_def, k = n[i], lower.tail = TRUE)
+            prej_i <- phyper(c(r[i] - 1), m = n_def, n = N - n_def, k = n[i], lower.tail = FALSE)         
+        } else if (dist == "poisson") {
+            pacc_i <- ppois(c(c[i]), lambda = pd*n[i], lower.tail = TRUE)
+            prej_i <- ppois(c(r[i] - 1), lambda = pd*n[i], lower.tail = FALSE)
+        }
+        prob_i <- pacc_i + prej_i
+        ASN <- ASN + cum_n * prob_i * probs_prod
+        probs_prod <- probs_prod * (1 - prob_i)
+    }
+    ASN <- ASN + (cum_n + n[stages]) * probs_prod
+    df_asn <- data.frame(PD = pd, ASN = ASN)
+
+    # Draw ASN plot
+    asnPlot <- createJaspPlot(title = "ASN Curve for multiple sampling plan",  width = 320, height = 320)
+    asnPlot$dependOn(variables)
+    jaspResults[["asnPlot"]] <- asnPlot
+    plt <- ggplot2::ggplot(data = df_asn, ggplot2::aes(x = PD, y = ASN)) + 
+                        ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion defective", y = "Average Sample Number")
+    plt <- jaspGraphs::themeJasp(plt)
+    asnPlot$plotObject <- plt
+    return (asnPlot)
 }

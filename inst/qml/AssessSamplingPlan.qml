@@ -76,7 +76,8 @@ Form
 		Group
 		{
 			CheckBox { label: qsTr("Show OC Curve"); name: "showOCCurveMult" }
-			CheckBox { label: qsTr("Show summary"); name: "showSummaryMult" }
+			CheckBox{ name: "showASNCurve"; label: qsTr("Show ASN Curve") }
+			CheckBox { label: qsTr("Show summary"); name: "showSummaryMult" }			
 		}
 	}
 }

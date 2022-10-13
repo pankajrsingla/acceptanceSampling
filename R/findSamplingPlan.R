@@ -26,9 +26,9 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
   # perform a check on the hypothesis
 
   sanityCheck <- function() {
-    if (options$pd_prp > options$pd_crp) {
-      return(gettext("CRP should have worse quality (higher proportion defective) than PRP."))
-    }
+    # if (options$pd_prp > options$pd_crp) {
+    #   return(gettext("CRP should have worse quality (higher proportion defective) than PRP."))
+    # }
   }
   
   # Error Check 1: Number of levels of the variables and the hypothesis
