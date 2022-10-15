@@ -21,8 +21,8 @@ import JASP.Controls 1.0
 
 Group
 {
-    property string suffix: ""
-    IntegerField { name: "sampleSize" + suffix; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
-    IntegerField { id: acceptNumber; name: "acceptNumber" + suffix; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
-    IntegerField { id: rejectNumber; name: "rejectNumber" + suffix; label: qsTr("Rejection number (r): "); defaultValue: 0 }
+    IntegerField { name: "lotSizeSingle"; label: qsTr("Lot size (N): "); defaultValue: 1000; min: 1 }
+    IntegerField { name: "sampleSizeSingle"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
+    IntegerField { name: "acceptNumberSingle"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
+    IntegerField { name: "rejectNumberSingle"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
 }

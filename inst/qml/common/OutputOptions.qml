@@ -18,12 +18,23 @@
 import QtQuick 2.8
 import QtQuick.Layouts 1.3
 import JASP.Controls 1.0
+import "./" as Common
 
 Group
 {
-    // Layout.columnSpan: 2
-    IntegerField { name: "lotSizeMult"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1 }
-    TextField { name: "sampleSizeMult"; label: qsTr("Sample sizes (n1,n2,...): "); inputType: "integerArray"; fieldWidth: 60 }
-    TextField { name: "acceptNumberMult"; label: qsTr("Acceptance numbers (c1,c2,...): "); inputType: "integerArray"; fieldWidth: 60 }
-    TextField { name: "rejectNumberMult"; label: qsTr("Rejection numbers (r1,r2,...): "); inputType: "integerArray"; fieldWidth: 60 }
+    title: qsTr("Output options")
+    property string output_suffix: ""
+    CheckBox { name: "showOCCurve" + output_suffix; label: qsTr("OC curve") }
+	CheckBox { name: "showSummary" + output_suffix; label: qsTr("Plan summary") }
+    Group
+    {
+        CheckBox { name: "assessPlan" + output_suffix; label: qsTr("Assess sampling plan"); id: assess }
+        Common.RiskPoints
+        {
+            suffix: output_suffix
+            enabled: assess.checked
+        }
+    }
+    CheckBox { name: "showAOQCurve" + output_suffix; label: qsTr("AOQ curve (plan with rectification)") }
+    CheckBox { name: "showATICurve" + output_suffix; label: qsTr("ATI curve (plan with rectification)") }
 }
