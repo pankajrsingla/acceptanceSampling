@@ -24,48 +24,45 @@ Form
 {
 	Section
 	{
-		title: qsTr("Assess Single Sampling Plan")
+		title: qsTr("Single Sampling Plan")
 
 		Common.PlanSingle
 		{
-			suffix: "Single"
-			Layout.columnSpan: 2			
-		}
-
-		Common.RiskPoints
-		{
-			suffix: "Single"
 			Layout.columnSpan: 2
 		}
 
+        Common.ProbDefect
+        {
+            suffix: "Single"
+            Layout.columnSpan: 2
+        }
+		
 		Common.Distribution
 		{
 			suffix: "Single"
 			Layout.columnSpan: 2
 		}
 
-		Group
-		{
-			Layout.columnSpan: 2
-			CheckBox { label: qsTr("Show OC Curve"); name: "showOCCurveSingle" }
-			CheckBox { label: qsTr("Show summary"); name: "showSummarySingle" }
-		}
-	}
+        Common.OutputOptions
+        {
+            output_suffix: "Single"
+        }
+    }
 
 	Section
 	{
-		title: qsTr("Assess Multiple Sampling Plan")
+		title: qsTr("Multiple Sampling Plan")
 
 		Common.PlanMultiple
 		{
 			Layout.columnSpan: 2
 		}
 
-		Common.RiskPoints
-		{
-			suffix: "Mult"
-			Layout.columnSpan: 2
-		}
+        Common.ProbDefect
+        {
+            suffix: "Mult"
+            Layout.columnSpan: 2
+        }
 
 		Common.Distribution
 		{
@@ -73,11 +70,11 @@ Form
 			Layout.columnSpan: 2
 		}
 
-		Group
-		{
-			CheckBox { label: qsTr("Show OC Curve"); name: "showOCCurveMult" }
-			CheckBox{ name: "showASNCurve"; label: qsTr("Show ASN Curve") }
-			CheckBox { label: qsTr("Show summary"); name: "showSummaryMult" }			
-		}
+        Common.OutputOptions
+        {
+            output_suffix: "Mult"
+        }
+
+        CheckBox { name: "showASNCurveMult"; label: qsTr("ASN curve"); Layout.columnSpan: 2 }
 	}
 }

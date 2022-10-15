@@ -27,6 +27,12 @@ Form
 		Layout.columnSpan: 2
 	}
 
+	Common.ProbDefect
+	{
+		suffix: "Mult"
+		Layout.columnSpan: 2
+	}
+	
 	Common.Distribution
 	{
 		Layout.columnSpan: 2
@@ -35,7 +41,7 @@ Form
 	Group
 	{
 		Layout.rowSpan: 2
-		CheckBox { label: qsTr("Show OC Curve"); name: "showOCCurve"}
-		CheckBox { label: qsTr("Show summary"); name: "showSummary"}
+		CheckBox { name: "showOCCurve"; label: qsTr("Show OC Curve") }
+		CheckBox { name: "showSummary"; label: qsTr("Show summary") }
 	}	
 }

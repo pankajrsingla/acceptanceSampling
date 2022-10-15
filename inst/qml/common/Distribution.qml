@@ -27,8 +27,7 @@ RadioButtonGroup
     RadioButton { value: "binom"; label: qsTr("Binomial"); checked: true }
     Group
     {
-        RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom }
-        IntegerField { name: "lotSize" + suffix; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1; enabled: hypergeom.checked }
+        RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); }
     }
     RadioButton { value: "poisson"; label: qsTr("Poisson") }
 }

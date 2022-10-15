@@ -75,17 +75,16 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     jaspResults[["table"]] <- table
 
     if (options$showSummary || options$showOCCurve) {
-      df_x <- getPlanDf(plan$n, plan$c, plan$r, dist, options$lotSize)
+      df_x <- getPlanDf(options, "")
       
-      # Summary
-      if (options$showSummary) {
-        printSummary(jaspResults, df_x, c(names, "showSummary"))
-      }
-
       # OC Curve
       if (options$showOCCurve) {
-        # Generate plot
-        ocPlot <- getPlot(jaspResults, df_x, c(names, "showOCCurve"), "the")
+        getOCCurve(jaspResults, df_x, c(names, "pd_lower", "pd_upper", "pd_step", "showOCCurve"))
+      }
+
+      # Summary
+      if (options$showSummary) {
+        getSummary(jaspResults, df_x, c(names, "pd_lower", "pd_upper", "pd_step", "showSummary"))
       }
     }
   }

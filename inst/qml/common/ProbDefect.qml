@@ -21,9 +21,16 @@ import JASP.Controls 1.0
 
 Group
 {
-    // Layout.columnSpan: 2
-    IntegerField { name: "lotSizeMult"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1 }
-    TextField { name: "sampleSizeMult"; label: qsTr("Sample sizes (n1,n2,...): "); inputType: "integerArray"; fieldWidth: 60 }
-    TextField { name: "acceptNumberMult"; label: qsTr("Acceptance numbers (c1,c2,...): "); inputType: "integerArray"; fieldWidth: 60 }
-    TextField { name: "rejectNumberMult"; label: qsTr("Rejection numbers (r1,r2,...): "); inputType: "integerArray"; fieldWidth: 60 }
+    title: qsTr("PD (Proportion non-confirming items)")        
+    property string suffix: ""
+    Group
+    {
+        columns: 2
+        Text { text: qsTr("From") }
+        DoubleField{ name: "pd_lower" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0; min: 0; max: 1 }
+        Text { text: qsTr("To") }
+        DoubleField{ name: "pd_upper" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
+        Text { text: qsTr("Step size") }
+        DoubleField{ name: "pd_step" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.01; min: 0.001; max: 1 }
+    }
 }

@@ -22,16 +22,10 @@ Description
 
 	Analysis
 	{
-		title:	qsTr("OC Curves")
-		func:	"OCCurves"
+		title:	qsTr("Analyze Sampling Plan")
+		func:	"AnalyzeSamplingPlan"
 	}
 
-	Analysis
-	{
-		title:	qsTr("Assess Sampling Plan")
-		func:	"AssessSamplingPlan"
-	}
-	
 	Analysis
 	{
 		title:	qsTr("Find Sampling Plan")
