@@ -30,9 +30,9 @@ Group
         {
             columns: 2
             Text { text: qsTr("Quality Level: [P(defect)]") }
-            DoubleField{ name: "pd_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.1; min: 0; max: 1 }
+            DoubleField{ name: "pd_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.01; min: 0; max: 1 }
             Text { text: qsTr("Acceptance Probability: [Least P(accept)]") }
-            DoubleField{ name: "pa_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
+            DoubleField{ name: "pa_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.9; min: 0; max: 1 }
         }
     }
     
@@ -46,7 +46,7 @@ Group
             Text { text: qsTr("Quality Level: [P(defect)]") }
             DoubleField { name: "pd_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.2; min: 0; max: 1 }
             Text { text: qsTr("Acceptance Probability: [Maximum P(accept)]") }
-            DoubleField { name: "pa_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
+            DoubleField { name: "pa_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.25; min: 0; max: 1 }
         }
     }
 }

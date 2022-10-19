@@ -15,48 +15,55 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-getPlanDf <- function(options, planType, returnPlan=FALSE) {
+getPlanDf <- function(options, planType, depend_variables, returnPlan=FALSE) {
+  n <- options[[paste0("sampleSize", planType)]]
+  c <- options[[paste0("acceptNumber", planType)]]
+  r <- options[[paste0("rejectNumber", planType)]]
+  pd_lower <- options[[paste0("pd_lower", planType)]]
+  pd_upper <- options[[paste0("pd_upper", planType)]]
+  pd_step <- options[[paste0("pd_step", planType)]]
+  pd <- seq(pd_lower, pd_upper, pd_step)
+  dist = options[[paste0("distribution", planType)]]
+
+  plan <- NULL
+  if (dist == "hypergeom") {
     N <-  options[[paste0("lotSize", planType)]]
-    n <- options[[paste0("sampleSize", planType)]]
-    c <- options[[paste0("acceptNumber", planType)]]
-    r <- options[[paste0("rejectNumber", planType)]]
-    pd_lower <- options[[paste0("pd_lower", planType)]]
-    pd_upper <- options[[paste0("pd_upper", planType)]]
-    pd_step <- options[[paste0("pd_step", planType)]]
-    dist = options[[paste0("distribution", planType)]]
+    plan <- AcceptanceSampling::OC2c(N = N, n = n, c = c, r = r, type = dist, pd = pd)
+  } else {
+    plan <- AcceptanceSampling::OC2c(n = n, c = c, r = r, type = dist, pd = pd)
+  }
+  df_plan <- data.frame(PD = plan@pd, PA = plan@paccept)
+  
+  # To make sure the df gets updated when the plan variables change
+#   dummy <- createJaspHtml()
+#   dummy$dependOn(depend_variables)
+#   dummy[["text"]] <- ""
 
-    plan <- NULL
-    if (dist == "hypergeom") {
-      plan <- AcceptanceSampling::OC2c(N = N, n = n, c = c, r = r, type = dist, pd = seq(pd_lower, pd_upper, pd_step))
-    } else {
-      plan <- AcceptanceSampling::OC2c(n = n, c = c, r = r, type = dist, pd = seq(pd_lower, pd_upper, pd_step))
-    }
-    df_plan <- data.frame(PD = plan@pd, PA = plan@paccept)
-    if (returnPlan) {
-      return (list(plan, df_plan))
-    } else {
-      return (df_plan)
-    }
+  if (returnPlan) {
+    return (list(plan, df_plan))
+  } else {
+    return (df_plan)
+  }
 }
 
-getOCCurve <- function(jaspResults, df_plan, depend_variables) {
-  ocPlot <- createJaspPlot(title = paste0("OC (Operating Characteristics) curve"),  width = 320, height = 320)
-  ocPlot$dependOn(depend_variables)
-  jaspResults[["ocPlot"]] <- ocPlot
+getOCCurve <- function(jaspResults, df_plan, planType, depend_variables) {
+  ocCurve <- createJaspPlot(title = paste0("OC (Operating Characteristics) curve"),  width = 320, height = 320)
+  ocCurve$dependOn(depend_variables)
+  jaspResults[[paste0("ocCurve", planType)]] <- ocCurve
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
-                      ggplot2::geom_point(colour = "black", shape = 24) + ggplot2::labs(x = "Proportion non-confirming", y = "P(accept)")
+                      ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion non-confirming", y = "P(accept)")
   plt <- jaspGraphs::themeJasp(plt)
-  ocPlot$plotObject <- plt
+  ocCurve$plotObject <- plt
 }
 
-getSummary <- function(jaspResults, df_plan, depend_variables) {
+getSummary <- function(jaspResults, df_plan, planType, depend_variables) {
   summaryTable <- createJaspTable(title = "Detailed acceptance probabilities")
   summaryTable$dependOn(depend_variables)
   summaryTable$addColumnInfo(name = "col_1", title = "Prop. non-confirming", type = "number")
   summaryTable$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
   summaryTable$setData(list(col_1 = df_plan$PD, col_2 = df_plan$PA))
   summaryTable$showSpecifiedColumnsOnly <- TRUE
-  jaspResults[["summaryTable"]] <- summaryTable
+  jaspResults[[paste0("summaryTable", planType)]] <- summaryTable
   return (summaryTable)
 }
 
@@ -67,7 +74,7 @@ assessPlan <- function(jaspResults, options, planType, depend_variables) {
   pa_crp <- options[[paste0("pa_crp", planType)]]
   
   if (pd_prp > 0 && pa_prp > 0 && pd_crp > 0 && pa_crp > 0) {
-    output <- getPlanDf(options, planType, TRUE)
+    output <- getPlanDf(options, planType, depend_variables, TRUE)
     plan <- output[[1]]
     df_plan <- output[[2]]
     # Assessment of the sampling plan
@@ -99,14 +106,14 @@ assessPlan <- function(jaspResults, options, planType, depend_variables) {
       plan_table$setData(list(table_1_col_1 = 1:length(options$sampleSizeMult), table_1_col_2 = n, table_1_col_3 = cumsum(n), table_1_col_4 = c, table_1_col_5 = r))
     }
     plan_table$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[["plan_table"]] <- plan_table
+    jaspResults[[paste0("plan_table", planType)]] <- plan_table
 
     # 2. Table with the specified and actual acceptance probabilities
-    risk_table <- getRiskPointTable(jaspResults, assess, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp)
+    risk_table <- getRiskPointTable(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp)
   }
 }
 
-getRiskPointTable <- function(jaspResults, assess, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp) {
+getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp) {
   table <- createJaspTable(title = as.character(assess[8]))
   table$dependOn(depend_variables)
   table$addColumnInfo(name = "col_1", title = "", type = "string")
@@ -116,61 +123,134 @@ getRiskPointTable <- function(jaspResults, assess, depend_variables, pd_prp, pa_
   table$addRows(list("col_1" = "PRP", "col_2" = pd_prp, "col_3" = pa_prp, "col_4" = as.numeric(unlist(strsplit(assess[11], " +"))[4])))
   table$addRows(list("col_1" = "CRP", "col_2" = pd_crp, "col_3" = pd_crp, "col_4" = as.numeric(unlist(strsplit(assess[12], " +"))[4])))
   table$showSpecifiedColumnsOnly <- TRUE
-  jaspResults[["riskTable"]] <- table
+  jaspResults[[paste0("riskTable", planType)]] <- table
   return (table)
 }
 
-getAOQCurve <- function(jaspResults, options, depend_variables) {
-  # add code
+getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variables) {
+  aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 320, height = 320)
+  aoqCurve$dependOn(depend_variables)
+  jaspResults[[paste0("aoqCurve", planType)]] <- aoqCurve
+
+  N <-  options[[paste0("lotSize", planType)]]
+  n <- options[[paste0("sampleSize", planType)]]
+  c <- options[[paste0("acceptNumber", planType)]]
+  r <- options[[paste0("rejectNumber", planType)]]
+  dist <- options[[paste0("distribution", planType)]]
+  pd <- df_plan$PD
+  AOQ <- numeric(length(pd))
+  if (planType == "Single") {
+    AOQ <- df_plan$PA * pd * (N-n) / N
+  } else {
+    stages <- length(n)
+    probs_prod <- 1
+    cum_n <- 0
+    n_def <- pd * N
+    for (i in 1:stages) {
+      cum_n <- cum_n + n[i]
+      p_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
+      pAcc_i <- unlist(p_acc_rej_i[1])
+      pDecide_i <- pAcc_i + unlist(p_acc_rej_i[2])
+      AOQ <- AOQ + (N - cum_n) * pAcc_i * probs_prod
+      probs_prod <- probs_prod * (1 - pDecide_i)
+    }
+    AOQ <- AOQ * pd / N
+  }
+  df_plan$AOQ <- AOQ
+  plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
+                         ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion non-confirming", y = "AOQ") +
+                         ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
+                         ggplot2::geom_text(ggplot2::aes(0, max(df_plan$AOQ), label = paste0("AOQL: ", round(max(df_plan$AOQ)),2), vjust = "top", check_overlap=TRUE))
+  plt <- jaspGraphs::themeJasp(plt)
+  aoqCurve$plotObject <- plt
 }
 
-getATICurve <- function(jaspResults, options, depend_variables) {
-  # add code
+getATICurve <- function(jaspResults, df_plan, options, planType, depend_variables) {
+  atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 320, height = 320)
+  atiCurve$dependOn(depend_variables)
+  jaspResults[[paste0("atiCurve", planType)]] <- atiCurve
+
+  N <-  options[[paste0("lotSize", planType)]]
+  n <- options[[paste0("sampleSize", planType)]]
+  c <- options[[paste0("acceptNumber", planType)]]
+  r <- options[[paste0("rejectNumber", planType)]]
+  dist <- options[[paste0("distribution", planType)]]
+  pd <- df_plan$PD
+  ATI <- numeric(length(pd))
+  if (planType == "Single") {
+    ATI <- df_plan$PA * n + (1 - df_plan$PA) * N
+  } else {
+    stages <- length(n)
+    probs_prod <- 1
+    cum_n <- 0
+    n_def <- pd * N
+    for (i in 1:stages) {
+      cum_n <- cum_n + n[i]
+      p_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
+      pAcc_i <- unlist(p_acc_rej_i[1])
+      pRej_i <- unlist(p_acc_rej_i[2])
+      pDecide_i <- pAcc_i + pRej_i
+      ATI <- ATI + (pAcc_i * cum_n + pRej_i * N) * probs_prod
+      probs_prod <- probs_prod * (1 - pDecide_i)
+    }
+  }
+  df_plan$ATI <- ATI
+  plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
+                         ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion non-confirming", y = "ATI")
+  plt <- jaspGraphs::themeJasp(plt)
+  atiCurve$plotObject <- plt
 }
 
 getASNCurve <- function(jaspResults, options, depend_variables) {
-    # Parse option values
-    n <- options$sampleSizeMult
-    c <- options$acceptNumberMult
-    r <- options$rejectNumberMult
-    dist <- options$distributionMult
-    N <- options$lotSizeMult
+  # Parse option values
+  n <- options$sampleSizeMult
+  c <- options$acceptNumberMult
+  r <- options$rejectNumberMult
+  dist <- options$distributionMult
+  N <- options$lotSizeMult
+  pd_lower <- options$pd_lowerMult
+  pd_upper <- options$pd_upperMult
+  pd_step <- options$pd_stepMult
+  pd = seq(pd_lower, pd_upper, pd_step)
+  n_def <- pd * N
+  stages <- length(n)
+  num_values <- length(pd)
+  ASN <- numeric(num_values)
+  probs_prod <- 1
+  cum_n <- 0
+  for (i in 1:(stages-1)) {
+    cum_n <- cum_n + n[i]
+    prob_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
+    pDecide_i <- as.numeric(unlist(prob_acc_rej_i[1]) + unlist(prob_acc_rej_i[2]))
+    ASN <- ASN + cum_n * pDecide_i * probs_prod
+    probs_prod <- probs_prod * (1 - pDecide_i)
+  }
+  ASN <- ASN + (cum_n + n[stages]) * probs_prod
+  df_asn <- data.frame(PD = pd, ASN = ASN)
 
-    pd <- seq(0,1,0.01) # To-do: Add option to specify pd
-    n_def <- pd * N
-    stages <- length(n)
-    num_values <- length(pd)
-    ASN <- numeric(num_values)
-    pacc_i <- numeric(num_values)
-    prej_i <- numeric(num_values)    
-    probs_prod <- 1
-    cum_n <- 0
-    for (i in 1:(stages-1)) {
-        cum_n <- cum_n + n[i]
-        if (dist == "binom") {
-            pacc_i <- pbinom(c(c[i]), size = n[i], prob = pd, lower.tail = TRUE)
-            prej_i <- pbinom(c(r[i] - 1), size = n[i], prob = pd, lower.tail = FALSE)
-        } else if (dist == "hypergeom") {
-            pacc_i <- phyper(c(c[i]), m = n_def, n = N - n_def, k = n[i], lower.tail = TRUE)
-            prej_i <- phyper(c(r[i] - 1), m = n_def, n = N - n_def, k = n[i], lower.tail = FALSE)         
-        } else if (dist == "poisson") {
-            pacc_i <- ppois(c(c[i]), lambda = pd*n[i], lower.tail = TRUE)
-            prej_i <- ppois(c(r[i] - 1), lambda = pd*n[i], lower.tail = FALSE)
-        }
-        prob_i <- pacc_i + prej_i
-        ASN <- ASN + cum_n * prob_i * probs_prod
-        probs_prod <- probs_prod * (1 - prob_i)
-    }
-    ASN <- ASN + (cum_n + n[stages]) * probs_prod
-    df_asn <- data.frame(PD = pd, ASN = ASN)
+  # Draw ASN plot
+  asnPlot <- createJaspPlot(title = "ASN Curve for multiple sampling plan",  width = 320, height = 320)
+  asnPlot$dependOn(depend_variables)
+  jaspResults[["asnPlot"]] <- asnPlot
+  plt <- ggplot2::ggplot(data = df_asn, ggplot2::aes(x = PD, y = ASN)) + 
+         ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion non-confirming", y = "Average Sample Number")
+  plt <- jaspGraphs::themeJasp(plt)
+  asnPlot$plotObject <- plt
+  return (asnPlot)
+}
 
-    # Draw ASN plot
-    asnPlot <- createJaspPlot(title = "ASN Curve for multiple sampling plan",  width = 320, height = 320)
-    asnPlot$dependOn(depend_variables)
-    jaspResults[["asnPlot"]] <- asnPlot
-    plt <- ggplot2::ggplot(data = df_asn, ggplot2::aes(x = PD, y = ASN)) + 
-                        ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion non-confirming", y = "Average Sample Number")
-    plt <- jaspGraphs::themeJasp(plt)
-    asnPlot$plotObject <- plt
-    return (asnPlot)
+getProbability <- function(N, n, c, r, dist, pd, n_def) {
+  pAcc <- NULL
+  pRej <- NULL
+  if (dist == "binom") {
+    pAcc <- pbinom(c(c), size = n, prob = pd, lower.tail = TRUE)
+    pRej <- pbinom(c(r - 1), size = n, prob = pd, lower.tail = FALSE)
+  } else if (dist == "hypergeom") {
+    pAcc <- phyper(c(c), m = n_def, n = N - n_def, k = n, lower.tail = TRUE)
+    pRej <- phyper(c(r - 1), m = n_def, n = N - n_def, k = n, lower.tail = FALSE)         
+  } else if (dist == "poisson") {
+    pAcc <- ppois(c(c), lambda = pd*n, lower.tail = TRUE)
+    pRej <- ppois(c(r - 1), lambda = pd*n, lower.tail = FALSE)
+  }
+  return (list(pAcc,pRej))
 }

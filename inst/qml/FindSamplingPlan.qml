@@ -24,18 +24,27 @@ Form
 {
 	Common.RiskPoints
 	{
+		// suffix: ""
 		Layout.columnSpan: 2
 	}
 
 	Common.ProbDefect
 	{
-		suffix: "Mult"
+		// suffix: ""
 		Layout.columnSpan: 2
 	}
-	
-	Common.Distribution
+
+	RadioButtonGroup
 	{
-		Layout.columnSpan: 2
+		title: qsTr("Distribution")
+		name: "distribution"
+		RadioButton { value: "binom"; label: qsTr("Binomial"); checked: true }
+		Group
+		{
+			RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom}
+			IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 1000; min: 1; enabled: hypergeom.checked }
+		}
+		RadioButton { value: "poisson"; label: qsTr("Poisson") }
 	}
 	
 	Group
