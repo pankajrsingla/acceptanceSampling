@@ -34,15 +34,15 @@ AnalyzeSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
   output_variables <- paste0(c("showOCCurve", "showSummary", "assessPlan", "showAOQCurve", "showATICurve", "showASNCurve"), planType)
   
   # Plan Dataframe
-  df_plan <- getPlanDf(options, planType)
+  df_plan <- getPlanDf(options, planType, c(plan_variables, pd_variables))
 
   # OC Curve
   if (options[[paste0("showOCCurve", planType)]]) {
-    getOCCurve(jaspResults, df_plan, c(plan_variables, pd_variables, output_variables[1]))
+    getOCCurve(jaspResults, df_plan, planType, c(plan_variables, pd_variables, output_variables[1]))
   }
   # Plan summary
   if (options[[paste0("showSummary", planType)]]) {
-    getSummary(jaspResults, df_plan, c(plan_variables, pd_variables, output_variables[2]))
+    getSummary(jaspResults, df_plan, planType, c(plan_variables, pd_variables, output_variables[2]))
   }
   # Assess plan
   if (options[[paste0("assessPlan", planType)]]) {
@@ -50,14 +50,14 @@ AnalyzeSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
   # AOQ Curve
   if (options[[paste0("showAOQCurve", planType)]]) {
-    # getAOQCurve(jaspResults, options, variables)
+    getAOQCurve(jaspResults, df_plan, options, planType, c(plan_variables, pd_variables, output_variables[4]))
   }
   # ATI Curve
   if (options[[paste0("showATICurve", planType)]]) {
-    # getATICurve(jaspResults, options, variables)
+    getATICurve(jaspResults, df_plan, options, planType, c(plan_variables, pd_variables, output_variables[5]))
   }
   # ASN Curve (only for multiple sampling plan)
   if (options[["showASNCurveMult"]]) {
-    getASNCurve(jaspResults, options, variables)
+    getASNCurve(jaspResults, options, c(plan_variables, pd_variables, output_variables[6]))
   }
 }

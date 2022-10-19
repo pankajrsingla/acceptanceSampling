@@ -16,7 +16,7 @@
 #
 
 FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
-  optionNames <- c("lotSize", "pd_prp", "pa_prp", "pd_crp", "pa_crp")
+  optionNames <- c("lotSize", "pd_lower", "pd_upper", "pd_step", "pd_prp", "pa_prp", "pd_crp", "pa_crp")
   .findSampleCheckErrors(dataset, options)
   .findPlan(jaspResults, options, optionNames)
 }
@@ -72,19 +72,19 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     table$addRows(list("col_1" = "Acc. Number (c)", "col_2" = plan$c))
     table$addRows(list("col_1" = "Rej. Number (r)", "col_2" = plan$r))
     table$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[["table"]] <- table
+    jaspResults[["findTable"]] <- table
 
     if (options$showSummary || options$showOCCurve) {
-      df_x <- getPlanDf(options, "")
+      df_x <- getPlanDf(options, "", names)
       
       # OC Curve
       if (options$showOCCurve) {
-        getOCCurve(jaspResults, df_x, c(names, "pd_lower", "pd_upper", "pd_step", "showOCCurve"))
+        getOCCurve(jaspResults, df_x, "", c(names, "showOCCurve"))
       }
 
       # Summary
       if (options$showSummary) {
-        getSummary(jaspResults, df_x, c(names, "pd_lower", "pd_upper", "pd_step", "showSummary"))
+        getSummary(jaspResults, df_x, "", c(names, "showSummary"))
       }
     }
   }
