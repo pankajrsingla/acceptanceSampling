@@ -239,6 +239,7 @@ getASNCurve <- function(jaspResults, options, depend_variables) {
   return (asnPlot)
 }
 
+# get probability
 getProbability <- function(N, n, c, r, dist, pd, n_def) {
   pAcc <- NULL
   pRej <- NULL
