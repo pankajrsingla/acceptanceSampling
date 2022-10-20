@@ -51,29 +51,5 @@ Form
 	Section
 	{
 		title: qsTr("M-Method")
-
-		// Common.PlanMultiple
-		// {
-		// 	Layout.columnSpan: 2
-		// }
-
-        // Common.ProbDefect
-        // {
-        //     suffix: "Mult"
-        //     Layout.columnSpan: 2
-        // }
-
-		// Common.Distribution
-		// {
-		// 	suffix: "Mult"
-		// 	Layout.columnSpan: 2
-		// }
-
-        // Common.OutputOptions
-        // {
-        //     output_suffix: "Mult"
-        // }
-
-        // CheckBox { name: "showASNCurveMult"; label: qsTr("ASN curve"); Layout.columnSpan: 2 }
 	}
 }
