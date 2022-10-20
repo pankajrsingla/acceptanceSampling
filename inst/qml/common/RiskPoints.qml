@@ -24,29 +24,21 @@ Group
     property string suffix: ""
     Group
     {
+        columns: 2
         // Layout.columnSpan: 2
-        title: qsTr("PRP (Producer Risk Point)")
-        Group
-        {
-            columns: 2
-            Text { text: qsTr("Quality Level: [P(defect)]") }
-            DoubleField{ name: "pd_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.01; min: 0; max: 1 }
-            Text { text: qsTr("Acceptance Probability: [Least P(accept)]") }
-            DoubleField{ name: "pa_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.9; min: 0; max: 1 }
-        }
+        Text { text: qsTr("Acceptable Quality Level (AQL)") }
+        DoubleField{ name: "pd_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1 }
+        Text { text: qsTr("Rejectable Quality Level (RQL / LTPD)") }
+        DoubleField { name: "pd_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.15; min: 0; max: 1 }
     }
     
     Group
     {
+        columns: 2
         // Layout.columnSpan: 2
-        title: qsTr("CRP (Consumer Risk Point)")
-        Group
-        {
-            columns: 2
-            Text { text: qsTr("Quality Level: [P(defect)]") }
-            DoubleField { name: "pd_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.2; min: 0; max: 1 }
-            Text { text: qsTr("Acceptance Probability: [Maximum P(accept)]") }
-            DoubleField { name: "pa_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.25; min: 0; max: 1 }
-        }
+        Text { text: qsTr("Producer's Risk (α)") }
+        DoubleField{ name: "pa_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1 }
+        Text { text: qsTr("Consumer's Risk (β)") }
+        DoubleField { name: "pa_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.10; min: 0; max: 1 }
     }
 }
