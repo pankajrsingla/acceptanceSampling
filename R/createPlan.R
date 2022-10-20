@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
+CreatePlan <- function(jaspResults, dataset = NULL, options, ...) {
   optionNames <- c("lotSize", "pd_lower", "pd_upper", "pd_step", "pd_prp", "pa_prp", "pd_crp", "pa_crp")
   .findSampleCheckErrors(dataset, options)
   .findPlan(jaspResults, options, optionNames)
@@ -49,7 +49,7 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
     # # Create sampling plan with the specified values
     if (dist == "hypergeom") {
       # Need to provide the lot size (N) for hypergeometric distribution.
-      plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
+      plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
     } else if (dist == "normal") {
       # For now, the selection of normal distribution is disabled.
       # Need to specify standard deviation (whether known or unknown) for normal distribution.
@@ -58,7 +58,7 @@ FindSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
       # plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, s.type = options$stdev)
     } else {
       # Binomial and Poisson distributions don't require lot size (N) or standard deviation.
-      plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist)
+      plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist)
     }
     
     # Create and fill the output table(s)

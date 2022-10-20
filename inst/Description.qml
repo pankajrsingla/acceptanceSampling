@@ -16,27 +16,43 @@ Description
 
 	GroupTitle
 	{
-		title:	qsTr("Attribute Plans")
+		title:	qsTr("Attribute Sampling")
 		// icon:	"analysis-classical-crosstabs.svg"
 	}
 
 	Analysis
 	{
 		title:	qsTr("Analyze Sampling Plan")
-		func:	"AnalyzeSamplingPlan"
+		qml:	"AnalyzeAttributePlan.qml"
+		func:	"AnalyzeAttributePlan"
 	}
 
 	Analysis
 	{
-		title:	qsTr("Find Sampling Plan")
-		func:	"FindSamplingPlan"
+		title:	qsTr("Create Sampling Plan")
+		qml:	"CreatePlan.qml"
+		func:	"CreatePlan"
 	}
 
-	// Separator {}
+	Separator {}
 
-	// GroupTitle
-	// {
-	// 	title:	qsTr("Variable Plans")
-	// 	icon:	"analysis-bayesian-crosstabs.svg"
-	// }
+	GroupTitle
+	{
+		title:	qsTr("Variable Sampling")
+		// icon:	"analysis-bayesian-crosstabs.svg"
+	}
+
+	Analysis
+	{
+		title:	qsTr("Analyze Sampling Plan")
+		qml:	"AnalyzeVariablePlan.qml"
+		func:	"AnalyzeVariablePlan"
+	}
+
+	Analysis
+	{
+		title:	qsTr("Create Sampling Plan")
+		qml:	"CreatePlan.qml"
+		func:	"CreatePlan"
+	}
 }

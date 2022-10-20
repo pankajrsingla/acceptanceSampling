@@ -15,19 +15,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-AnalyzeSamplingPlan <- function(jaspResults, dataset = NULL, options, ...) {
+AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Single sampling plan
   if ((options$sampleSizeSingle > 0) && (options$acceptNumberSingle > 0) && (options$rejectNumberSingle > 0)) {
-    .handleSamplingPlan(jaspResults, options, "Single")
+    .handleAttributePlan(jaspResults, options, "Single")
   }
 
   # Multiple sampling plan
   if (length(options$sampleSizeMult) > 0 && length(options$acceptNumberMult) > 0 && length(options$rejectNumberMult > 0)) {
-    .handleSamplingPlan(jaspResults, options, "Mult")
+    .handleAttributePlan(jaspResults, options, "Mult")
   }
 }
 
-.handleSamplingPlan <- function(jaspResults, options, planType) {
+.handleAttributePlan <- function(jaspResults, options, planType) {
   plan_variables <- paste0(c("lotSize", "sampleSize", "acceptNumber", "rejectNumber", "distribution"), planType)
   pd_variables <- paste0(c("pd_lower", "pd_upper", "pd_step"), planType)
   risk_variables <- paste0(c("pd_prp", "pa_prp", "pd_crp", "pa_crp"), planType)

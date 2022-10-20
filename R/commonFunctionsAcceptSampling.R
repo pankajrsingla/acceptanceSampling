@@ -35,9 +35,9 @@ getPlanDf <- function(options, planType, depend_variables, returnPlan=FALSE) {
   df_plan <- data.frame(PD = plan@pd, PA = plan@paccept)
   
   # To make sure the df gets updated when the plan variables change
-#   dummy <- createJaspHtml()
-#   dummy$dependOn(depend_variables)
-#   dummy[["text"]] <- ""
+  dummy <- createJaspHtml()
+  dummy$dependOn(depend_variables)
+  dummy[["text"]] <- ""
 
   if (returnPlan) {
     return (list(plan, df_plan))
@@ -69,7 +69,7 @@ getSummary <- function(jaspResults, df_plan, planType, depend_variables) {
 
 assessPlan <- function(jaspResults, options, planType, depend_variables) {
   pd_prp <- options[[paste0("pd_prp", planType)]]
-  pa_prp <- options[[paste0("pa_prp", planType)]]
+  pa_prp <- 1 - options[[paste0("pa_prp", planType)]]
   pd_crp <- options[[paste0("pd_crp", planType)]]
   pa_crp <- options[[paste0("pa_crp", planType)]]
   
@@ -239,6 +239,7 @@ getASNCurve <- function(jaspResults, options, depend_variables) {
   return (asnPlot)
 }
 
+# get probability
 getProbability <- function(N, n, c, r, dist, pd, n_def) {
   pAcc <- NULL
   pRej <- NULL
