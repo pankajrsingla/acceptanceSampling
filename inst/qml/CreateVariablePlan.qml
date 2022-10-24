@@ -26,25 +26,39 @@ Form
 	{
 		title: qsTr("k-Method")
 
-		IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 1000; min: 1 }
-    	IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
-    
+		Common.RiskPoints
+		{
+			Layout.columnSpan: 2
+		}
 
-        Common.ProbDefect
+		Group
+		{
+			columns: 2
+			Layout.columnSpan: 2
+			CheckBox { name: "lsl"; label: qsTr("Lower Specification Limit (LSL): "); id: lsl; checked: true }
+        	DoubleField{ name: "lower_spec"; label: qsTr(""); defaultValue: 0; enabled: lsl.checked /*; min: 0; max: 1; negativeValues: false;*/ }
+			CheckBox { name: "usl"; label: qsTr("Upper Specification Limit (USL): "); id: usl; checked: false }
+        	DoubleField{ name: "upper_spec"; label: qsTr(""); enabled: usl.checked; /*defaultValue: null; min: 0; max: 1; negativeValues: false;*/ }
+		}
+
+		Group
+		{
+			Layout.columnSpan: 2
+			columns: 2
+			CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known "); id: sd; checked: true }
+        	DoubleField{ name: "stdev"; label: qsTr(""); enabled: sd.checked; defaultValue: 1; min: 0; negativeValues: false }
+		}
+
+		IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 1000; min: 1 }
+
+		Common.ProbDefect
         {
-            // suffix: "Single"
             Layout.columnSpan: 2
         }
-		
-		// Common.Distribution
-		// {
-		// 	suffix: "Single"
-		// 	Layout.columnSpan: 2
-		// }
 
         Common.OutputOptions
         {
-            // output_suffix: "Single"
+			Layout.columnSpan: 2
         }
     }
 

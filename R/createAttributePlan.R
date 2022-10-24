@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-CreatePlan <- function(jaspResults, dataset = NULL, options, ...) {
+CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   optionNames <- c("lotSize", "pd_lower", "pd_upper", "pd_step", "pd_prp", "pa_prp", "pd_crp", "pa_crp")
   .findSampleCheckErrors(dataset, options)
   .findPlan(jaspResults, options, optionNames)
@@ -43,13 +43,19 @@ CreatePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
 .findPlan <- function(jaspResults, options, names) {
   if (options$pd_prp && options$pa_prp && options$pd_crp && options$pa_crp) {
-    plan <- NULL
+    pd_lower <- options$pd_lower
+    pd_upper <- options$pd_upper
+    pd_step <- options$pd_step
+    pd <- seq(pd_lower, pd_upper, pd_step)
     dist = options$distribution
-
+    plan_vars <- NULL
+    plan <- NULL
+      
     # # Create sampling plan with the specified values
     if (dist == "hypergeom") {
       # Need to provide the lot size (N) for hypergeometric distribution.
-      plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
+      plan_vars <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
+      plan <- AcceptanceSampling::OC2c(N = options$lotSize, n = plan_vars$n, c = plan_vars$c, r = plan_vars$r, type = dist, pd = pd)
     } else if (dist == "normal") {
       # For now, the selection of normal distribution is disabled.
       # Need to specify standard deviation (whether known or unknown) for normal distribution.
@@ -58,7 +64,8 @@ CreatePlan <- function(jaspResults, dataset = NULL, options, ...) {
       # plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, s.type = options$stdev)
     } else {
       # Binomial and Poisson distributions don't require lot size (N) or standard deviation.
-      plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist)
+      plan_vars <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist)
+      plan <- AcceptanceSampling::OC2c(n = plan_vars$n, c = plan_vars$c, r = plan_vars$r, type = dist, pd = pd)
     }
     
     # Create and fill the output table(s)
@@ -68,23 +75,23 @@ CreatePlan <- function(jaspResults, dataset = NULL, options, ...) {
     table$dependOn(names)
     table$addColumnInfo(name = "col_1", title = "", type = "string")
     table$addColumnInfo(name = "col_2", title = "Value", type = "integer")
-    table$addRows(list("col_1" = "Sample size (n)", "col_2" = plan$n))
-    table$addRows(list("col_1" = "Acc. Number (c)", "col_2" = plan$c))
-    table$addRows(list("col_1" = "Rej. Number (r)", "col_2" = plan$r))
+    table$addRows(list("col_1" = "Sample size (n)", "col_2" = plan_vars$n))
+    table$addRows(list("col_1" = "Acc. Number (c)", "col_2" = plan_vars$c))
+    table$addRows(list("col_1" = "Rej. Number (r)", "col_2" = plan_vars$r))
     table$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["findTable"]] <- table
 
     if (options$showSummary || options$showOCCurve) {
-      df_x <- getPlanDf(options, "", names)
+      df_plan <- data.frame(PD = pd, PA = plan@paccept)
       
       # OC Curve
       if (options$showOCCurve) {
-        getOCCurve(jaspResults, df_x, "", c(names, "showOCCurve"))
+        getOCCurve(jaspResults, df_plan, "", c(names, "showOCCurve"))
       }
 
       # Summary
       if (options$showSummary) {
-        getSummary(jaspResults, df_x, "", c(names, "showSummary"))
+        getSummary(jaspResults, df_plan, "", c(names, "showSummary"))
       }
     }
   }

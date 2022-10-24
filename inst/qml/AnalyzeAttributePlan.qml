@@ -30,18 +30,28 @@ Form
 		{
 			Layout.columnSpan: 2
 		}
-
-        Common.ProbDefect
-        {
-            suffix: "Single"
-            Layout.columnSpan: 2
-        }
 		
 		Common.Distribution
 		{
 			suffix: "Single"
 			Layout.columnSpan: 2
 		}
+
+		Group
+    	{
+			CheckBox { name: "assessPlanSingle"; label: qsTr("Assess sampling plan "); id: assessSingle }
+			Common.RiskPoints
+			{
+			    suffix: "Single"
+			    enabled: assessSingle.checked
+			}
+    	}
+
+		Common.ProbDefect
+        {
+            suffix: "Single"
+            Layout.columnSpan: 2
+        }
 
         Common.OutputOptions
         {
@@ -58,23 +68,31 @@ Form
 			Layout.columnSpan: 2
 		}
 
-        Common.ProbDefect
-        {
-            suffix: "Mult"
-            Layout.columnSpan: 2
-        }
-
 		Common.Distribution
 		{
 			suffix: "Mult"
 			Layout.columnSpan: 2
 		}
 
+		Group
+    	{
+			CheckBox { name: "assessPlanMult"; label: qsTr("Assess sampling plan "); id: assessMult }
+			Common.RiskPoints
+			{
+			    suffix: "Mult"
+			    enabled: assessMult.checked
+			}
+    	}
+
+		Common.ProbDefect
+        {
+            suffix: "Mult"
+            Layout.columnSpan: 2
+        }
+		
         Common.OutputOptions
         {
             output_suffix: "Mult"
         }
-
-        CheckBox { name: "showASNCurveMult"; label: qsTr("ASN curve"); Layout.columnSpan: 2 }
 	}
 }

@@ -26,11 +26,11 @@ Group
     Group
     {
         columns: 2
-        Text { text: qsTr("From") }
+        Text { text: qsTr("From: ") }
         DoubleField{ name: "pd_lower" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0; min: 0; max: 1 }
-        Text { text: qsTr("To") }
+        Text { text: qsTr("To: ") }
         DoubleField{ name: "pd_upper" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 1; min: 0; max: 1 }
-        Text { text: qsTr("Step size") }
+        Text { text: qsTr("Step size: ") }
         DoubleField{ name: "pd_step" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0.001; max: 1 }
     }
 }
