@@ -24,17 +24,9 @@ Group
 {
     title: qsTr("Output options")
     property string output_suffix: ""
-    CheckBox { name: "showOCCurve" + output_suffix; label: qsTr("OC curve") }
-	CheckBox { name: "showSummary" + output_suffix; label: qsTr("Plan summary") }
-    Group
-    {
-        CheckBox { name: "assessPlan" + output_suffix; label: qsTr("Assess sampling plan"); id: assess }
-        Common.RiskPoints
-        {
-            suffix: output_suffix
-            enabled: assess.checked
-        }
-    }
-    CheckBox { name: "showAOQCurve" + output_suffix; label: qsTr("AOQ curve (plan with rectification)") }
-    CheckBox { name: "showATICurve" + output_suffix; label: qsTr("ATI curve (plan with rectification)") }
+    CheckBox { name: "showOCCurve" + output_suffix; label: qsTr("OC curve ") }
+	CheckBox { name: "showSummary" + output_suffix; label: qsTr("Plan summary ") }
+    CheckBox { name: "showAOQCurve" + output_suffix; label: qsTr("AOQ curve (plan with rectification) ") }
+    CheckBox { name: "showATICurve" + output_suffix; label: qsTr("ATI curve (plan with rectification) ") }
+    CheckBox { name: "showASNCurve" + output_suffix; label: qsTr("ASN curve"); enabled: false; visible: true; /*output_suffix == "Mult"*/ }
 }

@@ -30,7 +30,7 @@ Form
 
 	Common.ProbDefect
 	{
-		// suffix: ""
+		suffix: ""
 		Layout.columnSpan: 2
 	}
 

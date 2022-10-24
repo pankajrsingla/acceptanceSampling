@@ -30,8 +30,8 @@ Description
 	Analysis
 	{
 		title:	qsTr("Create Sampling Plan")
-		qml:	"CreatePlan.qml"
-		func:	"CreatePlan"
+		qml:	"CreateAttributePlan.qml"
+		func:	"CreateAttributePlan"
 	}
 
 	Separator {}
@@ -44,15 +44,15 @@ Description
 
 	Analysis
 	{
-		title:	qsTr("Analyze Sampling Plan")
-		qml:	"AnalyzeVariablePlan.qml"
-		func:	"AnalyzeVariablePlan"
+		title:	qsTr("Create Sampling Plan")
+		qml:	"CreateVariablePlan.qml"
+		func:	"CreateVariablePlan"
 	}
 
-	Analysis
-	{
-		title:	qsTr("Create Sampling Plan")
-		qml:	"CreatePlan.qml"
-		func:	"CreatePlan"
-	}
+	// Analysis
+	// {
+	// 	title:	qsTr("Accept/Reject Lots")
+	// 	qml:	"VariableLots.qml"
+	// 	func:	"VariableLots"
+	// }
 }
