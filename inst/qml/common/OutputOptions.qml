@@ -28,5 +28,5 @@ Group
 	CheckBox { name: "showSummary" + output_suffix; label: qsTr("Plan summary ") }
     CheckBox { name: "showAOQCurve" + output_suffix; label: qsTr("AOQ curve (plan with rectification) ") }
     CheckBox { name: "showATICurve" + output_suffix; label: qsTr("ATI curve (plan with rectification) ") }
-    CheckBox { name: "showASNCurve" + output_suffix; label: qsTr("ASN curve"); enabled: false; visible: true; /*output_suffix == "Mult"*/ }
+    CheckBox { name: "showASNCurve" + output_suffix; label: qsTr("ASN curve"); enabled: output_suffix == "Mult" ? true : false; visible: output_suffix == "Mult" ? true : false }
 }

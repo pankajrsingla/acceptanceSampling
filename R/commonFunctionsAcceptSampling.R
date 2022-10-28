@@ -35,9 +35,9 @@ getPlanDf <- function(options, planType, depend_variables, returnPlan=FALSE) {
   df_plan <- data.frame(PD = plan@pd, PA = plan@paccept)
   
   # To make sure the df gets updated when the plan variables change
-  dummy <- createJaspHtml()
-  dummy$dependOn(depend_variables)
-  dummy[["text"]] <- ""
+  # dummy <- createJaspHtml()
+  # dummy$dependOn(depend_variables)
+  # dummy[["text"]] <- ""
 
   if (returnPlan) {
     return (list(plan, df_plan))
@@ -51,8 +51,11 @@ getOCCurve <- function(jaspResults, df_plan, planType, depend_variables) {
   ocCurve$dependOn(depend_variables)
   jaspResults[[paste0("ocCurve", planType)]] <- ocCurve
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
-                      ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion non-confirming", y = "P(accept)")
-  plt <- jaspGraphs::themeJasp(plt)
+                  ggplot2::geom_point(colour = "black", shape = 19) + 
+                  ggplot2::geom_line(colour = "black", linetype = "dashed") +
+                  ggplot2::labs(x = "Proportion non-confirming", y = "P(accept)")
+  # plt <- jaspGraphs::themeJaspRaw(plt)
+  # plt <- jaspGraphs::themeJasp(plt)
   ocCurve$plotObject <- plt
 }
 
@@ -149,6 +152,7 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
     for (i in 1:stages) {
       cum_n <- cum_n + n[i]
       p_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
+      # p_acc_rej_i <- getDecisionProbability(N, n, c, r, dist, pd, n_def, i)
       pAcc_i <- unlist(p_acc_rej_i[1])
       pDecide_i <- pAcc_i + unlist(p_acc_rej_i[2])
       AOQ <- AOQ + (N - cum_n) * pAcc_i * probs_prod
@@ -157,11 +161,14 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
     AOQ <- AOQ * pd / N
   }
   df_plan$AOQ <- AOQ
+  aoq_max <- round(max(df_plan$AOQ),2)
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
-                         ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion non-confirming", y = "AOQ") +
+                         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-confirming", y = "AOQ") +
+                         ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
-                         ggplot2::geom_text(ggplot2::aes(0, max(df_plan$AOQ), label = paste0("AOQL: ", round(max(df_plan$AOQ)),2), vjust = "top", check_overlap=TRUE))
-  plt <- jaspGraphs::themeJasp(plt)
+                         ggplot2::geom_text(ggplot2::aes(0, max(df_plan$AOQ), label = paste0("AOQL: ", aoq_max), vjust = -0.6, hjust = -1, check_overlap=TRUE)) +
+                         ggplot2::ylim(0,aoq_max+0.01)
+  # plt <- jaspGraphs::themeJasp(plt)
   aoqCurve$plotObject <- plt
 }
 
@@ -187,6 +194,7 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
     for (i in 1:stages) {
       cum_n <- cum_n + n[i]
       p_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
+      # p_acc_rej_i <- getDecisionProbability(N, n, c, r, dist, pd, n_def, i)
       pAcc_i <- unlist(p_acc_rej_i[1])
       pRej_i <- unlist(p_acc_rej_i[2])
       pDecide_i <- pAcc_i + pRej_i
@@ -196,8 +204,10 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
   }
   df_plan$ATI <- ATI
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
-                         ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion non-confirming", y = "ATI")
-  plt <- jaspGraphs::themeJasp(plt)
+                         ggplot2::geom_point(colour = "black", shape = 19) + 
+                         ggplot2::geom_line(colour = "black", linetype = "dashed") +
+                         ggplot2::labs(x = "Proportion non-confirming", y = "ATI")
+  # plt <- jaspGraphs::themeJasp(plt)
   atiCurve$plotObject <- plt
 }
 
@@ -221,6 +231,7 @@ getASNCurve <- function(jaspResults, options, depend_variables) {
   for (i in 1:(stages-1)) {
     cum_n <- cum_n + n[i]
     prob_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
+    # prob_acc_rej_i <- getDecisionProbability(N, n, c, r, dist, pd, n_def, i)
     pDecide_i <- as.numeric(unlist(prob_acc_rej_i[1]) + unlist(prob_acc_rej_i[2]))
     ASN <- ASN + cum_n * pDecide_i * probs_prod
     probs_prod <- probs_prod * (1 - pDecide_i)
@@ -233,8 +244,10 @@ getASNCurve <- function(jaspResults, options, depend_variables) {
   asnPlot$dependOn(depend_variables)
   jaspResults[["asnPlot"]] <- asnPlot
   plt <- ggplot2::ggplot(data = df_asn, ggplot2::aes(x = PD, y = ASN)) + 
-         ggplot2::geom_point(colour = "black") + ggplot2::labs(x = "Proportion non-confirming", y = "Average Sample Number")
-  plt <- jaspGraphs::themeJasp(plt)
+         ggplot2::geom_point(colour = "black", shape = 19) + 
+         ggplot2::geom_line(colour = "black", linetype = "dashed") +
+         ggplot2::labs(x = "Proportion non-confirming", y = "Average Sample Number")
+  # plt <- jaspGraphs::themeJasp(plt)
   asnPlot$plotObject <- plt
   return (asnPlot)
 }
@@ -254,4 +267,47 @@ getProbability <- function(N, n, c, r, dist, pd, n_def) {
     pRej <- ppois(c(r - 1), lambda = pd*n, lower.tail = FALSE)
   }
   return (list(pAcc,pRej))
+}
+
+getProbBetween <- function(N, n, low, high, dist, pd, n_def) {
+  prob <- NULL
+  if (dist == "binom") {
+    prob <- pbinom(c(high), size = n, prob = pd, lower.tail = TRUE) - pbinom(c(low), size = n, prob = pd, lower.tail = TRUE)
+  } else if (dist == "hypergeom") {
+    prob <- phyper(c(high), m = n_def, n = N - n_def, k = n, lower.tail = TRUE) - phyper(c(low), m = n_def, n = N - n_def, k = n, lower.tail = TRUE)  
+  } else if (dist == "poisson") {
+    prob <- ppois(c(high), lambda = pd*n, lower.tail = TRUE) - ppois(c(low), lambda = pd*n, lower.tail = TRUE)
+  }
+  return (prob)
+}
+
+getPointProb <- function(N, n, c, dist, pd, n_def, lower_tail) {
+  prob <- NULL
+  if (dist == "binom") {
+    prob <- pbinom(c(c), size = n, prob = pd, lower.tail = lower_tail)
+  } else if (dist == "hypergeom") {
+    prob <- phyper(c(c), m = n_def, n = N - n_def, k = n, lower.tail = lower_tail)  
+  } else if (dist == "poisson") {
+    prob <- ppois(c(c), lambda = pd*n, lower.tail = lower_tail)
+  }
+  return (prob)
+}
+
+getDecisionProbability <- function(N, n, c, r, dist, pd, n_def, i) {
+  acc <- NULL
+  rej <- NULL
+  if (i == 1) {
+    acc <- getPointProb(N, n[i], c[i], dist, pd, n_def, TRUE)
+    rej <- getPointProb(N, n[i], r[i] - 1, dist, pd, n_def, FALSE)
+  } else {
+    d_vals <- seq(c[i-1]+1, r[i-1]-1, 1)
+    for (d in d_vals) {
+      prob_prev <- getProbBetween(N, n[i-1], c[i-1] + 1, r[i]-1, dist, pd, n_def)
+      acc_i <- getPointProb(N, n[i], c[i] - d, dist, pd, n_def, TRUE)
+      acc <- acc + prob_prev*acc_i
+      rej_i <- getPointProb(N, n[i], r[i] - d - 1, dist, pd, n_def, FALSE)
+      rej <- rej + prob_prev*rej_i
+    }
+  }
+  return (list(acc,rej))
 }
