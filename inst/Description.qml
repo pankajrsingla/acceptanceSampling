@@ -12,7 +12,6 @@ Description
 	maintainer	: "JASP Team <info@jasp-stats.org>"
 	website		: "jasp-stats.org"
 	license		: "GPL (>= 2)"
-	requiresData: false
 
 	GroupTitle
 	{
@@ -22,16 +21,18 @@ Description
 
 	Analysis
 	{
-		title:	qsTr("Analyze Sampling Plan")
+		title:	qsTr("Analyze Attribute Plan")
 		qml:	"AnalyzeAttributePlan.qml"
 		func:	"AnalyzeAttributePlan"
+		requiresData: false
 	}
 
 	Analysis
 	{
-		title:	qsTr("Create Sampling Plan")
+		title:	qsTr("Create Attribute Plan")
 		qml:	"CreateAttributePlan.qml"
 		func:	"CreateAttributePlan"
+		requiresData: false
 	}
 
 	Separator {}
@@ -44,15 +45,17 @@ Description
 
 	Analysis
 	{
-		title:	qsTr("Create Sampling Plan")
+		title:	qsTr("Create Variable Plan")
 		qml:	"CreateVariablePlan.qml"
 		func:	"CreateVariablePlan"
+		requiresData: false
 	}
 
-	// Analysis
-	// {
-	// 	title:	qsTr("Accept/Reject Lots")
-	// 	qml:	"VariableLots.qml"
-	// 	func:	"VariableLots"
-	// }
+	Analysis
+	{
+		title:	qsTr("Accept/Reject Lots")
+		qml:	"DecideVariableLots.qml"
+		func:	"DecideVariableLots"
+		requiresData: true
+	}
 }
