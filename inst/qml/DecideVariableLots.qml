@@ -24,16 +24,24 @@ Form
 {
 	VariablesForm
 	{
-		AvailableVariablesList	{ name: "allVariablesList"								}
-		AssignedVariablesList	{ name: "variables";		title: qsTr("Variables")	}
-		// AssignedVariablesList	{ name: "splitBy";			title: qsTr("Split");		singleVariable: true; suggestedColumns: ["ordinal", "nominal"];	id: splitBy }
+		AvailableVariablesList	{ name: "allVariablesList"; id: allVariablesList }
+		AssignedVariablesList	{ name: "variables"; title: qsTr("Variables"); id: variables; singleVariable: true; suggestedColumns: ["scale"]; allowedColumns: ["scale"] }
 	}
 
 	Group
 	{
 		Layout.columnSpan: 2
-		// IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
-		DoubleField { name: "kValue"; label: qsTr("k value"); defaultValue: 0 }
+		DoubleField { name: "kValue"; label: qsTr("k value"); defaultValue: 1; min: 0; negativeValues: false }
+	}
+
+	Group
+	{
+		enabled: variables.count != 1
+		Layout.columnSpan: 2
+		CheckBox { name: "sampleStats"; label: qsTr("Provide sample statistics directly (required if dataset is not available)"); id: sampleStats; checked: false }
+		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
+		DoubleField { name: "sampleMean"; label: qsTr("Sample mean"); defaultValue: 0 }
+		DoubleField { name: "sampleSD"; label: qsTr("Sample standard deviation"); defaultValue: 1; min: 0 }
 	}
 
 	Group
@@ -41,22 +49,27 @@ Form
 		columns: 2
 		Layout.columnSpan: 2
 		CheckBox { name: "lsl"; label: qsTr("Lower Specification Limit (LSL): "); id: lsl; checked: false }
-		DoubleField{ name: "lower_spec"; label: qsTr(""); defaultValue: 0; enabled: lsl.checked /*; min: 0; max: 1; negativeValues: false;*/ }
+		DoubleField{ name: "lower_spec"; label: qsTr(""); defaultValue: 0; enabled: lsl.checked; min: -Inf; negativeValues: true /*; max: 1*/ }
 		CheckBox { name: "usl"; label: qsTr("Upper Specification Limit (USL): "); id: usl; checked: false }
-		DoubleField { name: "upper_spec"; label: qsTr(""); enabled: usl.checked; /*defaultValue: null; min: 0; max: 1; negativeValues: false;*/ }
+		DoubleField { name: "upper_spec"; label: qsTr(""); enabled: usl.checked; min: -Inf; negativeValues: true /*defaultValue: null; max: 1*/ }
 	}
 
 	Group
 	{
 		Layout.columnSpan: 2
 		columns: 2
-		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known "); id: sd; checked: true }
+		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known "); id: sd; checked: false }
 		DoubleField { name: "stdev"; label: qsTr(""); enabled: sd.checked; defaultValue: 1; min: 0; negativeValues: false }
 	}
 
-	Common.RiskPoints
-	{
+	Group
+    {
 		enabled: lsl.checked && usl.checked && sd.checked
 		Layout.columnSpan: 2
+        columns: 2
+        Text { text: qsTr("Acceptable Quality Level (AQL): ") }
+        DoubleField{ name: "pd_prp"; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1 }
+        Text { text: qsTr("Rejectable Quality Level (RQL / LTPD): ") }
+        DoubleField { name: "pd_crp"; label: qsTr(""); negativeValues: false; defaultValue: 0.15; min: 0; max: 1 }
 	}
 }

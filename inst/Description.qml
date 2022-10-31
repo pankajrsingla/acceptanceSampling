@@ -56,6 +56,6 @@ Description
 		title:	qsTr("Accept/Reject Lots")
 		qml:	"DecideVariableLots.qml"
 		func:	"DecideVariableLots"
-		requiresData: true
+		requiresData: false
 	}
 }
