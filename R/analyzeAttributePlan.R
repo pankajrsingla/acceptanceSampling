@@ -17,7 +17,7 @@
 
 AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Single sampling plan
-  if ((options$sampleSizeSingle > 0) && (options$acceptNumberSingle > 0) && (options$rejectNumberSingle > 0)) {
+  if ((options$sampleSizeSingle > 0) && (options$acceptNumberSingle > 0)) {
     .handleAttributePlan(jaspResults, options, "Single")
   }
 

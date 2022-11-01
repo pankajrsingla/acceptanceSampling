@@ -19,7 +19,6 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   n <- NULL
   mean_sample <- NULL
   sd_sample <- NULL
-  sd_compare <- NULL
   k <- options$kValue
   variable_name <- NULL
 
@@ -45,14 +44,18 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
     }
   }
 
+  depend_variables <- c("variables", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
+  risk_variables <- c("pd_prp", "pd_crp")
+  decision_table <- createJaspTable(title = gettextf("Accept or Reject Lot %s", ifelse(!is.null(variable_name), paste0("(", variable_name, ")"), "")))
+  decision_table$dependOn(c(depend_variables, risk_variables))
+  jaspResults[["decision_table"]] <- decision_table
+  if (sd_sample <= 0) {
+    decision_table$setError(gettextf("Error: Sample standard deviation has to be greater than 0."))
+    return ()
+  }
+  
   if (n > 0 & !is.null(mean_sample) & sd_sample > 0) {
-    # Initialize the decision table.
-    depend_variables <- c("variables", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
-    risk_variables <- c("pd_prp", "pd_crp")
-    decision_table <- createJaspTable(title = gettextf("Accept or Reject Lot %s", ifelse(!is.null(variable_name), paste0("(", variable_name, ")"), "")))
-    decision_table$dependOn(c(depend_variables, risk_variables))
-    jaspResults[["decision_table"]] <- decision_table
-    
+    # Initialize the decision table.    
     sd_compare <- sd_sample
     
     sd <- "unknown"
@@ -60,6 +63,10 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
     if (options$sd) {
       sd <- "known"
       sd_historical <- options$stdev
+      if (sd_sample <= 0) {
+        decision_table$setError(gettextf("Error: Sample standard deviation has to be greater than 0."))
+        return ()
+      }
       sd_compare <- sd_historical
     }
 
@@ -68,7 +75,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
     decision <- NULL
 
     if (!options$lsl & !options$usl) {
-      # decision_table$setError(gettextf("Error - either LSL or USL needs to be specified for the lot to be accepted/rejected."))
+      # decision_table$setError(gettextf("Error: Either LSL or USL needs to be specified for the lot to be accepted/rejected."))
       decision <- NULL
     }
 
@@ -89,6 +96,10 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
     }
 
     if (options$lsl & options$usl) {
+      if (options$upper_spec < options$lower_spec) {
+        decision_table$setError(gettextf("Error: USL can not be lower than LSL."))
+        return ()
+      }
       # Both LSL and USL specified. Decide based on SD.
       if (options$sd) {
         # Historical sd known
@@ -137,6 +148,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
     decision_table$addColumnInfo(name = "col_2", title = "", type = "number")
     decision_table$addRows(list("col_1" = "Sample Size", "col_2" = as.integer(n)))
     decision_table$addRows(list("col_1" = "Sample Mean", "col_2" = round(mean_sample,3)))
+    decision_table$addRows(list("col_1" = "Sample Standard Deviation", "col_2" = round(sd_sample,3)))
     decision_table$addRows(list("col_1" = ifelse(options$sd, "Historical Standard Deviation", "Sample Standard Deviation"), "col_2" = round(sd_compare,3)))
     if (options$lsl) {
       decision_table$addRows(list("col_1" = "Lower Specification Limit (LSL)", "col_2" = round(options$lower_spec,3)))
