@@ -38,7 +38,7 @@ Form
 	{
 		enabled: variables.count != 1
 		Layout.columnSpan: 2
-		CheckBox { name: "sampleStats"; label: qsTr("Provide sample statistics directly (required if dataset is not available)"); id: sampleStats; checked: false }
+		CheckBox { name: "sampleStats"; label: qsTr("Specify sample statistics directly (used if dataset is not available)"); id: sampleStats; checked: (variables.count != 1); enabled: false }
 		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
 		DoubleField { name: "sampleMean"; label: qsTr("Sample mean"); defaultValue: 0 }
 		DoubleField { name: "sampleSD"; label: qsTr("Sample standard deviation"); defaultValue: 1; min: 0 }
@@ -49,9 +49,9 @@ Form
 		columns: 2
 		Layout.columnSpan: 2
 		CheckBox { name: "lsl"; label: qsTr("Lower Specification Limit (LSL): "); id: lsl; checked: false }
-		DoubleField{ name: "lower_spec"; label: qsTr(""); defaultValue: 0; enabled: lsl.checked; min: -Inf; negativeValues: true /*; max: 1*/ }
+		DoubleField{ name: "lower_spec"; label: qsTr(""); defaultValue: 0; enabled: lsl.checked; negativeValues: true }
 		CheckBox { name: "usl"; label: qsTr("Upper Specification Limit (USL): "); id: usl; checked: false }
-		DoubleField { name: "upper_spec"; label: qsTr(""); enabled: usl.checked; min: -Inf; negativeValues: true /*defaultValue: null; max: 1*/ }
+		DoubleField { name: "upper_spec"; label: qsTr(""); enabled: usl.checked; negativeValues: true }
 	}
 
 	Group

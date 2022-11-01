@@ -23,6 +23,6 @@ Group
 {
     IntegerField { name: "lotSizeSingle"; label: qsTr("Lot size (N): "); defaultValue: 1000; min: 1 }
     IntegerField { name: "sampleSizeSingle"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
-    IntegerField { name: "acceptNumberSingle"; label: qsTr("Acceptance number (c): "); defaultValue: 0 }
-    IntegerField { name: "rejectNumberSingle"; label: qsTr("Rejection number (r): "); defaultValue: 0 }
+    IntegerField { name: "acceptNumberSingle"; label: qsTr("Acceptance number (c): "); defaultValue: 0; id: acceptNumberSingle; onEditingFinished: rejectNumberSingle.editingFinished() }
+    IntegerField { name: "rejectNumberSingle"; label: qsTr("Rejection number (r): "); value: parseInt(acceptNumberSingle.value) + 1; enabled: false; id: rejectNumberSingle }
 }

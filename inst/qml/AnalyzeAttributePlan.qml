@@ -30,7 +30,7 @@ Form
 		{
 			Layout.columnSpan: 2
 		}
-		
+
 		Common.Distribution
 		{
 			suffix: "Single"
