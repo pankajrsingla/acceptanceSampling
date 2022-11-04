@@ -65,7 +65,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
   # 3. AOQ Curve
   if (options$showAOQCurve) {
-    aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 320, height = 320)
+    aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 480, height = 320)
     aoqCurve$dependOn(c(risk_variables, pd_variables, output_variables[3], "lotSize"))
     jaspResults[["aoqCurveVariable"]] <- aoqCurve
     df_plan$AOQ <- df_plan$PA * pd * (N-n) / N
@@ -81,7 +81,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
   # 4. ATI Curve
   if (options$showATICurve) {
-    atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 320, height = 320)
+    atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 480, height = 320)
     atiCurve$dependOn(c(risk_variables, pd_variables, output_variables[4], "lotSize"))
     jaspResults[["atiCurveVariable"]] <- atiCurve
     df_plan$ATI <- df_plan$PA * n + (1 - df_plan$PA) * N

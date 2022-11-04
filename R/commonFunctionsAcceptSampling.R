@@ -46,19 +46,6 @@ getPlanDf <- function(options, planType, depend_variables, returnPlan=FALSE) {
   }
 }
 
-getOCCurve <- function(jaspResults, df_plan, planType, depend_variables) {
-  ocCurve <- createJaspPlot(title = paste0("OC (Operating Characteristics) curve"),  width = 320, height = 320)
-  ocCurve$dependOn(depend_variables)
-  jaspResults[[paste0("ocCurve", planType)]] <- ocCurve
-  plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
-                  ggplot2::geom_point(colour = "black", shape = 19) + 
-                  ggplot2::geom_line(colour = "black", linetype = "dashed") +
-                  ggplot2::labs(x = "Proportion non-confirming", y = "P(accept)")
-  # plt <- jaspGraphs::themeJaspRaw(plt)
-  # plt <- jaspGraphs::themeJasp(plt)
-  ocCurve$plotObject <- plt
-}
-
 getSummary <- function(jaspResults, df_plan, planType, depend_variables) {
   summaryTable <- createJaspTable(title = "Detailed acceptance probabilities")
   summaryTable$dependOn(depend_variables)
@@ -130,8 +117,25 @@ getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, p
   return (table)
 }
 
+
+getOCCurve <- function(jaspResults, df_plan, planType, depend_variables) {
+  ocCurve <- createJaspPlot(title = paste0("OC (Operating Characteristics) curve"),  width = 480, height = 320)
+  ocCurve$dependOn(depend_variables)
+  jaspResults[[paste0("ocCurve", planType)]] <- ocCurve
+  plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
+                  ggplot2::geom_point(colour = "black", shape = 19) + 
+                  ggplot2::geom_line(colour = "black", linetype = "dashed") +
+                  ggplot2::labs(x = "Proportion non-confirming", y = "P(accept)")
+                  # ggplot2::theme_classic() +
+                  # ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), axis.text.y = ggplot2::element_text(size = 16, color = "black"),
+                  #                axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
+  # plt <- jaspGraphs::themeJasp(plt)
+  plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+  ocCurve$plotObject <- plt
+}
+
 getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variables) {
-  aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 320, height = 320)
+  aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 480, height = 320)
   aoqCurve$dependOn(depend_variables)
   jaspResults[[paste0("aoqCurve", planType)]] <- aoqCurve
 
@@ -162,18 +166,22 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
   }
   df_plan$AOQ <- AOQ
   aoq_max <- round(max(df_plan$AOQ),2)
+  pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
                          ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-confirming", y = "AOQ") +
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
-                         ggplot2::geom_text(ggplot2::aes(0, max(df_plan$AOQ), label = paste0("AOQL: ", aoq_max), vjust = -0.6, hjust = -1, check_overlap=TRUE)) +
-                         ggplot2::ylim(0,aoq_max+0.01)
-  # plt <- jaspGraphs::themeJasp(plt)
+                         ggplot2::annotate("text", label = gettextf("AOQL: %.2f", aoq_max), x = pd_aoq_max*0.9, y = aoq_max*1.1, color = "black", size = 6) +
+                         ggplot2::ylim(0.0,round(aoq_max*1.1, 2))
+                        #  ggplot2::theme_classic() +
+                        #  ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), axis.text.y = ggplot2::element_text(size = 16, color = "black"),
+                        #                 axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
+  plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   aoqCurve$plotObject <- plt
 }
 
 getATICurve <- function(jaspResults, df_plan, options, planType, depend_variables) {
-  atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 320, height = 320)
+  atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 480, height = 320)
   atiCurve$dependOn(depend_variables)
   jaspResults[[paste0("atiCurve", planType)]] <- atiCurve
 
@@ -207,7 +215,10 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
                          ggplot2::geom_point(colour = "black", shape = 19) + 
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::labs(x = "Proportion non-confirming", y = "ATI")
-  # plt <- jaspGraphs::themeJasp(plt)
+                        #  ggplot2::theme_classic() +
+                        #  ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), axis.text.y = ggplot2::element_text(size = 16, color = "black"),
+                        #                 axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
+  plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   atiCurve$plotObject <- plt
 }
 
@@ -240,19 +251,19 @@ getASNCurve <- function(jaspResults, options, depend_variables) {
   df_asn <- data.frame(PD = pd, ASN = ASN)
 
   # Draw ASN plot
-  asnPlot <- createJaspPlot(title = "ASN Curve for multiple sampling plan",  width = 320, height = 320)
+  asnPlot <- createJaspPlot(title = "ASN Curve for multiple sampling plan",  width = 480, height = 320)
   asnPlot$dependOn(depend_variables)
   jaspResults[["asnPlot"]] <- asnPlot
   plt <- ggplot2::ggplot(data = df_asn, ggplot2::aes(x = PD, y = ASN)) + 
          ggplot2::geom_point(colour = "black", shape = 19) + 
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
          ggplot2::labs(x = "Proportion non-confirming", y = "Average Sample Number")
-  # plt <- jaspGraphs::themeJasp(plt)
+  plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   asnPlot$plotObject <- plt
   return (asnPlot)
 }
 
-# get probability
+# Currently in use. Incorrect.
 getProbability <- function(N, n, c, r, dist, pd, n_def) {
   pAcc <- NULL
   pRej <- NULL
@@ -269,47 +280,63 @@ getProbability <- function(N, n, c, r, dist, pd, n_def) {
   return (list(pAcc,pRej))
 }
 
-getProbBetween <- function(N, n, low, high, dist, pd, n_def) {
+# TODO [############# IN PROGRESS ##############]
+#########################################
+
+# getProbBetween <- function(N, n, low, high, dist, pd, n_def) {
+#   prob <- NULL
+#   if (dist == "binom") {
+#     prob <- pbinom(c(high), size = n, prob = pd, lower.tail = TRUE) - pbinom(c(low), size = n, prob = pd, lower.tail = TRUE)
+#   } else if (dist == "hypergeom") {
+#     prob <- phyper(c(high), m = n_def, n = N - n_def, k = n, lower.tail = TRUE) - phyper(c(low), m = n_def, n = N - n_def, k = n, lower.tail = TRUE)  
+#   } else if (dist == "poisson") {
+#     prob <- ppois(c(high), lambda = pd*n, lower.tail = TRUE) - ppois(c(low), lambda = pd*n, lower.tail = TRUE)
+#   }
+#   return (prob)
+# }
+
+getCumulativeProb <- function(N, n, c, dist, pd, n_def, lower_tail) {
   prob <- NULL
   if (dist == "binom") {
-    prob <- pbinom(c(high), size = n, prob = pd, lower.tail = TRUE) - pbinom(c(low), size = n, prob = pd, lower.tail = TRUE)
+    prob <- pbinom(q = c, size = n, prob = pd, lower.tail = lower_tail)
   } else if (dist == "hypergeom") {
-    prob <- phyper(c(high), m = n_def, n = N - n_def, k = n, lower.tail = TRUE) - phyper(c(low), m = n_def, n = N - n_def, k = n, lower.tail = TRUE)  
+    prob <- phyper(q = c, m = n_def, n = N - n_def, k = n, lower.tail = lower_tail)
   } else if (dist == "poisson") {
-    prob <- ppois(c(high), lambda = pd*n, lower.tail = TRUE) - ppois(c(low), lambda = pd*n, lower.tail = TRUE)
+    prob <- ppois(q = c, lambda = pd*n, lower.tail = lower_tail)
   }
   return (prob)
 }
 
-getPointProb <- function(N, n, c, dist, pd, n_def, lower_tail) {
+getPointProb <- function(N, n, c, dist, pd, n_def) {
   prob <- NULL
   if (dist == "binom") {
-    prob <- pbinom(c(c), size = n, prob = pd, lower.tail = lower_tail)
+    prob <- dbinom(x = c, size = n, prob = pd)
   } else if (dist == "hypergeom") {
-    prob <- phyper(c(c), m = n_def, n = N - n_def, k = n, lower.tail = lower_tail)  
+    prob <- dhyper(x = c, m = n_def, n = N - n_def, k = n)
   } else if (dist == "poisson") {
-    prob <- ppois(c(c), lambda = pd*n, lower.tail = lower_tail)
+    prob <- dpois(x = c, lambda = pd*n)
   }
   return (prob)
 }
 
+# Right now, it's taking the previous prob of only the previous stages,
+# but it needs to take the product of the probability of all the previous stages, with d1,d2,.. and so on.
 getDecisionProbability <- function(N, n, c, r, dist, pd, n_def, i) {
   acc <- NULL
   rej <- NULL
   if (i == 1) {
-    acc <- getPointProb(N, n[i], c[i], dist, pd, n_def, TRUE)
-    rej <- getPointProb(N, n[i], r[i] - 1, dist, pd, n_def, FALSE)
+    acc <- getCumulativeProb(N, n[i], c[i], dist, pd, n_def, TRUE)
+    rej <- getCumulativeProb(N, n[i], r[i] - 1, dist, pd, n_def, FALSE)
   } else {
+    for (stage in seq(1:i))
     d_vals <- seq(c[i-1]+1, r[i-1]-1, 1)
     for (d in d_vals) {
-      prob_prev <- getProbBetween(N, n[i-1], c[i-1] + 1, r[i]-1, dist, pd, n_def)
-      acc_i <- getPointProb(N, n[i], c[i] - d, dist, pd, n_def, TRUE)
-      acc <- acc + prob_prev*acc_i
-      rej_i <- getPointProb(N, n[i], r[i] - d - 1, dist, pd, n_def, FALSE)
-      rej <- rej + prob_prev*rej_i
+      prob_prev_d <- getPointProb(N, n[i-1], d, dist, pd, n_def)
+      prob_acc_cur_d <- getCumulativeProb(N, n[i], c[i] - d, dist, pd, n_def, TRUE)
+      acc <- acc + prob_prev_d*prob_acc_cur_d
+      prob_rej_cur_d <- getCumulativeProb(N, n[i], r[i] - d - 1, dist, pd, n_def, FALSE)
+      rej <- rej + prob_prev_d*prob_rej_cur_d
     }
   }
   return (list(acc,rej))
 }
-
-# Debug comment

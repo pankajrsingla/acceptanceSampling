@@ -69,15 +69,14 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     }
     
     # Create and fill the output table(s)
-    table <- createJaspTable(title = "Sampling plan meeting the specified risk points")
-    # table$dependOn(c(names, "stdev", "distribution"))
+    table <- createJaspTable(title = "Generated Sampling Plan")
     names <- c(names, "distribution")
     table$dependOn(names)
     table$addColumnInfo(name = "col_1", title = "", type = "string")
     table$addColumnInfo(name = "col_2", title = "Value", type = "integer")
-    table$addRows(list("col_1" = "Sample size (n)", "col_2" = plan_vars$n))
-    table$addRows(list("col_1" = "Acc. Number (c)", "col_2" = plan_vars$c))
-    table$addRows(list("col_1" = "Rej. Number (r)", "col_2" = plan_vars$r))
+    table$addRows(list("col_1" = "Sample size", "col_2" = plan_vars$n))
+    table$addRows(list("col_1" = "Acceptance Number", "col_2" = plan_vars$c))
+    # table$addRows(list("col_1" = "Rej. Number (r)", "col_2" = plan_vars$r))
     table$showSpecifiedColumnsOnly <- TRUE
     jaspResults[["findTable"]] <- table
 
