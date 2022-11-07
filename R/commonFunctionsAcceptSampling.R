@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Create and return a data frame with the quality levels and the corresponding acceptance probabilities for the plan.
 getPlanDf <- function(options, planType, depend_variables, returnPlan=FALSE) {
   n <- options[[paste0("sampleSize", planType)]]
   c <- options[[paste0("acceptNumber", planType)]]
@@ -46,18 +47,23 @@ getPlanDf <- function(options, planType, depend_variables, returnPlan=FALSE) {
   }
 }
 
-getSummary <- function(jaspResults, df_plan, planType, depend_variables) {
+# Generate a table with the quality levels and the corresponding acceptance probabilities for the plan.
+getSummary <- function(jaspResults, df_plan, planType, depend_variables, positionInContainer) {
+  if (!is.null(jaspResults[[paste0("summaryTable", planType)]])) {
+    return()
+  }
   summaryTable <- createJaspTable(title = "Detailed acceptance probabilities")
   summaryTable$dependOn(depend_variables)
   summaryTable$addColumnInfo(name = "col_1", title = "Prop. non-confirming", type = "number")
   summaryTable$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
-  summaryTable$setData(list(col_1 = df_plan$PD, col_2 = df_plan$PA))
+  summaryTable$setData(list(col_1 = round(df_plan$PD,2), col_2 = round(df_plan$PA,2)))
   summaryTable$showSpecifiedColumnsOnly <- TRUE
+  summaryTable$position <- positionInContainer
   jaspResults[[paste0("summaryTable", planType)]] <- summaryTable
-  return (summaryTable)
 }
 
-assessPlan <- function(jaspResults, options, planType, depend_variables) {
+# Check if the plan can satisfy the AQL and RQL constraints. Create tabular output.
+assessPlan <- function(jaspResults, options, planType, depend_variables, positionInContainer) {
   pd_prp <- options[[paste0("pd_prp", planType)]]
   pa_prp <- 1 - options[[paste0("pa_prp", planType)]]
   pd_crp <- options[[paste0("pd_crp", planType)]]
@@ -72,38 +78,42 @@ assessPlan <- function(jaspResults, options, planType, depend_variables) {
 
     # Create and fill the output tables
     # 1. Sampling plan table
-    plan_table <- createJaspTable(title = "Acceptance Sampling Plan")
-    plan_table$dependOn(paste0(c("sampleSize", "acceptNumber", "rejectNumber"), planType))
-    n <- options[[paste0("sampleSize", planType)]]
-    c <- options[[paste0("acceptNumber", planType)]]
-    r <- options[[paste0("rejectNumber", planType)]]
-    
-    if (planType == "Single") {
-      plan_table$addColumnInfo(name = "table_1_col_1", title = "", type = "string")
-      plan_table$addColumnInfo(name = "table_1_col_2", title = "Value", type = "integer")
-      plan_table$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = n))
-      plan_table$addRows(list("table_1_col_1" = "Acc. Number(s)", "table_1_col_2" = c))
-      plan_table$addRows(list("table_1_col_1" = "Rej. Number(s)", "table_1_col_2" = r))
-    } else {
-      plan_table$addColumnInfo(name = "table_1_col_1", title = "Sample", type = "integer")
-      plan_table$addColumnInfo(name = "table_1_col_2", title = "Sample Size", type = "integer")
-      plan_table$addColumnInfo(name = "table_1_col_3", title = "Cum. Sample Size", type = "integer")
-      plan_table$addColumnInfo(name = "table_1_col_4", title = "Acc. Number", type = "integer")
-      plan_table$addColumnInfo(name = "table_1_col_5", title = "Rej. Number", type = "integer")
-      # rows <- length(options$sampleSizeMult)
-      # table_df_mult <- data.frame(sample = 1:rows, sample_size = n, cum_sample_size = cumsum(n),
-      #                             acc_num = c, rej_num = r)
-      plan_table$setData(list(table_1_col_1 = 1:length(options$sampleSizeMult), table_1_col_2 = n, table_1_col_3 = cumsum(n), table_1_col_4 = c, table_1_col_5 = r))
+    if (is.null(jaspResults[[paste0("plan_table", planType)]])) {
+      plan_table <- createJaspTable(title = "Acceptance Sampling Plan")
+      plan_table$dependOn(paste0(c("sampleSize", "acceptNumber", "rejectNumber"), planType))
+      n <- options[[paste0("sampleSize", planType)]]
+      c <- options[[paste0("acceptNumber", planType)]]
+      r <- options[[paste0("rejectNumber", planType)]]
+      
+      if (planType == "Single") {
+        plan_table$addColumnInfo(name = "table_1_col_1", title = "", type = "string")
+        plan_table$addColumnInfo(name = "table_1_col_2", title = "Value", type = "integer")
+        plan_table$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = n))
+        plan_table$addRows(list("table_1_col_1" = "Acc. Number(s)", "table_1_col_2" = c))
+        # plan_table$addRows(list("table_1_col_1" = "Rej. Number(s)", "table_1_col_2" = r))
+      } else {
+        plan_table$addColumnInfo(name = "table_1_col_1", title = "Sample", type = "integer")
+        plan_table$addColumnInfo(name = "table_1_col_2", title = "Sample Size", type = "integer")
+        plan_table$addColumnInfo(name = "table_1_col_3", title = "Cum. Sample Size", type = "integer")
+        plan_table$addColumnInfo(name = "table_1_col_4", title = "Acc. Number", type = "integer")
+        plan_table$addColumnInfo(name = "table_1_col_5", title = "Rej. Number", type = "integer")
+        plan_table$setData(list(table_1_col_1 = 1:length(options$sampleSizeMult), table_1_col_2 = n, table_1_col_3 = cumsum(n), table_1_col_4 = c, table_1_col_5 = r))
+      }
+      plan_table$showSpecifiedColumnsOnly <- TRUE
+      plan_table$position <- positionInContainer
+      jaspResults[[paste0("plan_table", planType)]] <- plan_table
     }
-    plan_table$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[[paste0("plan_table", planType)]] <- plan_table
 
     # 2. Table with the specified and actual acceptance probabilities
-    risk_table <- getRiskPointTable(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp)
+    getRiskPointTable(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer+1)
   }
 }
 
-getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp) {
+# Create the table showing the specified risk quality levels and the acceptance probabilities for those levels.
+getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer) {
+  if (!is.null(jaspResults[[paste0("riskTable", planType)]])) {
+    return ()
+  }
   table <- createJaspTable(title = as.character(assess[8]))
   table$dependOn(depend_variables)
   table$addColumnInfo(name = "col_1", title = "", type = "string")
@@ -113,12 +123,15 @@ getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, p
   table$addRows(list("col_1" = "PRP", "col_2" = pd_prp, "col_3" = pa_prp, "col_4" = as.numeric(unlist(strsplit(assess[11], " +"))[4])))
   table$addRows(list("col_1" = "CRP", "col_2" = pd_crp, "col_3" = pd_crp, "col_4" = as.numeric(unlist(strsplit(assess[12], " +"))[4])))
   table$showSpecifiedColumnsOnly <- TRUE
+  table$position <- positionInContainer
   jaspResults[[paste0("riskTable", planType)]] <- table
-  return (table)
 }
 
-
-getOCCurve <- function(jaspResults, df_plan, planType, depend_variables) {
+# Generate the operating characteristics curve for the plan.
+getOCCurve <- function(jaspResults, df_plan, planType, depend_variables, positionInContainer) {
+  if (!is.null(jaspResults[[paste0("ocCurve", planType)]])) {
+    return()
+  }
   ocCurve <- createJaspPlot(title = paste0("OC (Operating Characteristics) curve"),  width = 480, height = 320)
   ocCurve$dependOn(depend_variables)
   jaspResults[[paste0("ocCurve", planType)]] <- ocCurve
@@ -131,10 +144,15 @@ getOCCurve <- function(jaspResults, df_plan, planType, depend_variables) {
                   #                axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
   # plt <- jaspGraphs::themeJasp(plt)
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+  plt$position <- positionInContainer
   ocCurve$plotObject <- plt
 }
 
-getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variables) {
+# Generate the average outgoing quality curve for the plan.
+getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variables, positionInContainer) {
+  if (!is.null(jaspResults[[paste0("aoqCurve", planType)]])) {
+    return ()
+  }
   aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 480, height = 320)
   aoqCurve$dependOn(depend_variables)
   jaspResults[[paste0("aoqCurve", planType)]] <- aoqCurve
@@ -173,14 +191,16 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
                          ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
                          ggplot2::annotate("text", label = gettextf("AOQL: %.2f", aoq_max), x = pd_aoq_max*0.9, y = aoq_max*1.1, color = "black", size = 6) +
                          ggplot2::ylim(0.0,round(aoq_max*1.1, 2))
-                        #  ggplot2::theme_classic() +
-                        #  ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), axis.text.y = ggplot2::element_text(size = 16, color = "black"),
-                        #                 axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+  plt$position <- positionInContainer
   aoqCurve$plotObject <- plt
 }
 
-getATICurve <- function(jaspResults, df_plan, options, planType, depend_variables) {
+# Generate the average total inspection curve for the plan.
+getATICurve <- function(jaspResults, df_plan, options, planType, depend_variables, positionInContainer) {
+  if (!is.null(jaspResults[[paste0("atiCurve", planType)]])) {
+    return ()
+  }
   atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 480, height = 320)
   atiCurve$dependOn(depend_variables)
   jaspResults[[paste0("atiCurve", planType)]] <- atiCurve
@@ -219,10 +239,15 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
                         #  ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), axis.text.y = ggplot2::element_text(size = 16, color = "black"),
                         #                 axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+  plt$position <- positionInContainer
   atiCurve$plotObject <- plt
 }
 
-getASNCurve <- function(jaspResults, options, depend_variables) {
+# Generate the average sample number curve for the plan. Only applicable for multiple sampling plans.
+getASNCurve <- function(jaspResults, options, depend_variables, positionInContainer) {
+  if (!is.null(jaspResults[["asnPlot"]])) {
+    return ()
+  }
   # Parse option values
   n <- options$sampleSizeMult
   c <- options$acceptNumberMult
@@ -259,11 +284,12 @@ getASNCurve <- function(jaspResults, options, depend_variables) {
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
          ggplot2::labs(x = "Proportion non-confirming", y = "Average Sample Number")
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+  plt$position <- positionInContainer
   asnPlot$plotObject <- plt
-  return (asnPlot)
 }
 
-# Currently in use. Incorrect.
+# Currently in use. Need to modify.
+# TODO [############# IN PROGRESS ##############]
 getProbability <- function(N, n, c, r, dist, pd, n_def) {
   pAcc <- NULL
   pRej <- NULL
@@ -281,8 +307,6 @@ getProbability <- function(N, n, c, r, dist, pd, n_def) {
 }
 
 # TODO [############# IN PROGRESS ##############]
-#########################################
-
 # getProbBetween <- function(N, n, low, high, dist, pd, n_def) {
 #   prob <- NULL
 #   if (dist == "binom") {
@@ -295,6 +319,7 @@ getProbability <- function(N, n, c, r, dist, pd, n_def) {
 #   return (prob)
 # }
 
+# TODO [############# IN PROGRESS ##############]
 getCumulativeProb <- function(N, n, c, dist, pd, n_def, lower_tail) {
   prob <- NULL
   if (dist == "binom") {
@@ -307,6 +332,7 @@ getCumulativeProb <- function(N, n, c, dist, pd, n_def, lower_tail) {
   return (prob)
 }
 
+# TODO [############# IN PROGRESS ##############]
 getPointProb <- function(N, n, c, dist, pd, n_def) {
   prob <- NULL
   if (dist == "binom") {
@@ -319,6 +345,7 @@ getPointProb <- function(N, n, c, dist, pd, n_def) {
   return (prob)
 }
 
+# TODO [############# IN PROGRESS ##############]
 # Right now, it's taking the previous prob of only the previous stages,
 # but it needs to take the product of the probability of all the previous stages, with d1,d2,.. and so on.
 getDecisionProbability <- function(N, n, c, r, dist, pd, n_def, i) {

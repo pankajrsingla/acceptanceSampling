@@ -16,31 +16,11 @@
 #
 
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
-  optionNames <- c("lotSize", "pd_lower", "pd_upper", "pd_step", "pd_prp", "pa_prp", "pd_crp", "pa_crp")
-  .findSampleCheckErrors(dataset, options)
+  optionNames <- c("lotSize", "pd_lower", "pd_upper", "pd_step", "pd_prp", "pa_prp", "pd_crp", "pa_crp", "distribution")
   .findPlan(jaspResults, options, optionNames)
 }
 
-
-.findSampleCheckErrors <- function(dataset = NULL, options) {
-  # perform a check on the hypothesis
-
-  sanityCheck <- function() {
-    # if (options$pd_prp > options$pd_crp) {
-    #   return(gettext("CRP should have worse quality (higher proportion defective) than PRP."))
-    # }
-  }
-  
-  # Error Check 1: Number of levels of the variables and the hypothesis
-  .hasErrors(
-    dataset              = dataset,
-    custom               = sanityCheck,
-    exitAnalysisIfErrors = TRUE
-  )
-}
-
-# Results functions ----
-
+# Find the sampling plan that satisfies the specified AQL and RQL constraints.
 .findPlan <- function(jaspResults, options, names) {
   if (options$pd_prp && options$pa_prp && options$pd_crp && options$pa_crp) {
     pd_lower <- options$pd_lower
@@ -68,30 +48,38 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
       plan <- AcceptanceSampling::OC2c(n = plan_vars$n, c = plan_vars$c, r = plan_vars$r, type = dist, pd = pd)
     }
     
-    # Create and fill the output table(s)
-    table <- createJaspTable(title = "Generated Sampling Plan")
-    names <- c(names, "distribution")
-    table$dependOn(names)
-    table$addColumnInfo(name = "col_1", title = "", type = "string")
-    table$addColumnInfo(name = "col_2", title = "Value", type = "integer")
-    table$addRows(list("col_1" = "Sample size", "col_2" = plan_vars$n))
-    table$addRows(list("col_1" = "Acceptance Number", "col_2" = plan_vars$c))
-    # table$addRows(list("col_1" = "Rej. Number (r)", "col_2" = plan_vars$r))
-    table$showSpecifiedColumnsOnly <- TRUE
-    jaspResults[["findTable"]] <- table
-
+    .attributePlanTable(jaspResults, names, plan_vars, positionInContainer=1)
+    
     if (options$showSummary || options$showOCCurve) {
       df_plan <- data.frame(PD = pd, PA = plan@paccept)
       
       # OC Curve
       if (options$showOCCurve) {
-        getOCCurve(jaspResults, df_plan, "", c(names, "showOCCurve"))
+        getOCCurve(jaspResults, df_plan, "", c(names, "showOCCurve"), positionInContainer=3)
       }
 
       # Summary
       if (options$showSummary) {
-        getSummary(jaspResults, df_plan, "", c(names, "showSummary"))
+        getSummary(jaspResults, df_plan, "", c(names, "showSummary"), positionInContainer=2)
       }
     }
   }
+}
+
+# Create and fill the output table(s)
+.attributePlanTable <- function(jaspResults, depend_variables, plan_vars, positionInContainer) {
+  # Create and fill the output table(s)
+  if (!is.null(jaspResults[["findTable"]])) {
+    return ()
+  }
+  table <- createJaspTable(title = "Generated Sampling Plan")
+  table$dependOn(depend_variables)
+  # table$transpose <- TRUE
+  table$addColumnInfo(name = "col_1", title = "", type = "string")
+  table$addColumnInfo(name = "col_2", title = "Value", type = "integer")
+  table$addRows(list("col_1" = "Sample size", "col_2" = plan_vars$n))
+  table$addRows(list("col_1" = "Acceptance Number", "col_2" = plan_vars$c))
+  table$showSpecifiedColumnsOnly <- TRUE
+  table$position <- positionInContainer
+  jaspResults[["findTable"]] <- table
 }

@@ -46,7 +46,12 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
 
   depend_variables <- c("variables", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
   risk_variables <- c("pd_prp", "pd_crp")
+  if (!is.null(jaspResults[["decision_table"]])) {
+    return ()
+  }
   decision_table <- createJaspTable(title = gettextf("Accept or Reject Lot %s", ifelse(!is.null(variable_name), paste0("(", variable_name, ")"), "")))
+  decision_table$transpose <- TRUE
+  decision_table$transposeWithOvertitle <- FALSE
   decision_table$dependOn(c(depend_variables, risk_variables))
   jaspResults[["decision_table"]] <- decision_table
   if (sd_sample <= 0) {
@@ -144,32 +149,50 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       }
     }
 
-    decision_table$addColumnInfo(name = "col_1", title = "", type = "string")
-    decision_table$addColumnInfo(name = "col_2", title = "", type = "number")
-    decision_table$addRows(list("col_1" = "Sample Size", "col_2" = as.integer(n)))
-    decision_table$addRows(list("col_1" = "Sample Mean", "col_2" = round(mean_sample,3)))
-    decision_table$addRows(list("col_1" = "Sample Standard Deviation", "col_2" = round(sd_sample,3)))
-    decision_table$addRows(list("col_1" = ifelse(options$sd, "Historical Standard Deviation", "Sample Standard Deviation"), "col_2" = round(sd_compare,3)))
+    decision_table$addColumnInfo(name = "col_1", title = "Sample Size", type = "integer")
+    decision_table$addColumnInfo(name = "col_2", title = "Sample Mean", type = "number")
+    decision_table$addColumnInfo(name = "col_3", title = "Sample Standard Deviation", type = "number")
+    decision_table$addColumnInfo(name = "col_4", title = ifelse(options$sd, "Historical Standard Deviation", "Sample Standard Deviation"), type = "number")
     if (options$lsl) {
-      decision_table$addRows(list("col_1" = "Lower Specification Limit (LSL)", "col_2" = round(options$lower_spec,3)))
+      decision_table$addColumnInfo(name = "col_5", title = "Lower Specification Limit (LSL)", type = "number")
     }
     if (options$usl) {
-      decision_table$addRows(list("col_1" = "Upper Specification Limit (USL)", "col_2" = round(options$upper_spec,3)))
+      decision_table$addColumnInfo(name = "col_6", title = "Upper Specification Limit (USL)", type = "number")
     }
     if (options$lsl) {
-      decision_table$addRows(list("col_1" = "Z.LSL", "col_2" = round(z.lsl,3)))
+      decision_table$addColumnInfo(name = "col_7", title = "Z.LSL", type = "number")
     }
     if (options$usl) {
-      decision_table$addRows(list("col_1" = "Z.USL", "col_2" = round(z.usl,3)))
+      decision_table$addColumnInfo(name = "col_8", title = "Z.USL", type = "number")
     }
-    decision_table$addRows(list("col_1" = "Critical Distance (k)", "col_2" = round(k,3)))
+    decision_table$addColumnInfo(name = "col_9", title = "Critical Distance (k)", type = "number")
+
+    row = list("col_1" = n, "col_2" = round(mean_sample,2), "col_3" = round(sd_sample,2), "col_4" = round(sd_compare,2))
+    if (options$lsl) {
+      row = append(row, list("col_5" = round(options$lower_spec,2)))
+    }
+    if (options$usl) {
+      row = append(row, list("col_6" = round(options$upper_spec,2)))
+    }
+    if (options$lsl) {
+      row = append(row, list("col_7" = round(z.lsl,2)))
+    }
+    if (options$usl) {
+      row = append(row, list("col_8" = round(z.usl,2)))
+    }
+    row = append(row, list("col_9" = round(k,2)))
+
+    decision_table$addRows(row)
     decision_table$showSpecifiedColumnsOnly <- TRUE
     decision_table$position <- 1
-    
+
     if (!is.null(decision)) {
-      decision_output <- createJaspHtml(text = gettextf("Decision: %s lot.", ifelse(decision == TRUE, "Accept", "Reject")), 
-                                        dependencies = c(depend_variables, risk_variables), position = 2)
-      jaspResults[["decision_output"]] <- decision_output
+      if (is.null(jaspResults[["decision_output"]])) {
+        decision_output <- createJaspHtml(text = gettextf("Decision: %s lot.", ifelse(decision == TRUE, "Accept", "Reject")), 
+                                          dependencies = c(depend_variables, risk_variables), position = 2)
+        decision_output$position <- 2                                              
+        jaspResults[["decision_output"]] <- decision_output
+      }
     }
   }
 }

@@ -41,54 +41,72 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   df_plan <- data.frame(PD = pd, PA = oc_var@paccept)
   
   # Output
-  # 0. Plan
+  # 0. Variable plan table
+  .variablePlanTable(jaspResults, sd, risk_variables, n, k, positionInContainer=1)
+
+  if (is.null(jaspResults[["decision_info"]])) {    
+    plan_op <- createJaspHtml(text = gettextf("%s\n\n%s", "Z.LSL = (mean - LSL) / historical standard deviation", "Accept lot if Z.LSL >= k, otherwise reject."), 
+                              dependencies = c(risk_variables, "sd"), position = 2)
+    jaspResults[["decision_info"]] <- plan_op
+  }
+  
+  # 1. OC Curve
+  if (options$showOCCurve) {
+    getOCCurve(jaspResults, df_plan, "", c(risk_variables, pd_variables, output_variables[1]), positionInContainer=4)
+  }
+  # 2. Plan summary
+  if (options$showSummary) {
+    getSummary(jaspResults, df_plan, "", c(risk_variables, pd_variables, output_variables[2]), positionInContainer=3)
+  }
+  # 3. AOQ Curve
+  if (options$showAOQCurve) {
+    if (is.null(jaspResults[["aoqCurveVariable"]])) {
+      aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 480, height = 320)
+      aoqCurve$dependOn(c(risk_variables, pd_variables, output_variables[3], "lotSize"))
+      jaspResults[["aoqCurveVariable"]] <- aoqCurve
+      df_plan$AOQ <- df_plan$PA * pd * (N-n) / N
+      aoq_max <- round(max(df_plan$AOQ),2)
+      pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
+      plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
+                            ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-confirming", y = "AOQ") +
+                            ggplot2::geom_line(colour = "black", linetype = "dashed") +
+                            ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
+                            ggplot2::annotate("text", label = gettextf("AOQL: %.2f", aoq_max), x = pd_aoq_max*0.9, y = aoq_max*1.1, color = "black", size = 6)
+                            ggplot2::ylim(0,aoq_max+0.01)
+      plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+      plt$position <- 5
+      aoqCurve$plotObject <- plt
+    }
+  }
+  # 4. ATI Curve
+  if (options$showATICurve) {
+    if (is.null(jaspResults[["atiCurveVariable"]])) {
+      atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 480, height = 320)
+      atiCurve$dependOn(c(risk_variables, pd_variables, output_variables[4], "lotSize"))
+      jaspResults[["atiCurveVariable"]] <- atiCurve
+      df_plan$ATI <- df_plan$PA * n + (1 - df_plan$PA) * N
+      plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
+                      ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-confirming", y = "ATI") +
+                      ggplot2::geom_line(colour = "black", linetype = "dashed")
+      plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+      plt$position <- 6
+      atiCurve$plotObject <- plt
+    }
+  }
+}
+
+# Create table for the variable plan
+.variablePlanTable <- function(jaspResults, sd, depend_variables, n, k, positionInContainer) {
+  if (!is.null(jaspResults[["plan_table"]])) {
+    return ()
+  }
   plan_table <- createJaspTable(title = paste0("Variable Sampling Plan (Standard deviation assumed to be ", sd, ")"))
-  plan_table$dependOn(c(risk_variables, "sd"))
+  plan_table$dependOn(c(depend_variables, "sd"))
   plan_table$addColumnInfo(name = "col_1", title = "", type = "string")
   plan_table$addColumnInfo(name = "col_2", title = "Sample", type = "number")
   plan_table$addRows(list("col_1" = "Sample size", "col_2" = as.integer(n)))
   plan_table$addRows(list("col_1" = "Critical Distance (k)", "col_2" = round(k,3)))
   plan_table$showSpecifiedColumnsOnly <- TRUE
+  plan_table$position <- positionInContainer
   jaspResults[["plan_table"]] <- plan_table
-
-  plan_op <- createJaspHtml()
-  plan_op$dependOn(c(risk_variables, "sd"))
-  plan_op[["text"]] <- "Z.LSL = (mean - LSL)/historical standard deviation\n Accept lot if Z.LSL >= k, otherwise reject."
-  
-  # 1. OC Curve
-  if (options$showOCCurve) {
-    getOCCurve(jaspResults, df_plan, "", c(risk_variables, pd_variables, output_variables[1]))
-  }
-  # 2. Plan summary
-  if (options$showSummary) {
-    getSummary(jaspResults, df_plan, "", c(risk_variables, pd_variables, output_variables[2]))
-  }
-  # 3. AOQ Curve
-  if (options$showAOQCurve) {
-    aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 480, height = 320)
-    aoqCurve$dependOn(c(risk_variables, pd_variables, output_variables[3], "lotSize"))
-    jaspResults[["aoqCurveVariable"]] <- aoqCurve
-    df_plan$AOQ <- df_plan$PA * pd * (N-n) / N
-    aoq_max <- round(max(df_plan$AOQ),2)
-    plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
-                          ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-confirming", y = "AOQ") +
-                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
-                          ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
-                          ggplot2::geom_text(ggplot2::aes(0, max(df_plan$AOQ), label = paste0("AOQL: ", aoq_max), vjust = -0.6, hjust = -1, check_overlap=TRUE)) +
-                          ggplot2::ylim(0,aoq_max+0.01)
-    plt <- jaspGraphs::themeJasp(plt)
-    aoqCurve$plotObject <- plt
-  }
-  # 4. ATI Curve
-  if (options$showATICurve) {
-    atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 480, height = 320)
-    atiCurve$dependOn(c(risk_variables, pd_variables, output_variables[4], "lotSize"))
-    jaspResults[["atiCurveVariable"]] <- atiCurve
-    df_plan$ATI <- df_plan$PA * n + (1 - df_plan$PA) * N
-    plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
-                    ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-confirming", y = "ATI") +
-                    ggplot2::geom_line(colour = "black", linetype = "dashed")
-    plt <- jaspGraphs::themeJasp(plt)
-    atiCurve$plotObject <- plt
-  }
 }

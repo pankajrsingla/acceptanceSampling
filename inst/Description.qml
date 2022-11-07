@@ -16,7 +16,6 @@ Description
 	GroupTitle
 	{
 		title:	qsTr("Attribute Sampling")
-		// icon:	"analysis-classical-crosstabs.svg"
 	}
 
 	Analysis
@@ -40,7 +39,6 @@ Description
 	GroupTitle
 	{
 		title:	qsTr("Variable Sampling")
-		// icon:	"analysis-bayesian-crosstabs.svg"
 	}
 
 	Analysis
