@@ -63,9 +63,112 @@ Form
 	{
 		title: qsTr("Multiple Sampling Plan")
 
-		Common.PlanMultiple
+		// Common.PlanMultiple
+		// {
+		// 	Layout.columnSpan: 2
+		// }
+
+		// To-do: 
+		// This should be part of PlanMultiple.qml.
+		// Right now, messes up the display when put there. Fix this.
+
+		IntegerField
+		{ 
+			Layout.columnSpan: 2
+			// Layout.rowSpan: 1
+			name: "lotSizeMult"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1
+		}
+
+		IntegerField
 		{
 			Layout.columnSpan: 2
+			// Layout.rowSpan: 2
+			name: "numberOfStages"; id: numberOfStages; label: qsTr("Number of stages"); defaultValue: 2; min: 2; max: 100
+		}
+
+		ColumnLayout
+		{
+			spacing:                                0
+			Layout.preferredWidth:					parent.width
+			Layout.columnSpan:						1
+			
+			RowLayout
+			{
+				Label { text: qsTr("Stage");					Layout.leftMargin: 5 * preferencesModel.uiScale; Layout.preferredWidth: 42 * preferencesModel.uiScale}
+				Label { text: qsTr("Sample size (n)");			Layout.preferredWidth: 150 * preferencesModel.uiScale}
+				Label { text: qsTr("Acceptance number (c)");	Layout.preferredWidth: 150 * preferencesModel.uiScale}
+				Label { text: qsTr("Rejection number (r)");		Layout.preferredWidth: 150 * preferencesModel.uiScale}
+			}
+
+			ComponentsList
+			{
+				name:								"stages"
+				addItemManually:                    false
+				values:                             numberOfStages.value
+
+				rowComponent: 						RowLayout
+				{
+					Row
+					{
+						spacing:					5 * preferencesModel.uiScale
+						Layout.preferredWidth:		40 * preferencesModel.uiScale
+						Label
+						{
+							text: 					rowIndex + 1
+						}
+					}
+					Row
+					{
+						spacing:					5 * preferencesModel.uiScale
+						Layout.preferredWidth:		150 * preferencesModel.uiScale
+
+						IntegerField
+						{
+							id:						sampleSizeMult
+							label: 					""
+							name: 					"sampleSizeMult"
+							defaultValue:           10
+							min:                    1
+							placeholderText:		qsTr("n") + (rowIndex + 1)
+							fieldWidth:				50 * preferencesModel.uiScale
+							useExternalBorder:		false
+							showBorder:				true
+						}
+					}
+					Row
+					{
+						spacing:					5 * preferencesModel.uiScale
+						Layout.preferredWidth:		150 * preferencesModel.uiScale
+						IntegerField
+						{
+							label: 					""
+							name: 					"acceptNumberMult"
+							defaultValue:           rowIndex + 1
+							min:                    1
+							placeholderText:		qsTr("c") + (rowIndex + 1)
+							fieldWidth:				50 * preferencesModel.uiScale
+							useExternalBorder:		false
+							showBorder:				true
+						}
+					}
+					Row
+					{
+						spacing:					5 * preferencesModel.uiScale
+						Layout.preferredWidth:		150 * preferencesModel.uiScale
+						IntegerField
+						{
+							label: 					""
+							name: 					"rejectNumberMult"
+							defaultValue:           3
+							min:                    1
+							placeholderText:		qsTr("r") + (rowIndex + 1)
+							fieldWidth:				50 * preferencesModel.uiScale
+							useExternalBorder:		false
+							showBorder:				true
+						}
+					}
+				}
+			}
 		}
 
 		Common.Distribution

@@ -22,19 +22,25 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
 
   # Multiple sampling plan
-  if (length(options$sampleSizeMult) > 0 && length(options$acceptNumberMult) > 0 && length(options$rejectNumberMult > 0)) {
+  if (length(options$stages) > 1) {
+  # if (length(options$sampleSizeMult) > 0 && length(options$acceptNumberMult) > 0 && length(options$rejectNumberMult > 0)) {
     .handleAttributePlan(jaspResults, options, "Mult")
   }
 }
 
 .handleAttributePlan <- function(jaspResults, options, planType) {
-  plan_variables <- paste0(c("lotSize", "sampleSize", "acceptNumber", "rejectNumber", "distribution"), planType)
+  plan_variables <- paste0(c("lotSize", "distribution"), planType)
+  if (planType != "Mult") {
+    plan_variables <- c(plan_variables, paste0(c("sampleSize", "acceptNumber", "rejectNumber"), planType))
+  } else {
+    plan_variables <- c(plan_variables, "stages")
+  }
   pd_variables <- paste0(c("pd_lower", "pd_upper", "pd_step"), planType)
   risk_variables <- paste0(c("pd_prp", "pa_prp", "pd_crp", "pa_crp"), planType)
   output_variables <- paste0(c("showOCCurve", "showSummary", "assessPlan", "showAOQCurve", "showATICurve", "showASNCurve"), planType)
   
   # Plan Dataframe
-  df_plan <- getPlanDf(options, planType, c(plan_variables, pd_variables))
+  df_plan <- getPlanDf(options, planType, FALSE)
 
   # OC Curve
   if (options[[paste0("showOCCurve", planType)]]) {

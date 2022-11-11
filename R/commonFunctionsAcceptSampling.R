@@ -16,10 +16,23 @@
 #
 
 # Create and return a data frame with the quality levels and the corresponding acceptance probabilities for the plan.
-getPlanDf <- function(options, planType, depend_variables, returnPlan=FALSE) {
-  n <- options[[paste0("sampleSize", planType)]]
-  c <- options[[paste0("acceptNumber", planType)]]
-  r <- options[[paste0("rejectNumber", planType)]]
+getPlanDf <- function(options, planType, returnPlan=FALSE) {
+  n <- c <- r <- NULL
+  if (planType != "Mult") {
+    # Single sampling plan
+    n <- options[[paste0("sampleSize", planType)]]
+    c <- options[[paste0("acceptNumber", planType)]]
+    r <- options[[paste0("rejectNumber", planType)]]
+  } else {
+    # Multiple sampling plan
+     stages <- options[["stages"]]
+     for (i in 1:length(stages)) {
+       n[i] <- stages[[i]]$sampleSizeMult
+       c[i] <- stages[[i]]$acceptNumberMult
+       r[i] <- stages[[i]]$rejectNumberMult
+     }
+  }
+  
   pd_lower <- options[[paste0("pd_lower", planType)]]
   pd_upper <- options[[paste0("pd_upper", planType)]]
   pd_step <- options[[paste0("pd_step", planType)]]
@@ -34,11 +47,6 @@ getPlanDf <- function(options, planType, depend_variables, returnPlan=FALSE) {
     plan <- AcceptanceSampling::OC2c(n = n, c = c, r = r, type = dist, pd = pd)
   }
   df_plan <- data.frame(PD = plan@pd, PA = plan@paccept)
-  
-  # To make sure the df gets updated when the plan variables change
-  # dummy <- createJaspHtml()
-  # dummy$dependOn(depend_variables)
-  # dummy[["text"]] <- ""
 
   if (returnPlan) {
     return (list(plan, df_plan))
@@ -70,7 +78,7 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
   pa_crp <- options[[paste0("pa_crp", planType)]]
   
   if (pd_prp > 0 && pa_prp > 0 && pd_crp > 0 && pa_crp > 0) {
-    output <- getPlanDf(options, planType, depend_variables, TRUE)
+    output <- getPlanDf(options, planType, TRUE)
     plan <- output[[1]]
     df_plan <- output[[2]]
     # Assessment of the sampling plan
@@ -80,12 +88,25 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
     # 1. Sampling plan table
     if (is.null(jaspResults[[paste0("plan_table", planType)]])) {
       plan_table <- createJaspTable(title = "Acceptance Sampling Plan")
-      plan_table$dependOn(paste0(c("sampleSize", "acceptNumber", "rejectNumber"), planType))
-      n <- options[[paste0("sampleSize", planType)]]
-      c <- options[[paste0("acceptNumber", planType)]]
-      r <- options[[paste0("rejectNumber", planType)]]
+      n <- c <- r <- NULL
+      if (planType != "Mult") {
+        # Single sampling plan        
+        plan_table$dependOn(paste0(c("sampleSize", "acceptNumber", "rejectNumber"), planType))
+        n <- options[[paste0("sampleSize", planType)]]
+        c <- options[[paste0("acceptNumber", planType)]]
+        r <- options[[paste0("rejectNumber", planType)]]
+      } else {
+        # Multiple sampling plan
+        plan_table$dependOn("stages")
+        stages <- options[["stages"]]
+        for (i in 1:length(stages)) {
+          n[i] <- stages[[i]]$sampleSizeMult
+          c[i] <- stages[[i]]$acceptNumberMult
+          r[i] <- stages[[i]]$rejectNumberMult
+        }
+      }
       
-      if (planType == "Single") {
+      if (planType != "Mult") {
         plan_table$addColumnInfo(name = "table_1_col_1", title = "", type = "string")
         plan_table$addColumnInfo(name = "table_1_col_2", title = "Value", type = "integer")
         plan_table$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = n))
@@ -158,9 +179,21 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
   jaspResults[[paste0("aoqCurve", planType)]] <- aoqCurve
 
   N <-  options[[paste0("lotSize", planType)]]
-  n <- options[[paste0("sampleSize", planType)]]
-  c <- options[[paste0("acceptNumber", planType)]]
-  r <- options[[paste0("rejectNumber", planType)]]
+  n <- c <- r <- NULL
+  if (planType != "Mult") {
+    # Single sampling plan
+    n <- options[[paste0("sampleSize", planType)]]
+    c <- options[[paste0("acceptNumber", planType)]]
+    r <- options[[paste0("rejectNumber", planType)]]
+  } else {
+    # Multiple sampling plan
+    stages <- options[["stages"]]
+    for (i in 1:length(stages)) {
+      n[i] <- stages[[i]]$sampleSizeMult
+      c[i] <- stages[[i]]$acceptNumberMult
+      r[i] <- stages[[i]]$rejectNumberMult
+    }
+  }
   dist <- options[[paste0("distribution", planType)]]
   pd <- df_plan$PD
   AOQ <- numeric(length(pd))
@@ -190,7 +223,7 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
                          ggplot2::annotate("text", label = gettextf("AOQL: %.2f", aoq_max), x = pd_aoq_max*0.9, y = aoq_max*1.1, color = "black", size = 6) +
-                         ggplot2::ylim(0.0,round(aoq_max*1.1, 2))
+                         ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
   aoqCurve$plotObject <- plt
@@ -206,15 +239,29 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
   jaspResults[[paste0("atiCurve", planType)]] <- atiCurve
 
   N <-  options[[paste0("lotSize", planType)]]
-  n <- options[[paste0("sampleSize", planType)]]
-  c <- options[[paste0("acceptNumber", planType)]]
-  r <- options[[paste0("rejectNumber", planType)]]
+  n <- c <- r <- NULL
+  if (planType != "Mult") {
+    # Single sampling plan
+    n <- options[[paste0("sampleSize", planType)]]
+    c <- options[[paste0("acceptNumber", planType)]]
+    r <- options[[paste0("rejectNumber", planType)]]
+  } else {
+    # Multiple sampling plan
+    stages <- options[["stages"]]
+    for (i in 1:length(stages)) {
+      n[i] <- stages[[i]]$sampleSizeMult
+      c[i] <- stages[[i]]$acceptNumberMult
+      r[i] <- stages[[i]]$rejectNumberMult
+    }
+  }
   dist <- options[[paste0("distribution", planType)]]
   pd <- df_plan$PD
   ATI <- numeric(length(pd))
-  if (planType == "Single") {
+  if (planType != "Mult") {
+    # Single plan
     ATI <- df_plan$PA * n + (1 - df_plan$PA) * N
   } else {
+    # Multiple plan
     stages <- length(n)
     probs_prod <- 1
     cum_n <- 0
@@ -249,9 +296,13 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
     return ()
   }
   # Parse option values
-  n <- options$sampleSizeMult
-  c <- options$acceptNumberMult
-  r <- options$rejectNumberMult
+  n <- c <- r <- NULL
+  stages <- options[["stages"]]
+  for (i in 1:length(stages)) {
+    n[i] <- stages[[i]]$sampleSizeMult
+    c[i] <- stages[[i]]$acceptNumberMult
+    r[i] <- stages[[i]]$rejectNumberMult
+  }
   dist <- options$distributionMult
   N <- options$lotSizeMult
   pd_lower <- options$pd_lowerMult
