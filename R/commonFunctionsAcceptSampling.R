@@ -118,7 +118,7 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
         plan_table$addColumnInfo(name = "table_1_col_3", title = "Cum. Sample Size", type = "integer")
         plan_table$addColumnInfo(name = "table_1_col_4", title = "Acc. Number", type = "integer")
         plan_table$addColumnInfo(name = "table_1_col_5", title = "Rej. Number", type = "integer")
-        plan_table$setData(list(table_1_col_1 = 1:length(options$sampleSizeMult), table_1_col_2 = n, table_1_col_3 = cumsum(n), table_1_col_4 = c, table_1_col_5 = r))
+        plan_table$setData(list(table_1_col_1 = 1:length(stages), table_1_col_2 = n, table_1_col_3 = cumsum(n), table_1_col_4 = c, table_1_col_5 = r))
       }
       plan_table$showSpecifiedColumnsOnly <- TRUE
       plan_table$position <- positionInContainer

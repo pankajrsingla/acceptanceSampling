@@ -23,22 +23,17 @@ Group
 {
     IntegerField
     { 
-        Layout.columnSpan: 2
         name: "lotSizeMult"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1
     }
 
     IntegerField
     {
-        Layout.columnSpan: 2
-        name: "numberOfStages"; id: numberOfStages; label: qsTr("Number of stages"); defaultValue: 2; min: 2; max: 100
+        name: "numberOfStages"; id: numberOfStages; label: qsTr("Number of stages"); defaultValue: 2; min: 1; max: 100
     }
 
     ColumnLayout
     {
-        spacing:                                0
-        Layout.preferredWidth:					parent.width
-        Layout.columnSpan:						2
-        
+        spacing: 0
         RowLayout
         {
             Label { text: qsTr("Stage");					Layout.leftMargin: 5 * preferencesModel.uiScale; Layout.preferredWidth: 42 * preferencesModel.uiScale}
@@ -74,7 +69,7 @@ Group
                         id:						sampleSizeMult
                         label: 					""
                         name: 					"sampleSizeMult"
-                        defaultValue:           1
+                        defaultValue:           10
                         min:                    1
                         placeholderText:		qsTr("n") + (rowIndex + 1)
                         fieldWidth:				50 * preferencesModel.uiScale
@@ -90,8 +85,8 @@ Group
                     {
                         label: 					""
                         name: 					"acceptNumberMult"
-                        defaultValue:           1
-                        min:                    1
+                        defaultValue:           rowIndex + 1
+                        min:                    0
                         placeholderText:		qsTr("c") + (rowIndex + 1)
                         fieldWidth:				50 * preferencesModel.uiScale
                         useExternalBorder:		false
@@ -106,7 +101,7 @@ Group
                     {
                         label: 					""
                         name: 					"rejectNumberMult"
-                        defaultValue:           2
+                        defaultValue:           rowIndex + 2
                         min:                    1
                         placeholderText:		qsTr("r") + (rowIndex + 1)
                         fieldWidth:				50 * preferencesModel.uiScale
