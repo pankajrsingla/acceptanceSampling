@@ -101,11 +101,13 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
     return ()
   }
   plan_table <- createJaspTable(title = paste0("Variable Sampling Plan (Standard deviation assumed to be ", sd, ")"))
+  plan_table$transpose <- TRUE
+  plan_table$transposeWithOvertitle <- FALSE
   plan_table$dependOn(c(depend_variables, "sd"))
-  plan_table$addColumnInfo(name = "col_1", title = "", type = "string")
-  plan_table$addColumnInfo(name = "col_2", title = "Sample", type = "number")
-  plan_table$addRows(list("col_1" = "Sample size", "col_2" = as.integer(n)))
-  plan_table$addRows(list("col_1" = "Critical Distance (k)", "col_2" = round(k,3)))
+  plan_table$addColumnInfo(name = "col_0", title = "", type = "string") # Dummy row
+  plan_table$addColumnInfo(name = "col_1", title = "Sample size", type = "integer")
+  plan_table$addColumnInfo(name = "col_2", title = "Critical Distance (k)", type = "number")
+  plan_table$addRows(list("col_1" = n, "col_2" = k))
   plan_table$showSpecifiedColumnsOnly <- TRUE
   plan_table$position <- positionInContainer
   jaspResults[["plan_table"]] <- plan_table

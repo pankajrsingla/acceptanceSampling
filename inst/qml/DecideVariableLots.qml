@@ -22,6 +22,7 @@ import "./common" as Common
 
 Form
 {
+	columns: 1
 	VariablesForm
 	{
 		AvailableVariablesList	{ name: "allVariablesList"; id: allVariablesList }
@@ -30,14 +31,12 @@ Form
 
 	Group
 	{
-		Layout.columnSpan: 2
 		DoubleField { name: "kValue"; label: qsTr("k value"); defaultValue: 1; min: 0; negativeValues: false }
 	}
 
 	Group
 	{
 		enabled: variables.count != 1
-		Layout.columnSpan: 2
 		CheckBox { name: "sampleStats"; label: qsTr("Specify sample statistics directly (used if dataset is not available)"); id: sampleStats; checked: (variables.count != 1); enabled: false }
 		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
 		DoubleField { name: "sampleMean"; label: qsTr("Sample mean"); defaultValue: 0 }
@@ -47,7 +46,6 @@ Form
 	Group
 	{
 		columns: 2
-		Layout.columnSpan: 2
 		CheckBox { name: "lsl"; label: qsTr("Lower Specification Limit (LSL): "); id: lsl; checked: false }
 		DoubleField{ name: "lower_spec"; label: qsTr(""); defaultValue: 0; enabled: lsl.checked; negativeValues: true }
 		CheckBox { name: "usl"; label: qsTr("Upper Specification Limit (USL): "); id: usl; checked: false }
@@ -56,7 +54,6 @@ Form
 
 	Group
 	{
-		Layout.columnSpan: 2
 		columns: 2
 		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known "); id: sd; checked: false }
 		DoubleField { name: "stdev"; label: qsTr(""); enabled: sd.checked; defaultValue: 1; min: 0; negativeValues: false }
@@ -65,8 +62,7 @@ Form
 	Group
     {
 		enabled: lsl.checked && usl.checked && sd.checked
-		Layout.columnSpan: 2
-        columns: 2
+		columns: 2
         Text { text: qsTr("Acceptable Quality Level (AQL): ") }
         DoubleField{ name: "pd_prp"; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1 }
         Text { text: qsTr("Rejectable Quality Level (RQL / LTPD): ") }

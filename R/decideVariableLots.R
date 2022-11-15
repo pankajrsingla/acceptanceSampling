@@ -149,6 +149,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       }
     }
 
+    decision_table$addColumnInfo(name = "col_0", title = "", type = "string") # Dummy row for title. Add title if needed.
     decision_table$addColumnInfo(name = "col_1", title = "Sample Size", type = "integer")
     decision_table$addColumnInfo(name = "col_2", title = "Sample Mean", type = "number")
     decision_table$addColumnInfo(name = "col_3", title = "Sample Standard Deviation", type = "number")

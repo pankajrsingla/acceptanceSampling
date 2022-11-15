@@ -22,16 +22,12 @@ import "./common" as Common
 
 Form
 {
-	Common.RiskPoints
-	{
-		// suffix: ""
-		Layout.columnSpan: 2
-	}
+	columns: 1
+	Common.RiskPoints {}
 
 	Common.ProbDefect
 	{
 		suffix: ""
-		Layout.columnSpan: 2
 	}
 
 	RadioButtonGroup
@@ -49,7 +45,6 @@ Form
 	
 	Group
 	{
-		Layout.rowSpan: 2
 		CheckBox { name: "showOCCurve"; label: qsTr("Show OC Curve") }
 		CheckBox { name: "showSummary"; label: qsTr("Show summary") }
 	}	
