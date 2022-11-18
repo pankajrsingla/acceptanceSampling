@@ -85,7 +85,7 @@ Group
                     {
                         label: 					""
                         name: 					"acceptNumberMult"
-                        defaultValue:           rowIndex + 1
+                        defaultValue:           rowIndex
                         min:                    0
                         placeholderText:		qsTr("c") + (rowIndex + 1)
                         fieldWidth:				50 * preferencesModel.uiScale
@@ -101,7 +101,7 @@ Group
                     {
                         label: 					""
                         name: 					"rejectNumberMult"
-                        defaultValue:           rowIndex + 2
+                        defaultValue:           2
                         min:                    1
                         placeholderText:		qsTr("r") + (rowIndex + 1)
                         fieldWidth:				50 * preferencesModel.uiScale

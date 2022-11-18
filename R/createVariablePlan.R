@@ -15,6 +15,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# txt = "Create variable plan."
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##                    Create variable plan.                    --
+##---------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param dataset <>.
+#' @param options <>.
+#' @returns <>.
+#' @seealso
+#'   [()] for <>.
+#' @examples
+#' CreateVariablePlan(jaspResults, dataset, options)
 CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   N <- options$lotSize
   sd <- "unknown"
@@ -68,7 +81,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
       aoq_max <- round(max(df_plan$AOQ),2)
       pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
       plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
-                            ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-confirming", y = "AOQ") +
+                            ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "AOQ") +
                             ggplot2::geom_line(colour = "black", linetype = "dashed") +
                             ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
                             ggplot2::annotate("text", label = gettextf("AOQL: %.2f", aoq_max), x = pd_aoq_max*0.9, y = aoq_max*1.1, color = "black", size = 6)
@@ -86,7 +99,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
       jaspResults[["atiCurveVariable"]] <- atiCurve
       df_plan$ATI <- df_plan$PA * n + (1 - df_plan$PA) * N
       plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
-                      ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-confirming", y = "ATI") +
+                      ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "ATI") +
                       ggplot2::geom_line(colour = "black", linetype = "dashed")
       plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
       plt$position <- 6
@@ -95,7 +108,22 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
 }
 
-# Create table for the variable plan
+# txt = "Create table for the variable plan."
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##             Create table for the variable plan.             --
+##---------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param sd <>.
+#' @param depend_variables <>.
+#' @param n <>
+#' @param k <>.
+#' @param positionInContainer <>.
+#' @returns <>.
+#' @seealso
+#'   [()] for <>.
+#' @examples
+#' .variablePlanTable(jaspResults, sd, depend_variables, n, k, positionInContainer)
 .variablePlanTable <- function(jaspResults, sd, depend_variables, n, k, positionInContainer) {
   if (!is.null(jaspResults[["plan_table"]])) {
     return ()

@@ -15,7 +15,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Create and return a data frame with the quality levels and the corresponding acceptance probabilities for the plan.
+##----------------------------------------------------------------
+##       Create and return a data frame for sampling plan       --
+##----------------------------------------------------------------
+#' @param options User specified options.
+#' @param planType "Single" or "Mult".
+#' @param returnPlan Return the OC2c plan object. Defaults to '"FALSE'.
+#' @returns A data frame, and optionally, an OC2c object.
+#' @seealso
+#'   [()] for <>,
+#'   [()] for <>.
+#' @examples
+#' getPlanDf(options, "Single", TRUE)
+#' getPlanDf(options, "Mult")
+##----------------------------------------------------------------
 getPlanDf <- function(options, planType, returnPlan=FALSE) {
   n <- c <- r <- NULL
   if (planType != "Mult") {
@@ -55,14 +68,27 @@ getPlanDf <- function(options, planType, returnPlan=FALSE) {
   }
 }
 
-# Generate a table with the quality levels and the corresponding acceptance probabilities for the plan.
+# txt = "Generate a summary table for the plan"
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##            Generate a summary table for the plan            --
+##---------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param df_plan <>.
+#' @param planType "Single" or "Mult".
+#' @param depend_variables <>.
+#' @param positionInContainer <>.
+#' @seealso
+#'   [getOCCurve()] for operating characteristics of the plan.
+#' @examples
+#' getSummary(jaspResults, df_plan, planType, depend_variables, positionInContainer)
 getSummary <- function(jaspResults, df_plan, planType, depend_variables, positionInContainer) {
   if (!is.null(jaspResults[[paste0("summaryTable", planType)]])) {
     return()
   }
   summaryTable <- createJaspTable(title = "Detailed acceptance probabilities")
   summaryTable$dependOn(depend_variables)
-  summaryTable$addColumnInfo(name = "col_1", title = "Prop. non-confirming", type = "number")
+  summaryTable$addColumnInfo(name = "col_1", title = "Prop. non-conforming", type = "number")
   summaryTable$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
   summaryTable$setData(list(col_1 = round(df_plan$PD,2), col_2 = round(df_plan$PA,2)))
   summaryTable$showSpecifiedColumnsOnly <- TRUE
@@ -70,7 +96,20 @@ getSummary <- function(jaspResults, df_plan, planType, depend_variables, positio
   jaspResults[[paste0("summaryTable", planType)]] <- summaryTable
 }
 
-# Check if the plan can satisfy the AQL and RQL constraints. Create tabular output.
+# txt = "Check if the plan can satisfy the AQL and RQL constraints. Create tabular output."
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------------------------------
+##  Check if the plan can satisfy the AQL and RQL constraints. Create tabular output.  --
+##---------------------------------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param options <>.
+#' @param planType "Single" or "Mult".
+#' @param depend_variables <>.
+#' @param positionInContainer <>.
+#' @seealso
+#'   [getOCCurve()] for operating characteristics of the plan.
+#' @examples
+#' assessPlan(jaspResults, options, planType, depend_variables, positionInContainer)
 assessPlan <- function(jaspResults, options, planType, depend_variables, positionInContainer) {
   pd_prp <- options[[paste0("pd_prp", planType)]]
   pa_prp <- 1 - options[[paste0("pa_prp", planType)]]
@@ -130,7 +169,24 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
   }
 }
 
-# Create the table showing the specified risk quality levels and the acceptance probabilities for those levels.
+# txt = "Create the table showing the specified risk quality levels and their acceptance probabilities."
+# banner(txt, centre = TRUE, bandChar = "-")
+##-------------------------------------------------------------------------------------------------------------------
+##  Create the table showing the specified risk quality levels and their acceptance probabilities.  --
+##-------------------------------------------------------------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param assess <>.
+#' @param planType "Single" or "Mult".
+#' @param depend_variables <>.
+#' @param pd_prp <>.
+#' @param pa_prp <>.
+#' @param pd_crp <>.
+#' @param pa_crp <>.
+#' @param positionInContainer <>.
+#' @seealso
+#'   [getOCCurve()] for operating characteristics of the plan.
+#' @examples
+#' getRiskPointTable(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer)
 getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer) {
   if (!is.null(jaspResults[[paste0("riskTable", planType)]])) {
     return ()
@@ -148,7 +204,20 @@ getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, p
   jaspResults[[paste0("riskTable", planType)]] <- table
 }
 
-# Generate the operating characteristics curve for the plan.
+# txt = "Generate the operating characteristics curve for the plan."
+# banner(txt, centre = TRUE, bandChar = "-")
+##----------------------------------------------------------------
+##  Generate the operating characteristics curve for the plan.  --
+##----------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param df_plan <>.
+#' @param planType "Single" or "Mult".
+#' @param depend_variables <>.
+#' @param positionInContainer <>.
+#' @seealso
+#'   [getSummaryTable()] for the summary table of the plan.
+#' @examples
+#' getOCCurve(jaspResults, df_plan, planType, depend_variables, positionInContainer)
 getOCCurve <- function(jaspResults, df_plan, planType, depend_variables, positionInContainer) {
   if (!is.null(jaspResults[[paste0("ocCurve", planType)]])) {
     return()
@@ -159,7 +228,7 @@ getOCCurve <- function(jaspResults, df_plan, planType, depend_variables, positio
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
                   ggplot2::geom_point(colour = "black", shape = 19) + 
                   ggplot2::geom_line(colour = "black", linetype = "dashed") +
-                  ggplot2::labs(x = "Proportion non-confirming", y = "P(accept)")
+                  ggplot2::labs(x = "Proportion non-conforming", y = "P(accept)")
                   # ggplot2::theme_classic() +
                   # ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), axis.text.y = ggplot2::element_text(size = 16, color = "black"),
                   #                axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
@@ -169,7 +238,21 @@ getOCCurve <- function(jaspResults, df_plan, planType, depend_variables, positio
   ocCurve$plotObject <- plt
 }
 
-# Generate the average outgoing quality curve for the plan.
+# txt = "Generate the average outgoing quality curve for the plan."
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##  Generate the average outgoing quality curve for the plan.  --
+##---------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param df_plan <>.
+#' @param options <>
+#' @param planType "Single" or "Mult".
+#' @param depend_variables <>.
+#' @param positionInContainer <>.
+#' @seealso
+#'   [getSummaryTable()] for the summary table of the plan.
+#' @examples
+#' getAOQCurve(jaspResults, df_plan, options, planType, depend_variables, positionInContainer)
 getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variables, positionInContainer) {
   if (!is.null(jaspResults[[paste0("aoqCurve", planType)]])) {
     return ()
@@ -219,7 +302,7 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
   aoq_max <- round(max(df_plan$AOQ),2)
   pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
-                         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-confirming", y = "AOQ") +
+                         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "AOQ") +
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
                          ggplot2::annotate("text", label = gettextf("AOQL: %.2f", aoq_max), x = pd_aoq_max*0.9, y = aoq_max*1.1, color = "black", size = 6) +
@@ -229,7 +312,21 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
   aoqCurve$plotObject <- plt
 }
 
-# Generate the average total inspection curve for the plan.
+# txt = "Generate the average total inspection curve for the plan."
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##  Generate the average total inspection curve for the plan.  --
+##---------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param df_plan <>.
+#' @param options <>
+#' @param planType "Single" or "Mult".
+#' @param depend_variables <>.
+#' @param positionInContainer <>.
+#' @seealso
+#'   [getSummaryTable()] for the summary table of the plan.
+#' @examples
+#' getATICurve(jaspResults, df_plan, options, planType, depend_variables, positionInContainer)
 getATICurve <- function(jaspResults, df_plan, options, planType, depend_variables, positionInContainer) {
   if (!is.null(jaspResults[[paste0("atiCurve", planType)]])) {
     return ()
@@ -281,7 +378,7 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
                          ggplot2::geom_point(colour = "black", shape = 19) + 
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
-                         ggplot2::labs(x = "Proportion non-confirming", y = "ATI")
+                         ggplot2::labs(x = "Proportion non-conforming", y = "ATI")
                         #  ggplot2::theme_classic() +
                         #  ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), axis.text.y = ggplot2::element_text(size = 16, color = "black"),
                         #                 axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
@@ -290,7 +387,19 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
   atiCurve$plotObject <- plt
 }
 
-# Generate the average sample number curve for the plan. Only applicable for multiple sampling plans.
+# txt = "Generate the average sample number curve for the plan. Only applicable for multiple sampling plans."
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------------------------------------------------
+##  Generate the average sample number curve for the plan. Only applicable for multiple sampling plans.  --
+##---------------------------------------------------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param options <>
+#' @param depend_variables <>.
+#' @param positionInContainer <>.
+#' @seealso
+#'   [getSummaryTable()] for the summary table of the plan.
+#' @examples
+#' getASNCurve(jaspResults, options, depend_variables, positionInContainer) 
 getASNCurve <- function(jaspResults, options, depend_variables, positionInContainer) {
   if (!is.null(jaspResults[["asnPlot"]])) {
     return ()
@@ -333,7 +442,7 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
   plt <- ggplot2::ggplot(data = df_asn, ggplot2::aes(x = PD, y = ASN)) + 
          ggplot2::geom_point(colour = "black", shape = 19) + 
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
-         ggplot2::labs(x = "Proportion non-confirming", y = "Average Sample Number")
+         ggplot2::labs(x = "Proportion non-conforming", y = "Average Sample Number")
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
   asnPlot$plotObject <- plt

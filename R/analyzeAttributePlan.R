@@ -28,6 +28,19 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
 }
 
+# txt = "Analyze attribute plans"
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##                   Analyze attribute plans                   --
+##---------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param options User specified options.
+#' @param planType "Single" or "Mult".
+#' @returns <>.
+#' @seealso
+#'   [()] for <>.
+#' @examples
+#' .handleAttributePlan(jaspResults, dataset, options)
 .handleAttributePlan <- function(jaspResults, options, planType) {
   plan_variables <- paste0(c("lotSize", "distribution"), planType)
   if (planType != "Mult") {
