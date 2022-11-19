@@ -130,13 +130,13 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
       n <- c <- r <- NULL
       if (planType != "Mult") {
         # Single sampling plan        
-        plan_table$dependOn(paste0(c("sampleSize", "acceptNumber", "rejectNumber"), planType))
+        plan_table$dependOn(paste0(c("sampleSize", "acceptNumber", "rejectNumber", "assessPlan"), planType))
         n <- options[[paste0("sampleSize", planType)]]
         c <- options[[paste0("acceptNumber", planType)]]
         r <- options[[paste0("rejectNumber", planType)]]
       } else {
         # Multiple sampling plan
-        plan_table$dependOn("stages")
+        plan_table$dependOn(c("stages", "assessPlanMult"))
         stages <- options[["stages"]]
         for (i in 1:length(stages)) {
           n[i] <- stages[[i]]$sampleSizeMult
@@ -157,7 +157,8 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
         plan_table$addColumnInfo(name = "table_1_col_3", title = "Cum. Sample Size", type = "integer")
         plan_table$addColumnInfo(name = "table_1_col_4", title = "Acc. Number", type = "integer")
         plan_table$addColumnInfo(name = "table_1_col_5", title = "Rej. Number", type = "integer")
-        plan_table$setData(list(table_1_col_1 = 1:length(stages), table_1_col_2 = n, table_1_col_3 = cumsum(n), table_1_col_4 = c, table_1_col_5 = r))
+        plan_table$setData(list(table_1_col_1 = 1:length(stages), table_1_col_2 = n, table_1_col_3 = cumsum(n), 
+                                table_1_col_4 = c, table_1_col_5 = r))
       }
       plan_table$showSpecifiedColumnsOnly <- TRUE
       plan_table$position <- positionInContainer
@@ -230,8 +231,10 @@ getOCCurve <- function(jaspResults, df_plan, planType, depend_variables, positio
                   ggplot2::geom_line(colour = "black", linetype = "dashed") +
                   ggplot2::labs(x = "Proportion non-conforming", y = "P(accept)")
                   # ggplot2::theme_classic() +
-                  # ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), axis.text.y = ggplot2::element_text(size = 16, color = "black"),
-                  #                axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
+                  # ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), 
+                                  # axis.text.y = ggplot2::element_text(size = 16, color = "black"),
+                                  # axis.title.x = ggplot2::element_text(size = 20, color = "black"), 
+                                  # axis.title.y = ggplot2::element_text(size = 20, color = "black"))
   # plt <- jaspGraphs::themeJasp(plt)
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
@@ -287,6 +290,7 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
     probs_prod <- 1
     cum_n <- 0
     n_def <- pd * N
+    # probs <- getStageWiseProbability()
     for (i in 1:stages) {
       cum_n <- cum_n + n[i]
       p_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
@@ -305,7 +309,8 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
                          ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "AOQ") +
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
-                         ggplot2::annotate("text", label = gettextf("AOQL: %.2f", aoq_max), x = pd_aoq_max*0.9, y = aoq_max*1.1, color = "black", size = 6) +
+                         ggplot2::annotate("text", label = gettextf("AOQL: %.2f", aoq_max), 
+                                            x = pd_aoq_max*0.9, y = aoq_max*1.1, color = "black", size = 6) +
                          ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
@@ -380,8 +385,10 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::labs(x = "Proportion non-conforming", y = "ATI")
                         #  ggplot2::theme_classic() +
-                        #  ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), axis.text.y = ggplot2::element_text(size = 16, color = "black"),
-                        #                 axis.title.x = ggplot2::element_text(size = 20, color = "black"), axis.title.y = ggplot2::element_text(size = 20, color = "black"))
+                        #  ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), 
+                                          # axis.text.y = ggplot2::element_text(size = 16, color = "black"),
+                                          # axis.title.x = ggplot2::element_text(size = 20, color = "black"), 
+                                          # axis.title.y = ggplot2::element_text(size = 20, color = "black"))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
   atiCurve$plotObject <- plt
@@ -424,15 +431,19 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
   ASN <- numeric(num_values)
   probs_prod <- 1
   cum_n <- 0
+  stage_probs <- getStageProbability(n,c,r,pd,"binom")
+  stage_probs <- stage_probs[[1]] + stage_probs[[2]] # Decision prob = p_acc + p_rej
   for (i in 1:(stages-1)) {
     cum_n <- cum_n + n[i]
-    prob_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
+    # prob_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
     # prob_acc_rej_i <- getDecisionProbability(N, n, c, r, dist, pd, n_def, i)
-    pDecide_i <- as.numeric(unlist(prob_acc_rej_i[1]) + unlist(prob_acc_rej_i[2]))
-    ASN <- ASN + cum_n * pDecide_i * probs_prod
-    probs_prod <- probs_prod * (1 - pDecide_i)
+    # pDecide_i <- as.numeric(unlist(prob_acc_rej_i[1]) + unlist(prob_acc_rej_i[2]))
+    # ASN <- ASN + cum_n * pDecide_i * probs_prod
+    # probs_prod <- probs_prod * (1 - pDecide_i)
+    pDecide_i <- stage_probs[i,]
+    ASN <- ASN + pDecide_i * cum_n
   }
-  ASN <- ASN + (cum_n + n[stages]) * probs_prod
+  # ASN <- ASN + (cum_n + n[stages]) * probs_prod
   df_asn <- data.frame(PD = pd, ASN = ASN)
 
   # Draw ASN plot
@@ -446,6 +457,112 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
   asnPlot$plotObject <- plt
+}
+
+getStageProbabilityBinom <- function(pd,n,c,r) {
+  num_stages <- length(n)
+  acc_probs <- matrix(nrow = num_stages, ncol = length(pd))
+  rej_probs <- matrix(nrow = num_stages, ncol = length(pd))
+  k.s <- num_stages ## number of stages in this sampling
+
+  prob.acc <- function(x, n, p){
+    k <- length(x)
+    k1 <- k-2
+    prod(dbinom(x[1:k1], n[1:k1], p))*pbinom(x[k-1], n[k-1], p)
+  }
+
+  prob.rej <- function(x, n, p){
+    k <- length(x)
+    k1 <- k-2
+    prod(dbinom(x[1:k1], n[1:k1], p))*pbinom(x[k], n[k-1], p, lower.tail = FALSE)
+  }
+  
+  for (k in 1:k.s) {
+    ## For each stage, find out all the possibilities which could
+    ## lead to still not having made a decision and then calculate
+    ## the appropriate probabilities.
+
+    if(k==1) {
+      ## Only a single sampling stage to do - this is simple
+      p.acc <- sapply(pd, FUN=function(el) {
+        pbinom(q=c[1],size=n[1],prob=el)})
+      acc_probs[k,] = p.acc
+      p.rej <- sapply(pd, FUN=function(el){
+        pbinom(q=r[1]-1,size=n[1],prob=el, lower.tail = FALSE)})
+      rej_probs[k,] = p.rej
+      ## p.acc and p.rej now exist and can be used in the following stages.
+    }
+    else if (k==2) {
+      ## Two sampling stages. Needs to be handled separately from
+      ## more stages due to matrix dimensions
+      c.s <- c+1 ## Use to calculate limits
+      r.s <- r-1 ## Use to calculate limits
+      ## The possibilities which lead to a decision to be made at
+      ## the second stage
+      x <- data.frame(X1=seq(c.s[1], r.s[1], by=1),
+                      X.acc=c[2]-seq(c.s[1], r.s[1], by=1),
+                      X.rej=r[2]-1-seq(c.s[1], r.s[1], by=1))
+      p.acc_2 <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd))
+      p.acc <- p.acc + p.acc_2
+      acc_probs[k,] = p.acc_2
+      p.rej_2 <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd))
+      p.rej <- p.rej + p.rej_2
+      rej_probs[k,] = p.rej_2
+    }
+    else {
+      ## More than two sampling stages.
+      ## Things are more tricky.
+      c.s <- c+1 ## Use to calculate limits
+      r.s <- r-1 ## Use to calculate limits
+      expand.call <- "expand.grid(c.s[k-1]:r.s[k-1]"
+      for(i in 2:(k-1)){
+        expand.call <- paste(expand.call,paste("c.s[k-",i,"]:r.s[k-",i,"]",sep=""),sep=",")        
+      }
+      expand.call <- paste(expand.call,")",sep="")
+      x <- eval(parse(text=expand.call)[[1]])
+      x <- x[,(k-1):1] # Reverses the order of columns in dataframe x
+      names(x) <- paste("X",1:(k-1),sep="")
+      
+      for(i in ncol(x):2){
+        x[,i] <- x[,i]-x[,i-1]
+      }
+      x <- cbind(x, X.acc=c[k] - rowSums(x[,1:(k-1)]))
+      x <- cbind(x, X.rej=r[k]-1 - rowSums(x[,1:(k-1)]))
+      p.acc_k <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd))
+      p.acc <- p.acc + p.acc_k
+      acc_probs[k,] = p.acc_k
+      p.rej_k <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd))
+      p.rej <- p.rej + p.rej_k
+      rej_probs[k,] = p.rej_k
+    }
+  }
+  return(list(acc_probs,rej_probs))
+}
+
+getStageProbabilityHyper <- function(pd,n,c,r) {
+  return ()
+}
+
+getStageProbabilityPois <- function(pd,n,c,r) {
+  return ()
+}
+
+getStageProbability <- function(n,c,r,pd, dist="binom") {
+  if (dist == "binom") {
+    stage_probs <- sapply(pd, FUN=getStageProbabilityBinom, n=n, c=c, r=r)
+  }
+  # else if (dist == "hypergeom") {
+  #   return ()
+  #   # stage_probs <- sapply(pd, FUN=getStageProbabilityHyper, n=n, c=c, r=r)
+  # } else if (dist == "poisson") {
+  #   return ()
+  #   # stage_probs <- sapply(pd, FUN=getStageProbabilityPois, n=n, c=c, r=r)
+  # }
+  acc <- matrix(unlist(stage_probs[1,]), byrow=FALSE, nrow=length(n))
+  rej <- matrix(unlist(stage_probs[2,]), byrow=FALSE, nrow=length(n))
+  # print(colSums(acc))
+  # print(colSums(rej))
+  return (list(acc,rej))
 }
 
 # Currently in use. Need to modify.
@@ -464,66 +581,4 @@ getProbability <- function(N, n, c, r, dist, pd, n_def) {
     pRej <- ppois(c(r - 1), lambda = pd*n, lower.tail = FALSE)
   }
   return (list(pAcc,pRej))
-}
-
-# TODO [############# IN PROGRESS ##############]
-# getProbBetween <- function(N, n, low, high, dist, pd, n_def) {
-#   prob <- NULL
-#   if (dist == "binom") {
-#     prob <- pbinom(c(high), size = n, prob = pd, lower.tail = TRUE) - pbinom(c(low), size = n, prob = pd, lower.tail = TRUE)
-#   } else if (dist == "hypergeom") {
-#     prob <- phyper(c(high), m = n_def, n = N - n_def, k = n, lower.tail = TRUE) - phyper(c(low), m = n_def, n = N - n_def, k = n, lower.tail = TRUE)  
-#   } else if (dist == "poisson") {
-#     prob <- ppois(c(high), lambda = pd*n, lower.tail = TRUE) - ppois(c(low), lambda = pd*n, lower.tail = TRUE)
-#   }
-#   return (prob)
-# }
-
-# TODO [############# IN PROGRESS ##############]
-getCumulativeProb <- function(N, n, c, dist, pd, n_def, lower_tail) {
-  prob <- NULL
-  if (dist == "binom") {
-    prob <- pbinom(q = c, size = n, prob = pd, lower.tail = lower_tail)
-  } else if (dist == "hypergeom") {
-    prob <- phyper(q = c, m = n_def, n = N - n_def, k = n, lower.tail = lower_tail)
-  } else if (dist == "poisson") {
-    prob <- ppois(q = c, lambda = pd*n, lower.tail = lower_tail)
-  }
-  return (prob)
-}
-
-# TODO [############# IN PROGRESS ##############]
-getPointProb <- function(N, n, c, dist, pd, n_def) {
-  prob <- NULL
-  if (dist == "binom") {
-    prob <- dbinom(x = c, size = n, prob = pd)
-  } else if (dist == "hypergeom") {
-    prob <- dhyper(x = c, m = n_def, n = N - n_def, k = n)
-  } else if (dist == "poisson") {
-    prob <- dpois(x = c, lambda = pd*n)
-  }
-  return (prob)
-}
-
-# TODO [############# IN PROGRESS ##############]
-# Right now, it's taking the previous prob of only the previous stages,
-# but it needs to take the product of the probability of all the previous stages, with d1,d2,.. and so on.
-getDecisionProbability <- function(N, n, c, r, dist, pd, n_def, i) {
-  acc <- NULL
-  rej <- NULL
-  if (i == 1) {
-    acc <- getCumulativeProb(N, n[i], c[i], dist, pd, n_def, TRUE)
-    rej <- getCumulativeProb(N, n[i], r[i] - 1, dist, pd, n_def, FALSE)
-  } else {
-    for (stage in seq(1:i))
-    d_vals <- seq(c[i-1]+1, r[i-1]-1, 1)
-    for (d in d_vals) {
-      prob_prev_d <- getPointProb(N, n[i-1], d, dist, pd, n_def)
-      prob_acc_cur_d <- getCumulativeProb(N, n[i], c[i] - d, dist, pd, n_def, TRUE)
-      acc <- acc + prob_prev_d*prob_acc_cur_d
-      prob_rej_cur_d <- getCumulativeProb(N, n[i], r[i] - d - 1, dist, pd, n_def, FALSE)
-      rej <- rej + prob_prev_d*prob_rej_cur_d
-    }
-  }
-  return (list(acc,rej))
 }

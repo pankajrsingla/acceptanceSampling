@@ -48,22 +48,26 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     # # Create sampling plan with the specified values
     if (dist == "hypergeom") {
       # Need to provide the lot size (N) for hypergeometric distribution.
-      plan_vars <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
+      plan_vars <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
+                                                CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
       plan <- AcceptanceSampling::OC2c(N = options$lotSize, n = plan_vars$n, c = plan_vars$c, r = plan_vars$r, type = dist, pd = pd)
     } else if (dist == "normal") {
       # For now, the selection of normal distribution is disabled.
       # Need to specify standard deviation (whether known or unknown) for normal distribution.
       ## A value of known results in a sampling plan based on the population standard deviation, 
       ## while a value of unknown results in the use of the sample standard deviation.
-      # plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist, s.type = options$stdev)
+      # plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), 
+                                              # CRP = c(options$pd_crp, options$pa_crp), type = dist, s.type = options$stdev)
     } else {
       # Binomial and Poisson distributions don't require lot size (N) or standard deviation.
-      plan_vars <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = dist)
+      plan_vars <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
+                                                CRP = c(options$pd_crp, options$pa_crp), type = dist)
       plan <- AcceptanceSampling::OC2c(n = plan_vars$n, c = plan_vars$c, r = plan_vars$r, type = dist, pd = pd)
     }
     
     df_plan <- data.frame(PD = pd, PA = plan@paccept)
-    .attributePlanTable(jaspResults, names, plan_vars, options$pd_prp, df_plan$PA[df_plan$PD == options$pd_prp], options$pd_crp, df_plan$PA[df_plan$PD == options$pd_crp], positionInContainer=1)
+    .attributePlanTable(jaspResults, names, plan_vars, options$pd_prp, df_plan$PA[df_plan$PD == options$pd_prp], 
+                        options$pd_crp, df_plan$PA[df_plan$PD == options$pd_crp], positionInContainer=1)
 
     # OC Curve
     if (options$showOCCurve) {
@@ -125,7 +129,8 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # Description of the sampling plan:
   if (is.null(jaspResults[["description"]])) {
-    description <- createJaspHtml(text = gettextf("Accept the lot if number of defective items in %d sampled <= %d. Reject otherwise.", plan_vars$n, plan_vars$c),
+    description <- createJaspHtml(text = sprintf("If the number of defective items out of %d sampled is <= %d, accept the lot. Reject otherwise.", 
+                                                 plan_vars$n, plan_vars$c),
                                   dependencies = depend_variables, position = positionInContainer + 2)
     description$position <- 2                                              
     jaspResults[["description"]] <- description
