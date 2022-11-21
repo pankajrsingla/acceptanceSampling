@@ -431,15 +431,10 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
   ASN <- numeric(num_values)
   probs_prod <- 1
   cum_n <- 0
-  stage_probs <- getStageProbability(n,c,r,pd,"binom")
+  stage_probs <- getStageProbability(pd, n, c, r, dist, N)
   stage_probs <- stage_probs[[1]] + stage_probs[[2]] # Decision prob = p_acc + p_rej
   for (i in 1:(stages-1)) {
     cum_n <- cum_n + n[i]
-    # prob_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
-    # prob_acc_rej_i <- getDecisionProbability(N, n, c, r, dist, pd, n_def, i)
-    # pDecide_i <- as.numeric(unlist(prob_acc_rej_i[1]) + unlist(prob_acc_rej_i[2]))
-    # ASN <- ASN + cum_n * pDecide_i * probs_prod
-    # probs_prod <- probs_prod * (1 - pDecide_i)
     pDecide_i <- stage_probs[i,]
     ASN <- ASN + pDecide_i * cum_n
   }
@@ -459,22 +454,49 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
   asnPlot$plotObject <- plt
 }
 
-getStageProbabilityBinom <- function(pd,n,c,r) {
+getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
+  D <- pd*N
   num_stages <- length(n)
   acc_probs <- matrix(nrow = num_stages, ncol = length(pd))
   rej_probs <- matrix(nrow = num_stages, ncol = length(pd))
   k.s <- num_stages ## number of stages in this sampling
 
-  prob.acc <- function(x, n, p){
+  prob.acc <- function(x, n, p, dist, N=1000) {
     k <- length(x)
     k1 <- k-2
-    prod(dbinom(x[1:k1], n[1:k1], p))*pbinom(x[k-1], n[k-1], p)
+    if (dist == "binom") {
+      # k = number of this stage + 2. x[1:k1] will give all values until the last stage before this one. n[1:k1] does the same for n.
+      prob <- prod(dbinom(x[1:k1], n[1:k1], p)) * pbinom(x[k-1], n[k-1], p)
+    } else if (dist == "poisson") {
+      prob <- prod(dpois(x[1:k1], n[1:k1]*p)) * ppois(x[k-1], n[k-1]*p)
+    } else if (dist == "hypergeom") {
+      x.cum <- cumsum(x[1:(k-1)])
+      n.cum <- cumsum(n)
+      N.cum <- N - c(0, n.cum[1:(k-1)])
+      D.cum <- D - c(0, x.cum[1:(k-1)])
+
+      prob <- prod(dhyper(x=x[1:k1], m=pmax(D.cum[1:k1], 0), n=N.cum[1:k1] - pmax(D.cum[1:k1], 0), k=n[1:k1])) *
+              phyper(q=x[k-1], m=pmax(D.cum[k-1], 0), n=N.cum[k-1] - pmax(D.cum[k-1], 0), k=n[k-1])
+    }
+    return (prob)
   }
 
-  prob.rej <- function(x, n, p){
+  prob.rej <- function(x, n, p, dist, N=1000) {
     k <- length(x)
     k1 <- k-2
-    prod(dbinom(x[1:k1], n[1:k1], p))*pbinom(x[k], n[k-1], p, lower.tail = FALSE)
+    if (dist == "binom") {
+      prob <- prod(dbinom(x[1:k1], n[1:k1], p)) * pbinom(x[k], n[k-1], p, lower.tail = FALSE)
+    } else if (dist == "poisson") {
+      prob <- prod(dpois(x[1:k1], n[1:k1]*p)) * ppois(x[k], n[k-1]*p, lower.tail = FALSE)
+    } else if (dist == "hypergeom") {
+      x.cum <- cumsum(x[c(1:(k-2), k)])
+      n.cum <- cumsum(n)
+      N.cum <- N - c(0,n.cum[1:(k-2)])
+      D.cum <- D - c(0,x.cum[1:(k-2)])
+      prob <- prod(dhyper(x=x[1:k1], m=pmax(D.cum[1:k1], 0), n=N.cum[1:k1] - pmax(D.cum[1:k1], 0), k=n[1:k1])) *
+              phyper(q=x[k], m=pmax(D.cum[k-1], 0), n=N.cum[k-1] - pmax(D.cum[k-1], 0), k=n[k-1], lower.tail = FALSE)
+    }
+    return (prob)
   }
   
   for (k in 1:k.s) {
@@ -482,30 +504,46 @@ getStageProbabilityBinom <- function(pd,n,c,r) {
     ## lead to still not having made a decision and then calculate
     ## the appropriate probabilities.
 
-    if(k==1) {
+    if(k == 1) {
       ## Only a single sampling stage to do - this is simple
-      p.acc <- sapply(pd, FUN=function(el) {
-        pbinom(q=c[1],size=n[1],prob=el)})
+      p.acc <- sapply(pd, FUN = function(el) {
+        if (dist == "binom") {
+          return (pbinom(q=c[1], size=n[1], prob=el))
+        } else if (dist == "poisson") {
+          return (ppois(q=c[1], lambda=n[1]*el))
+        } else if (dist == "hypergeom") {
+          el = el * N
+          return (phyper(q=c[1], m=el, n=N-el, k=n[1]))
+        }
+      })
       acc_probs[k,] = p.acc
-      p.rej <- sapply(pd, FUN=function(el){
-        pbinom(q=r[1]-1,size=n[1],prob=el, lower.tail = FALSE)})
+      p.rej <- sapply(pd, FUN = function(el) {
+        if (dist == "binom") {
+          return (pbinom(q=r[1]-1,size=n[1], prob=el, lower.tail = FALSE))
+        } else if (dist == "poisson") {
+          return (ppois(q=r[1]-1, lambda = n[1]*el, lower.tail = FALSE))
+        } else if (dist == "hypergeom") {
+          el = el * N
+          return (phyper(q=r[1]-1, m=el, n=N-el, k=n[1], lower.tail = FALSE))
+        }
+      })
       rej_probs[k,] = p.rej
       ## p.acc and p.rej now exist and can be used in the following stages.
     }
-    else if (k==2) {
+    else if (k == 2) {
       ## Two sampling stages. Needs to be handled separately from
       ## more stages due to matrix dimensions
       c.s <- c+1 ## Use to calculate limits
       r.s <- r-1 ## Use to calculate limits
       ## The possibilities which lead to a decision to be made at
       ## the second stage
-      x <- data.frame(X1=seq(c.s[1], r.s[1], by=1),
-                      X.acc=c[2]-seq(c.s[1], r.s[1], by=1),
-                      X.rej=r[2]-1-seq(c.s[1], r.s[1], by=1))
-      p.acc_2 <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd))
+      x <- data.frame(X1 = seq(c.s[1], r.s[1], by=1),
+                      X.acc = c[2]-seq(c.s[1], r.s[1], by=1),
+                      X.rej = r[2]-1-seq(c.s[1], r.s[1], by=1))
+      p.acc_2 <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd, dist = dist, N=N))
       p.acc <- p.acc + p.acc_2
       acc_probs[k,] = p.acc_2
-      p.rej_2 <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd))
+      p.rej_2 <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd, dist = dist, N=N))
       p.rej <- p.rej + p.rej_2
       rej_probs[k,] = p.rej_2
     }
@@ -515,23 +553,23 @@ getStageProbabilityBinom <- function(pd,n,c,r) {
       c.s <- c+1 ## Use to calculate limits
       r.s <- r-1 ## Use to calculate limits
       expand.call <- "expand.grid(c.s[k-1]:r.s[k-1]"
-      for(i in 2:(k-1)){
-        expand.call <- paste(expand.call,paste("c.s[k-",i,"]:r.s[k-",i,"]",sep=""),sep=",")        
+      for(i in 2:(k-1)) {
+        expand.call <- paste(expand.call, paste("c.s[k-",i,"]:r.s[k-",i,"]", sep=""), sep=",")        
       }
-      expand.call <- paste(expand.call,")",sep="")
+      expand.call <- paste(expand.call,")", sep="")
       x <- eval(parse(text=expand.call)[[1]])
       x <- x[,(k-1):1] # Reverses the order of columns in dataframe x
-      names(x) <- paste("X",1:(k-1),sep="")
+      names(x) <- paste("X", 1:(k-1), sep="")
       
-      for(i in ncol(x):2){
-        x[,i] <- x[,i]-x[,i-1]
+      for(i in ncol(x):2) {
+        x[,i] <- x[,i] - x[,i-1]
       }
-      x <- cbind(x, X.acc=c[k] - rowSums(x[,1:(k-1)]))
-      x <- cbind(x, X.rej=r[k]-1 - rowSums(x[,1:(k-1)]))
-      p.acc_k <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd))
+      x <- cbind(x, X.acc = c[k] - rowSums(x[,1:(k-1)]))
+      x <- cbind(x, X.rej = r[k]-1 - rowSums(x[,1:(k-1)]))
+      p.acc_k <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd, dist = dist, N=N))
       p.acc <- p.acc + p.acc_k
       acc_probs[k,] = p.acc_k
-      p.rej_k <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd))
+      p.rej_k <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd, dist = dist, N=N))
       p.rej <- p.rej + p.rej_k
       rej_probs[k,] = p.rej_k
     }
@@ -539,29 +577,21 @@ getStageProbabilityBinom <- function(pd,n,c,r) {
   return(list(acc_probs,rej_probs))
 }
 
-getStageProbabilityHyper <- function(pd,n,c,r) {
-  return ()
-}
-
-getStageProbabilityPois <- function(pd,n,c,r) {
-  return ()
-}
-
-getStageProbability <- function(n,c,r,pd, dist="binom") {
-  if (dist == "binom") {
-    stage_probs <- sapply(pd, FUN=getStageProbabilityBinom, n=n, c=c, r=r)
-  }
-  # else if (dist == "hypergeom") {
-  #   return ()
-  #   # stage_probs <- sapply(pd, FUN=getStageProbabilityHyper, n=n, c=c, r=r)
-  # } else if (dist == "poisson") {
-  #   return ()
-  #   # stage_probs <- sapply(pd, FUN=getStageProbabilityPois, n=n, c=c, r=r)
-  # }
+getStageProbability <- function(pd, n, c, r, dist, N=1000) {
+  if (dist == "hypergeom") {
+    # Hypergeomtric
+    is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
+      abs(x - round(x)) < tol
+    }
+    D <- N * pd
+    if(!all(is.wholenumber(N), is.wholenumber(D))) {
+      warning("N and D (or N*pd) should be integers.")
+      return ()
+    }    
+  } 
+  stage_probs <- sapply(pd, FUN=getStageProbabilityHelper, n=n, c=c, r=r, dist=dist, N=N)
   acc <- matrix(unlist(stage_probs[1,]), byrow=FALSE, nrow=length(n))
   rej <- matrix(unlist(stage_probs[2,]), byrow=FALSE, nrow=length(n))
-  # print(colSums(acc))
-  # print(colSums(rej))
   return (list(acc,rej))
 }
 
