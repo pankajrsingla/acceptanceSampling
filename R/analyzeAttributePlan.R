@@ -95,8 +95,8 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
   # ASN Curve (only for multiple sampling plan)
   if (options[["showASNCurveMult"]]) {
-    debug <- createJaspHtml(text = toString(c(plan_variables, pd_variables, output_variables[6])), position = 1)
-    jaspResults[["debug"]] <- debug
+    # debug <- createJaspHtml(text = toString(c(plan_variables, pd_variables, output_variables[6])), position = 1)
+    # jaspResults[["debug"]] <- debug
     getASNCurve(jaspResults, options, c(plan_variables, pd_variables, output_variables[6]), positionInContainer=7)
   }
 }
