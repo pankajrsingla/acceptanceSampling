@@ -50,7 +50,7 @@ getPlanDf <- function(options, planType, returnPlan=FALSE) {
   pd_upper <- options[[paste0("pd_upper", planType)]]
   pd_step <- options[[paste0("pd_step", planType)]]
   pd <- seq(pd_lower, pd_upper, pd_step)
-  dist = options[[paste0("distribution", planType)]]
+  dist <- options[[paste0("distribution", planType)]]
 
   plan <- NULL
   if (dist == "hypergeom") {
@@ -241,11 +241,11 @@ getOCCurve <- function(jaspResults, df_plan, planType, depend_variables, positio
   ocCurve$plotObject <- plt
 }
 
-# txt = "Generate the average outgoing quality curve for the plan."
+# txt = "Generate the average outgoing quality curve for plan with rectification."
 # banner(txt, centre = TRUE, bandChar = "-")
-##---------------------------------------------------------------
-##  Generate the average outgoing quality curve for the plan.  --
-##---------------------------------------------------------------
+##------------------------------------------------------------------------------
+##  Generate the average outgoing quality curve for plan with rectification.  --
+##------------------------------------------------------------------------------
 #' @param jaspResults <>.
 #' @param df_plan <>.
 #' @param options <>
@@ -288,17 +288,19 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
   } else {
     stages <- length(n)
     probs_prod <- 1
-    cum_n <- 0
-    n_def <- pd * N
-    # probs <- getStageWiseProbability()
+    cum_n <- cumsum(n)
+    stage_probs <- getStageProbability(pd, n, c, r, dist, N, jaspResults, depend_variables)
+    if (is.null(stage_probs)) {
+      if (is.null(jaspResults[["aoq_error"]])) {
+        aoq_error <- createJaspHtml(text = sprintf("Error: Can not calculate AOQ. Check the plan parameters."), dependencies = depend_variables, position = positionInContainer)
+        jaspResults[["aoq_error"]] <- aoq_error
+        return ()
+      }      
+    }
+    stage_probs <- stage_probs[[1]] # We only need acceptance probability.
     for (i in 1:stages) {
-      cum_n <- cum_n + n[i]
-      p_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
-      # p_acc_rej_i <- getDecisionProbability(N, n, c, r, dist, pd, n_def, i)
-      pAcc_i <- unlist(p_acc_rej_i[1])
-      pDecide_i <- pAcc_i + unlist(p_acc_rej_i[2])
-      AOQ <- AOQ + (N - cum_n) * pAcc_i * probs_prod
-      probs_prod <- probs_prod * (1 - pDecide_i)
+      pAcc_i <- stage_probs[i,] # Acceptance probability for ith stage
+      AOQ <- AOQ + (pAcc_i * (N - cum_n[i]))      
     }
     AOQ <- AOQ * pd / N
   }
@@ -365,19 +367,22 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
   } else {
     # Multiple plan
     stages <- length(n)
-    probs_prod <- 1
-    cum_n <- 0
-    n_def <- pd * N
-    for (i in 1:stages) {
-      cum_n <- cum_n + n[i]
-      p_acc_rej_i <- getProbability(N, n[i], c[i], r[i], dist, pd, n_def)
-      # p_acc_rej_i <- getDecisionProbability(N, n, c, r, dist, pd, n_def, i)
-      pAcc_i <- unlist(p_acc_rej_i[1])
-      pRej_i <- unlist(p_acc_rej_i[2])
-      pDecide_i <- pAcc_i + pRej_i
-      ATI <- ATI + (pAcc_i * cum_n + pRej_i * N) * probs_prod
-      probs_prod <- probs_prod * (1 - pDecide_i)
+    cum_n <- cumsum(n)
+    stage_probs <- getStageProbability(pd, n, c, r, dist, N, jaspResults, depend_variables)
+    if (is.null(stage_probs)) {
+      if (is.null(jaspResults[["ati_error"]])) {
+        ati_error <- createJaspHtml(text = sprintf("Error: Can not calculate ATI. Check the plan parameters."), dependencies = depend_variables, position = positionInContainer)
+        jaspResults[["ati_error"]] <- ati_error
+        return ()
+      }      
     }
+    acc_probs <- stage_probs[[1]] # Acceptance probabilities
+    rej_probs <- stage_probs[[2]] # Rejection probabilities
+    for (i in 1:stages) {
+      pAcc_i <- acc_probs[i,]
+      ATI <- ATI + (pAcc_i * cum_n[i])      
+    }
+    ATI <- ATI + N * colSums(rej_probs) # For any stage, if lot gets rejected, all N items are inspected under rectification plan.
   }
   df_plan$ATI <- ATI
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
@@ -411,6 +416,10 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
   if (!is.null(jaspResults[["asnPlot"]])) {
     return ()
   }
+  asnPlot <- createJaspPlot(title = "ASN Curve for multiple sampling plan",  width = 480, height = 320)
+  asnPlot$dependOn(depend_variables)
+  jaspResults[["asnPlot"]] <- asnPlot
+
   # Parse option values
   n <- c <- r <- NULL
   stages <- options[["stages"]]
@@ -425,26 +434,26 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
   pd_upper <- options$pd_upperMult
   pd_step <- options$pd_stepMult
   pd = seq(pd_lower, pd_upper, pd_step)
-  n_def <- pd * N
   stages <- length(n)
   num_values <- length(pd)
   ASN <- numeric(num_values)
-  probs_prod <- 1
-  cum_n <- 0
-  stage_probs <- getStageProbability(pd, n, c, r, dist, N)
+  cum_n <- cumsum(n)
+  stage_probs <- getStageProbability(pd, n, c, r, dist, N, jaspResults, depend_variables)
+  if (is.null(stage_probs)) {
+    if (is.null(jaspResults[["asn_error"]])) {
+        asn_error <- createJaspHtml(text = sprintf("Error: Can not calculate ASN. Check the plan parameters."), dependencies = depend_variables, position = positionInContainer)
+        jaspResults[["asn_error"]] <- asn_error
+        return ()
+      }
+  }
   stage_probs <- stage_probs[[1]] + stage_probs[[2]] # Decision prob = p_acc + p_rej
   for (i in 1:(stages-1)) {
-    cum_n <- cum_n + n[i]
     pDecide_i <- stage_probs[i,]
-    ASN <- ASN + pDecide_i * cum_n
+    ASN <- ASN + pDecide_i * cum_n[i]
   }
-  # ASN <- ASN + (cum_n + n[stages]) * probs_prod
   df_asn <- data.frame(PD = pd, ASN = ASN)
 
   # Draw ASN plot
-  asnPlot <- createJaspPlot(title = "ASN Curve for multiple sampling plan",  width = 480, height = 320)
-  asnPlot$dependOn(depend_variables)
-  jaspResults[["asnPlot"]] <- asnPlot
   plt <- ggplot2::ggplot(data = df_asn, ggplot2::aes(x = PD, y = ASN)) + 
          ggplot2::geom_point(colour = "black", shape = 19) + 
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
@@ -454,6 +463,21 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
   asnPlot$plotObject <- plt
 }
 
+# txt = "Helper function to get stagewise acceptance and rejection probabilities for the plan."
+# banner(txt, centre = TRUE, bandChar = "-")
+##-------------------------------------------------------------------------------------------
+##  Helper function to get stagewise acceptance and rejection probabilities for the plan.  --
+##-------------------------------------------------------------------------------------------
+#' @param pd <>.
+#' @param n <>.
+#' @param c <>.
+#' @param r <>.
+#' @param dist <>.
+#' @param N <>.
+#' @seealso
+#'   [getStageProbability()] for getting stagewise acceptance and rejection probabilities of the plan.
+#' @examples
+#' getStageProbabilityHelper(pd, n, c, r, dist, N)
 getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
   D <- pd*N
   num_stages <- length(n)
@@ -577,18 +601,37 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
   return(list(acc_probs,rej_probs))
 }
 
-getStageProbability <- function(pd, n, c, r, dist, N=1000) {
-  if (dist == "hypergeom") {
-    # Hypergeomtric
-    is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
-      abs(x - round(x)) < tol
-    }
-    D <- N * pd
-    if(!all(is.wholenumber(N), is.wholenumber(D))) {
-      warning("N and D (or N*pd) should be integers.")
-      return ()
-    }    
-  } 
+# txt = "Get stagewise acceptance and rejection probabilities for the plan."
+# banner(txt, centre = TRUE, bandChar = "#")
+##------------------------------------------------------------------------
+##  Get stagewise acceptance and rejection probabilities for the plan.  --
+##------------------------------------------------------------------------
+#' @param pd <>.
+#' @param n <>.
+#' @param c <>.
+#' @param r <>.
+#' @param dist <>.
+#' @param N <>.
+#' @param jaspResults <>.
+#' @param depend_variables <>.
+#' @seealso
+#'   [getOCCurve()] for operating characteristics of the plan.
+#' @examples
+#' getStageProbability(pd, n, c, r, dist, N, jaspResults, depend_variables)
+getStageProbability <- function(pd, n, c, r, dist, N=1000, jaspResults, depend_variables) {
+  # if (dist == "hypergeom") {
+  #   # Hypergeomtric
+  #   is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
+  #     abs(x - round(x)) < tol
+  #   }
+  #   D <- N * pd
+  #   if(!all(is.wholenumber(N), is.wholenumber(D))) {
+  #     hypergeom_error <- createJaspHtml(text = sprintf("Error: Can not calculate stagewise probability. N*pd should be integer values. Check the values of N and pd."), 
+                                          # dependencies = depend_variables, position = 1)
+  #     jaspResults[["hypergeom_error"]] <- hypergeom_error
+  #     return ()
+  #   }    
+  # } 
   stage_probs <- sapply(pd, FUN=getStageProbabilityHelper, n=n, c=c, r=r, dist=dist, N=N)
   acc <- matrix(unlist(stage_probs[1,]), byrow=FALSE, nrow=length(n))
   rej <- matrix(unlist(stage_probs[2,]), byrow=FALSE, nrow=length(n))

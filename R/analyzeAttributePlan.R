@@ -17,13 +17,12 @@
 
 AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Single sampling plan
-  if ((options$sampleSizeSingle > 0) && (options$acceptNumberSingle > 0)) {
+  if ((options$sampleSizeSingle > 0) && (options$acceptNumberSingle >= 0)) {
     .handleAttributePlan(jaspResults, options, "Single")
   }
 
   # Multiple sampling plan
   if (length(options$stages) > 1) {
-  # if (length(options$sampleSizeMult) > 0 && length(options$acceptNumberMult) > 0 && length(options$rejectNumberMult > 0)) {
     .handleAttributePlan(jaspResults, options, "Mult")
   }
 }
@@ -43,12 +42,31 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #' .handleAttributePlan(jaspResults, dataset, options)
 .handleAttributePlan <- function(jaspResults, options, planType) {
   plan_variables <- paste0(c("lotSize", "distribution"), planType)
+  pd_variables <- paste0(c("pd_lower", "pd_upper", "pd_step"), planType)
+  if (options[[plan_variables[2]]] == "hypergeom") {
+    # Error handling for hypergeometric distribution
+    pd_lower <- options[[pd_variables[1]]]
+    pd_upper <- options[[pd_variables[2]]]
+    pd_step <- options[[pd_variables[3]]]
+    pd <- seq(pd_lower, pd_upper, pd_step)
+    N <- options[[paste0("lotSize", planType)]]
+    is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
+      abs(x - round(x)) < tol
+    }
+    D <- N * pd
+    if(!all(is.wholenumber(N), is.wholenumber(D))) {
+      if (is.null(jaspResults[["hypergeom_error"]])) {
+        hypergeom_error <- createJaspHtml(text = sprintf("Error: Can not plot ASN curve. N*pd should be integer values. Check the values of N and pd."), dependencies = depend_variables, position = 1)
+        jaspResults[["hypergeom_error"]] <- hypergeom_error
+        return ()
+      }
+    }
+  }
   if (planType != "Mult") {
     plan_variables <- c(plan_variables, paste0(c("sampleSize", "acceptNumber", "rejectNumber"), planType))
   } else {
     plan_variables <- c(plan_variables, "stages")
   }
-  pd_variables <- paste0(c("pd_lower", "pd_upper", "pd_step"), planType)
   risk_variables <- paste0(c("pd_prp", "pa_prp", "pd_crp", "pa_crp"), planType)
   output_variables <- paste0(c("showOCCurve", "showSummary", "assessPlan", "showAOQCurve", "showATICurve", "showASNCurve"), planType)
   
@@ -77,6 +95,8 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
   # ASN Curve (only for multiple sampling plan)
   if (options[["showASNCurveMult"]]) {
+    debug <- createJaspHtml(text = toString(c(plan_variables, pd_variables, output_variables[6])), position = 1)
+    jaspResults[["debug"]] <- debug
     getASNCurve(jaspResults, options, c(plan_variables, pd_variables, output_variables[6]), positionInContainer=7)
   }
 }
