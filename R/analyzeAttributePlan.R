@@ -16,14 +16,31 @@
 #
 
 AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
+  plan_variables <- c("lotSize", "distribution")
+  pd_variables <- c("pd_lower", "pd_upper", "pd_step")
+  
   # Single sampling plan
   if ((options$sampleSizeSingle > 0) && (options$acceptNumberSingle >= 0)) {
-    .handleAttributePlan(jaspResults, options, "Single")
+    plan_vars_single <- c(plan_variables, "sampleSize", "acceptNumber", "rejectNumber")
+    plan_vars_single <- paste0(plan_vars_single, "Single")
+    pd_vars_single <- paste0(pd_variables, "Single")
+    singleContainer <- createJaspContainer(title = "Single Sampling Plan")
+    # Common dependencies for all single plans
+    singleContainer$dependOn(c(plan_vars_single, pd_vars_single))
+    jaspResults[["singleContainer"]] <- singleContainer
+    .handleAttributePlan(singleContainer, options, plan_vars_single, pd_vars_single, "Single", position=0)
   }
 
   # Multiple sampling plan
   if (length(options$stages) > 1) {
-    .handleAttributePlan(jaspResults, options, "Mult")
+    plan_vars_mult <- paste0(plan_variables, "Mult")
+    plan_vars_mult <- c(plan_vars_mult, "stages")
+    pd_vars_mult <- paste0(pd_variables, "Mult")
+    multipleContainer <- createJaspContainer(title = "Multiple Sampling Plan")
+    # Common dependencies for all multiple plans
+    multipleContainer$dependOn(c(plan_vars_mult, pd_vars_mult))
+    jaspResults[["multipleContainer"]] <- multipleContainer
+    .handleAttributePlan(multipleContainer, options, plan_vars_mult, pd_vars_mult, "Mult", position=100)
   }
 }
 
@@ -32,18 +49,16 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##---------------------------------------------------------------
 ##                   Analyze attribute plans                   --
 ##---------------------------------------------------------------
-#' @param jaspResults <>.
+#' @param jaspContainer <>.
 #' @param options User specified options.
 #' @param planType "Single" or "Mult".
 #' @returns <>.
 #' @seealso
 #'   [()] for <>.
 #' @examples
-#' .handleAttributePlan(jaspResults, dataset, options)
-.handleAttributePlan <- function(jaspResults, options, planType) {
-  plan_variables <- paste0(c("lotSize", "distribution"), planType)
-  pd_variables <- paste0(c("pd_lower", "pd_upper", "pd_step"), planType)
-  if (options[[plan_variables[2]]] == "hypergeom") {
+#' .handleAttributePlan(jaspContainer, dataset, options)
+.handleAttributePlan <- function(jaspContainer, options, plan_variables, pd_variables, planType, position) {
+  if (options[[paste0("distribution", planType)]] == "hypergeom") {
     # Error handling for hypergeometric distribution
     pd_lower <- options[[pd_variables[1]]]
     pd_upper <- options[[pd_variables[2]]]
@@ -54,18 +69,10 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
       abs(x - round(x)) < tol
     }
     D <- N * pd
-    if(!all(is.wholenumber(N), is.wholenumber(D))) {
-      if (is.null(jaspResults[["hypergeom_error"]])) {
-        hypergeom_error <- createJaspHtml(text = sprintf("Error: Can not plot ASN curve. N*pd should be integer values. Check the values of N and pd."), dependencies = depend_variables, position = 1)
-        jaspResults[["hypergeom_error"]] <- hypergeom_error
+    if (!all(is.wholenumber(N), is.wholenumber(D))) {
+        jaspContainer$setError(sprintf("Error: Can not plot ASN curve. N*pd should be integer values. Check the values of N and pd."))
         return ()
-      }
     }
-  }
-  if (planType != "Mult") {
-    plan_variables <- c(plan_variables, paste0(c("sampleSize", "acceptNumber", "rejectNumber"), planType))
-  } else {
-    plan_variables <- c(plan_variables, "stages")
   }
   risk_variables <- paste0(c("pd_prp", "pa_prp", "pd_crp", "pa_crp"), planType)
   output_variables <- paste0(c("showOCCurve", "showSummary", "assessPlan", "showAOQCurve", "showATICurve", "showASNCurve"), planType)
@@ -74,29 +81,27 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   df_plan <- getPlanDf(options, planType, FALSE)
 
   # OC Curve
-  if (options[[paste0("showOCCurve", planType)]]) {
-    getOCCurve(jaspResults, df_plan, planType, c(plan_variables, pd_variables, output_variables[1]), positionInContainer=4)
+  if (options[[output_variables[1]]]) {
+    getOCCurve(jaspContainer, df_plan, planType, output_variables[1], positionInContainer=position+4)
   }
   # Plan summary
-  if (options[[paste0("showSummary", planType)]]) {
-    getSummary(jaspResults, df_plan, planType, c(plan_variables, pd_variables, output_variables[2]), positionInContainer=3)
+  if (options[[output_variables[2]]]) {
+    getSummary(jaspContainer, df_plan, planType, output_variables[2], positionInContainer=position+3)
   }
   # Assess plan
-  if (options[[paste0("assessPlan", planType)]]) {
-    assessPlan(jaspResults, options, planType, c(plan_variables, risk_variables, output_variables[3]), positionInContainer=1)
+  if (options[[output_variables[3]]]) {
+    assessPlan(jaspContainer, options, planType, c(risk_variables, output_variables[3]), positionInContainer=position+1)
   }
   # AOQ Curve
-  if (options[[paste0("showAOQCurve", planType)]]) {
-    getAOQCurve(jaspResults, df_plan, options, planType, c(plan_variables, pd_variables, output_variables[4]), positionInContainer=5)
+  if (options[[output_variables[4]]]) {
+    getAOQCurve(jaspContainer, df_plan, options, planType, output_variables[4], positionInContainer=position+5)
   }
   # ATI Curve
-  if (options[[paste0("showATICurve", planType)]]) {
-    getATICurve(jaspResults, df_plan, options, planType, c(plan_variables, pd_variables, output_variables[5]), positionInContainer=6)
+  if (options[[output_variables[5]]]) {
+    getATICurve(jaspContainer, df_plan, options, planType, output_variables[5], positionInContainer=position+6)
   }
   # ASN Curve (only for multiple sampling plan)
-  if (options[["showASNCurveMult"]]) {
-    # debug <- createJaspHtml(text = toString(c(plan_variables, pd_variables, output_variables[6])), position = 1)
-    # jaspResults[["debug"]] <- debug
-    getASNCurve(jaspResults, options, c(plan_variables, pd_variables, output_variables[6]), positionInContainer=7)
+  if (options[[output_variables[6]]]) {
+    getASNCurve(jaspContainer, options, output_variables[6], positionInContainer=position+7)
   }
 }

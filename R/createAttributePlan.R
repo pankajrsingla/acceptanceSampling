@@ -16,6 +16,22 @@
 #
 
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
+  if (options$pd_prp > options$pd_crp) {
+    if (is.null(jaspResults[["pd_error"]])) {
+      pd_error <- createJaspHtml(text = sprintf("Error: AQL (Acceptable Quality Level) can not be greater than RQL (Rejectable Quality Level)."), 
+                                dependencies = c("pd_prp", "pd_crp"), position = 1)
+      jaspResults[["pd_error"]] <- pd_error
+      return ()
+    }    
+  }
+  if ((1 - options$pa_prp) < options$pa_crp) {
+    if (is.null(jaspResults[["pa_error"]])) {
+      pa_error <- createJaspHtml(text = sprintf("Error: Probability of lot acceptance at AQL (Acceptable Quality Level) can not be lower than the probability of lot acceptance at RQL (Rejectable Quality Level)."), 
+                                dependencies = c("pa_prp", "pa_crp"), position = 1)
+      jaspResults[["pa_error"]] <- pa_error
+      return ()
+    }    
+  }
   optionNames <- c("lotSize", "pd_lower", "pd_upper", "pd_step", "pd_prp", "pa_prp", "pd_crp", "pa_crp", "distribution")
   .findPlan(jaspResults, options, optionNames)
 }
@@ -44,7 +60,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     dist = options$distribution
     plan_vars <- NULL
     plan <- NULL
-      
+    
     # # Create sampling plan with the specified values
     if (dist == "hypergeom") {
       # Need to provide the lot size (N) for hypergeometric distribution.
