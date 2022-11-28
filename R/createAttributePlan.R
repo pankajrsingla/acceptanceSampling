@@ -15,19 +15,33 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# txt = "Create attribute plan"
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##                    Create attribute plan                    --
+##---------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param dataset <>.
+#' @param options User specified options.
+#' @returns <>.
+#' @seealso
+#'   [()] for <>.
+#' @examples
+#' CreateAttributePlan(jaspResults, dataset, options)
+##---------------------------------------------------------------
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   if (options$pd_prp > options$pd_crp) {
     if (is.null(jaspResults[["pd_error"]])) {
-      pd_error <- createJaspHtml(text = sprintf("Error: AQL (Acceptable Quality Level) can not be greater than RQL (Rejectable Quality Level)."), 
-                                dependencies = c("pd_prp", "pd_crp"), position = 1)
+      pd_error <- createJaspTable(title = "", dependencies = c("pd_prp", "pd_crp"), position = 1)
+      pd_error$setError(sprintf("Error: AQL (Acceptable Quality Level) can not be greater than RQL (Rejectable Quality Level)."))
       jaspResults[["pd_error"]] <- pd_error
       return ()
     }    
   }
   if ((1 - options$pa_prp) < options$pa_crp) {
     if (is.null(jaspResults[["pa_error"]])) {
-      pa_error <- createJaspHtml(text = sprintf("Error: Probability of lot acceptance at AQL (Acceptable Quality Level) can not be lower than the probability of lot acceptance at RQL (Rejectable Quality Level)."), 
-                                dependencies = c("pa_prp", "pa_crp"), position = 1)
+      pa_error <- createJaspTable(title = "", dependencies = c("pa_prp", "pa_crp"), position = 2)
+      pa_error$setError(sprintf("Error: Probability of lot acceptance at AQL (Acceptable Quality Level) can not be lower than the probability of lot acceptance at RQL (Rejectable Quality Level)."))
       jaspResults[["pa_error"]] <- pa_error
       return ()
     }    
@@ -49,6 +63,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #'   [()] for <>.
 #' @examples
 #' .findPlan(jaspResults, options, names)
+##----------------------------------------------------------------------------------
 .findPlan <- function(jaspResults, options, names) {
   if (options$pd_prp && options$pa_prp && options$pd_crp && options$pa_crp) {
     pd_lower <- options$pd_lower

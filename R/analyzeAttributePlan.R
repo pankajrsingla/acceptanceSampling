@@ -15,6 +15,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# txt = "Analyze single stage and multiple stage attribute plans"
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##   Analyze single stage and multiple stage attribute plans   --
+##---------------------------------------------------------------
+#' @param jaspResults <>.
+#' @param dataset <>.
+#' @param options "Single" or "Mult".
+#' @seealso
+#'   [getOCCurve()] for operating characteristics of the plan.
+#' @examples
+#' AnalyzeAttributePlan(jaspResults, dataset, optionss)
+##---------------------------------------------------------------
 AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   plan_variables <- c("lotSize", "distribution")
   pd_variables <- c("pd_lower", "pd_upper", "pd_step")
@@ -51,12 +64,16 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##---------------------------------------------------------------
 #' @param jaspContainer <>.
 #' @param options User specified options.
+#' @param plan_variables <>
+#' @param pd_variables <>
 #' @param planType "Single" or "Mult".
+#' @param position <>
 #' @returns <>.
 #' @seealso
 #'   [()] for <>.
 #' @examples
-#' .handleAttributePlan(jaspContainer, dataset, options)
+#' .handleAttributePlan(jaspContainer, options, plan_variables, pd_variables, planType, position)
+##---------------------------------------------------------------
 .handleAttributePlan <- function(jaspContainer, options, plan_variables, pd_variables, planType, position) {
   if (options[[paste0("distribution", planType)]] == "hypergeom") {
     # Error handling for hypergeometric distribution
@@ -70,8 +87,12 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     }
     D <- N * pd
     if (!all(is.wholenumber(N), is.wholenumber(D))) {
-        jaspContainer$setError(sprintf("Error: Can not plot ASN curve. N*pd should be integer values. Check the values of N and pd."))
+      if (is.null(jaspContainer[["hypergeom_error"]])) {
+        hypergeom_error <- createJaspTable(title = "", dependencies = paste0(c(pd_variables, "lotSize", "distribution"), planType), position = position)
+        hypergeom_error$setError(sprintf("%s\n%s", "Error: Invalid input. Can not analyze plan. N*pd should be integer values.", "Check the values of N and pd."))
+        jaspContainer[["hypergeom_error"]] <- hypergeom_error
         return ()
+      }
     }
   }
   risk_variables <- paste0(c("pd_prp", "pa_prp", "pd_crp", "pa_crp"), planType)

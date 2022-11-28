@@ -73,7 +73,7 @@ getPlanDf <- function(options, planType, returnPlan=FALSE) {
 ##---------------------------------------------------------------
 ##            Generate a summary table for the plan            --
 ##---------------------------------------------------------------
-#' @param jaspResults <>.
+#' @param jaspContainer <>.
 #' @param df_plan <>.
 #' @param planType "Single" or "Mult".
 #' @param depend_variables <>.
@@ -81,19 +81,20 @@ getPlanDf <- function(options, planType, returnPlan=FALSE) {
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' getSummary(jaspResults, df_plan, planType, depend_variables, positionInContainer)
-getSummary <- function(jaspResults, df_plan, planType, depend_variables, positionInContainer) {
-  if (!is.null(jaspResults[[paste0("summaryTable", planType)]])) {
+#' getSummary(jaspContainer, df_plan, planType, depend_variables, positionInContainer)
+##---------------------------------------------------------------
+getSummary <- function(jaspContainer, df_plan, planType, depend_variables, positionInContainer) {
+  if (!is.null(jaspContainer[[paste0("summaryTable", planType)]])) {
     return()
   }
-  summaryTable <- createJaspTable(title = "Detailed acceptance probabilities")
+  summaryTable <- createJaspTable(title = "Acceptance Probabilities")
   summaryTable$dependOn(depend_variables)
   summaryTable$addColumnInfo(name = "col_1", title = "Prop. non-conforming", type = "number")
   summaryTable$addColumnInfo(name = "col_2", title = " P(accept)", type = "number")
-  summaryTable$setData(list(col_1 = round(df_plan$PD,2), col_2 = round(df_plan$PA,2)))
+  summaryTable$setData(list(col_1 = df_plan$PD, col_2 = round(df_plan$PA,3)))
   summaryTable$showSpecifiedColumnsOnly <- TRUE
   summaryTable$position <- positionInContainer
-  jaspResults[[paste0("summaryTable", planType)]] <- summaryTable
+  jaspContainer[[paste0("summaryTable", planType)]] <- summaryTable
 }
 
 # txt = "Check if the plan can satisfy the AQL and RQL constraints. Create tabular output."
@@ -101,7 +102,7 @@ getSummary <- function(jaspResults, df_plan, planType, depend_variables, positio
 ##---------------------------------------------------------------------------------------
 ##  Check if the plan can satisfy the AQL and RQL constraints. Create tabular output.  --
 ##---------------------------------------------------------------------------------------
-#' @param jaspResults <>.
+#' @param jaspContainer <>.
 #' @param options <>.
 #' @param planType "Single" or "Mult".
 #' @param depend_variables <>.
@@ -109,8 +110,9 @@ getSummary <- function(jaspResults, df_plan, planType, depend_variables, positio
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' assessPlan(jaspResults, options, planType, depend_variables, positionInContainer)
-assessPlan <- function(jaspResults, options, planType, depend_variables, positionInContainer) {
+#' assessPlan(jaspContainer, options, planType, depend_variables, positionInContainer)
+##---------------------------------------------------------------------------------------
+assessPlan <- function(jaspContainer, options, planType, depend_variables, positionInContainer) {
   pd_prp <- options[[paste0("pd_prp", planType)]]
   pa_prp <- 1 - options[[paste0("pa_prp", planType)]]
   pd_crp <- options[[paste0("pd_crp", planType)]]
@@ -125,7 +127,7 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
 
     # Create and fill the output tables
     # 1. Sampling plan table
-    if (is.null(jaspResults[[paste0("plan_table", planType)]])) {
+    if (is.null(jaspContainer[[paste0("plan_table", planType)]])) {
       plan_table <- createJaspTable(title = "Acceptance Sampling Plan")
       n <- c <- r <- NULL
       if (planType != "Mult") {
@@ -148,9 +150,8 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
       if (planType != "Mult") {
         plan_table$addColumnInfo(name = "table_1_col_1", title = "", type = "string")
         plan_table$addColumnInfo(name = "table_1_col_2", title = "Value", type = "integer")
-        plan_table$addRows(list("table_1_col_1" = "Sample size(s)", "table_1_col_2" = n))
-        plan_table$addRows(list("table_1_col_1" = "Acc. Number(s)", "table_1_col_2" = c))
-        # plan_table$addRows(list("table_1_col_1" = "Rej. Number(s)", "table_1_col_2" = r))
+        plan_table$addRows(list("table_1_col_1" = "Sample size", "table_1_col_2" = n))
+        plan_table$addRows(list("table_1_col_1" = "Acceptance Number", "table_1_col_2" = c))        
       } else {
         plan_table$addColumnInfo(name = "table_1_col_1", title = "Sample", type = "integer")
         plan_table$addColumnInfo(name = "table_1_col_2", title = "Sample Size", type = "integer")
@@ -162,11 +163,11 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
       }
       plan_table$showSpecifiedColumnsOnly <- TRUE
       plan_table$position <- positionInContainer
-      jaspResults[[paste0("plan_table", planType)]] <- plan_table
+      jaspContainer[[paste0("plan_table", planType)]] <- plan_table
     }
 
     # 2. Table with the specified and actual acceptance probabilities
-    getRiskPointTable(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer+1)
+    getRiskPointTable(jaspContainer, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer+1)
   }
 }
 
@@ -175,7 +176,7 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
 ##-------------------------------------------------------------------------------------------------------------------
 ##  Create the table showing the specified risk quality levels and their acceptance probabilities.  --
 ##-------------------------------------------------------------------------------------------------------------------
-#' @param jaspResults <>.
+#' @param jaspContainer <>.
 #' @param assess <>.
 #' @param planType "Single" or "Mult".
 #' @param depend_variables <>.
@@ -187,9 +188,10 @@ assessPlan <- function(jaspResults, options, planType, depend_variables, positio
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' getRiskPointTable(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer)
-getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer) {
-  if (!is.null(jaspResults[[paste0("riskTable", planType)]])) {
+#' getRiskPointTable(jaspContainer, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer)
+##-------------------------------------------------------------------------------------------------------------------
+getRiskPointTable <- function(jaspContainer, assess, planType, depend_variables, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer) {
+  if (!is.null(jaspContainer[[paste0("riskTable", planType)]])) {
     return ()
   }
   table <- createJaspTable(title = as.character(assess[8]))
@@ -202,7 +204,7 @@ getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, p
   table$addRows(list("col_1" = "CRP", "col_2" = pd_crp, "col_3" = pd_crp, "col_4" = as.numeric(unlist(strsplit(assess[12], " +"))[4])))
   table$showSpecifiedColumnsOnly <- TRUE
   table$position <- positionInContainer
-  jaspResults[[paste0("riskTable", planType)]] <- table
+  jaspContainer[[paste0("riskTable", planType)]] <- table
 }
 
 # txt = "Generate the operating characteristics curve for the plan."
@@ -210,7 +212,7 @@ getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, p
 ##----------------------------------------------------------------
 ##  Generate the operating characteristics curve for the plan.  --
 ##----------------------------------------------------------------
-#' @param jaspResults <>.
+#' @param jaspContainer <>.
 #' @param df_plan <>.
 #' @param planType "Single" or "Mult".
 #' @param depend_variables <>.
@@ -218,24 +220,19 @@ getRiskPointTable <- function(jaspResults, assess, planType, depend_variables, p
 #' @seealso
 #'   [getSummaryTable()] for the summary table of the plan.
 #' @examples
-#' getOCCurve(jaspResults, df_plan, planType, depend_variables, positionInContainer)
-getOCCurve <- function(jaspResults, df_plan, planType, depend_variables, positionInContainer) {
-  if (!is.null(jaspResults[[paste0("ocCurve", planType)]])) {
+#' getOCCurve(jaspContainer, df_plan, planType, depend_variables, positionInContainer)
+##----------------------------------------------------------------
+getOCCurve <- function(jaspContainer, df_plan, planType, depend_variables, positionInContainer) {
+  if (!is.null(jaspContainer[[paste0("ocCurve", planType)]])) {
     return()
   }
-  ocCurve <- createJaspPlot(title = paste0("OC (Operating Characteristics) curve"),  width = 480, height = 320)
+  ocCurve <- createJaspPlot(title = paste0("OC (Operating Characteristics) Curve"),  width = 480, height = 320)
   ocCurve$dependOn(depend_variables)
-  jaspResults[[paste0("ocCurve", planType)]] <- ocCurve
+  jaspContainer[[paste0("ocCurve", planType)]] <- ocCurve
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
                   ggplot2::geom_point(colour = "black", shape = 19) + 
                   ggplot2::geom_line(colour = "black", linetype = "dashed") +
                   ggplot2::labs(x = "Proportion non-conforming", y = "P(accept)")
-                  # ggplot2::theme_classic() +
-                  # ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), 
-                                  # axis.text.y = ggplot2::element_text(size = 16, color = "black"),
-                                  # axis.title.x = ggplot2::element_text(size = 20, color = "black"), 
-                                  # axis.title.y = ggplot2::element_text(size = 20, color = "black"))
-  # plt <- jaspGraphs::themeJasp(plt)
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
   ocCurve$plotObject <- plt
@@ -246,7 +243,7 @@ getOCCurve <- function(jaspResults, df_plan, planType, depend_variables, positio
 ##------------------------------------------------------------------------------
 ##  Generate the average outgoing quality curve for plan with rectification.  --
 ##------------------------------------------------------------------------------
-#' @param jaspResults <>.
+#' @param jaspContainer <>.
 #' @param df_plan <>.
 #' @param options <>
 #' @param planType "Single" or "Mult".
@@ -255,14 +252,15 @@ getOCCurve <- function(jaspResults, df_plan, planType, depend_variables, positio
 #' @seealso
 #'   [getSummaryTable()] for the summary table of the plan.
 #' @examples
-#' getAOQCurve(jaspResults, df_plan, options, planType, depend_variables, positionInContainer)
-getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variables, positionInContainer) {
-  if (!is.null(jaspResults[[paste0("aoqCurve", planType)]])) {
+#' getAOQCurve(jaspContainer, df_plan, options, planType, depend_variables, positionInContainer)
+##------------------------------------------------------------------------------
+getAOQCurve <- function(jaspContainer, df_plan, options, planType, depend_variables, positionInContainer) {
+  if (!is.null(jaspContainer[[paste0("aoqCurve", planType)]])) {
     return ()
   }
-  aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 480, height = 320)
+  aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) Curve"),  width = 480, height = 320)
   aoqCurve$dependOn(depend_variables)
-  jaspResults[[paste0("aoqCurve", planType)]] <- aoqCurve
+  jaspContainer[[paste0("aoqCurve", planType)]] <- aoqCurve
 
   N <-  options[[paste0("lotSize", planType)]]
   n <- c <- r <- NULL
@@ -289,13 +287,10 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
     stages <- length(n)
     probs_prod <- 1
     cum_n <- cumsum(n)
-    stage_probs <- getStageProbability(pd, n, c, r, dist, N, jaspResults, depend_variables)
+    stage_probs <- getStageProbability(pd, n, c, r, dist, N, jaspContainer, depend_variables)
     if (is.null(stage_probs)) {
-      if (is.null(jaspResults[["aoq_error"]])) {
-        aoq_error <- createJaspHtml(text = sprintf("Error: Can not calculate AOQ. Check the plan parameters."), dependencies = depend_variables, position = positionInContainer)
-        jaspResults[["aoq_error"]] <- aoq_error
-        return ()
-      }      
+      aoqCurve$setError(sprintf("Error: Invalid input. Can not calculate AOQ. Check the plan parameters."))
+      return ()
     }
     stage_probs <- stage_probs[[1]] # We only need acceptance probability.
     for (i in 1:stages) {
@@ -305,15 +300,18 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
     AOQ <- AOQ * pd / N
   }
   df_plan$AOQ <- AOQ
-  aoq_max <- round(max(df_plan$AOQ),2)
+  aoq_max <- max(df_plan$AOQ)
   pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
+  # xBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$PD), max(df_plan$PD)))
+  yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(0, 1.1*aoq_max))
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
                          ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "AOQ") +
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
-                         ggplot2::geom_hline(yintercept = max(df_plan$AOQ), linetype = "dashed") +
-                         ggplot2::annotate("text", label = gettextf("AOQL: %.2f", aoq_max), 
-                                            x = pd_aoq_max*0.9, y = aoq_max*1.1, color = "black", size = 6) +
-                         ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
+                         ggplot2::geom_hline(yintercept = aoq_max, linetype = "dotted") +
+                         ggplot2::annotate("text", label = sprintf("AOQL: %.2f", aoq_max), 
+                                            x = max(0.09, pd_aoq_max*0.9), y = aoq_max*1.1, color = "black", size = 6) +
+                         ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
+                         #  ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
   aoqCurve$plotObject <- plt
@@ -324,7 +322,7 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
 ##---------------------------------------------------------------
 ##  Generate the average total inspection curve for the plan.  --
 ##---------------------------------------------------------------
-#' @param jaspResults <>.
+#' @param jaspContainer <>.
 #' @param df_plan <>.
 #' @param options <>
 #' @param planType "Single" or "Mult".
@@ -333,14 +331,15 @@ getAOQCurve <- function(jaspResults, df_plan, options, planType, depend_variable
 #' @seealso
 #'   [getSummaryTable()] for the summary table of the plan.
 #' @examples
-#' getATICurve(jaspResults, df_plan, options, planType, depend_variables, positionInContainer)
-getATICurve <- function(jaspResults, df_plan, options, planType, depend_variables, positionInContainer) {
-  if (!is.null(jaspResults[[paste0("atiCurve", planType)]])) {
+#' getATICurve(jaspContainer, df_plan, options, planType, depend_variables, positionInContainer)
+##---------------------------------------------------------------
+getATICurve <- function(jaspContainer, df_plan, options, planType, depend_variables, positionInContainer) {
+  if (!is.null(jaspContainer[[paste0("atiCurve", planType)]])) {
     return ()
   }
-  atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 480, height = 320)
+  atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) Curve"),  width = 480, height = 320)
   atiCurve$dependOn(depend_variables)
-  jaspResults[[paste0("atiCurve", planType)]] <- atiCurve
+  jaspContainer[[paste0("atiCurve", planType)]] <- atiCurve
 
   N <-  options[[paste0("lotSize", planType)]]
   n <- c <- r <- NULL
@@ -368,13 +367,10 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
     # Multiple plan
     stages <- length(n)
     cum_n <- cumsum(n)
-    stage_probs <- getStageProbability(pd, n, c, r, dist, N, jaspResults, depend_variables)
+    stage_probs <- getStageProbability(pd, n, c, r, dist, N, jaspContainer, depend_variables)
     if (is.null(stage_probs)) {
-      if (is.null(jaspResults[["ati_error"]])) {
-        ati_error <- createJaspHtml(text = sprintf("Error: Can not calculate ATI. Check the plan parameters."), dependencies = depend_variables, position = positionInContainer)
-        jaspResults[["ati_error"]] <- ati_error
-        return ()
-      }      
+      atiCurve$setError(sprintf("Error: Invalid input. Can not calculate ATI. Check the plan parameters."))
+      return ()
     }
     acc_probs <- stage_probs[[1]] # Acceptance probabilities
     rej_probs <- stage_probs[[2]] # Rejection probabilities
@@ -389,11 +385,6 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
                          ggplot2::geom_point(colour = "black", shape = 19) + 
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::labs(x = "Proportion non-conforming", y = "ATI")
-                        #  ggplot2::theme_classic() +
-                        #  ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16, color = "black"), 
-                                          # axis.text.y = ggplot2::element_text(size = 16, color = "black"),
-                                          # axis.title.x = ggplot2::element_text(size = 20, color = "black"), 
-                                          # axis.title.y = ggplot2::element_text(size = 20, color = "black"))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
   atiCurve$plotObject <- plt
@@ -404,21 +395,22 @@ getATICurve <- function(jaspResults, df_plan, options, planType, depend_variable
 ##---------------------------------------------------------------------------------------------------------
 ##  Generate the average sample number curve for the plan. Only applicable for multiple sampling plans.  --
 ##---------------------------------------------------------------------------------------------------------
-#' @param jaspResults <>.
+#' @param jaspContainer <>.
 #' @param options <>
 #' @param depend_variables <>.
 #' @param positionInContainer <>.
 #' @seealso
 #'   [getSummaryTable()] for the summary table of the plan.
 #' @examples
-#' getASNCurve(jaspResults, options, depend_variables, positionInContainer) 
-getASNCurve <- function(jaspResults, options, depend_variables, positionInContainer) {
-  if (!is.null(jaspResults[["asnPlot"]])) {
+#' getASNCurve(jaspContainer, options, depend_variables, positionInContainer) 
+##---------------------------------------------------------------------------------------------------------
+getASNCurve <- function(jaspContainer, options, depend_variables, positionInContainer) {
+  if (!is.null(jaspContainer[["asnPlot"]])) {
     return ()
   }
-  asnPlot <- createJaspPlot(title = "ASN Curve for multiple sampling plan",  width = 480, height = 320)
+  asnPlot <- createJaspPlot(title = "ASN Curve",  width = 480, height = 320)
   asnPlot$dependOn(depend_variables)
-  jaspResults[["asnPlot"]] <- asnPlot
+  jaspContainer[["asnPlot"]] <- asnPlot
 
   # Parse option values
   n <- c <- r <- NULL
@@ -438,13 +430,10 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
   num_values <- length(pd)
   ASN <- numeric(num_values)
   cum_n <- cumsum(n)
-  stage_probs <- getStageProbability(pd, n, c, r, dist, N, jaspResults, depend_variables)
+  stage_probs <- getStageProbability(pd, n, c, r, dist, N, jaspContainer, depend_variables)
   if (is.null(stage_probs)) {
-    if (is.null(jaspResults[["asn_error"]])) {
-        asn_error <- createJaspHtml(text = sprintf("Error: Can not calculate ASN. Check the plan parameters."), dependencies = depend_variables, position = positionInContainer)
-        jaspResults[["asn_error"]] <- asn_error
-        return ()
-      }
+    asnPlot$setError(sprintf("Error: Invalid input. Can not calculate ASN. Check the plan parameters."))
+    return ()
   }
   stage_probs <- stage_probs[[1]] + stage_probs[[2]] # Decision prob = p_acc + p_rej
   for (i in 1:(stages-1)) {
@@ -475,9 +464,10 @@ getASNCurve <- function(jaspResults, options, depend_variables, positionInContai
 #' @param dist <>.
 #' @param N <>.
 #' @seealso
-#'   [getStageProbability()] for getting stagewise acceptance and rejection probabilities of the plan.
+#'   [getStageProbability()] to get stagewise acceptance and rejection probabilities of the plan.
 #' @examples
 #' getStageProbabilityHelper(pd, n, c, r, dist, N)
+##-------------------------------------------------------------------------------------------
 getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
   D <- pd*N
   num_stages <- length(n)
@@ -612,46 +602,16 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
 #' @param r <>.
 #' @param dist <>.
 #' @param N <>.
-#' @param jaspResults <>.
+#' @param jaspContainer <>.
 #' @param depend_variables <>.
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' getStageProbability(pd, n, c, r, dist, N, jaspResults, depend_variables)
-getStageProbability <- function(pd, n, c, r, dist, N=1000, jaspResults, depend_variables) {
-  # if (dist == "hypergeom") {
-  #   # Hypergeomtric
-  #   is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
-  #     abs(x - round(x)) < tol
-  #   }
-  #   D <- N * pd
-  #   if(!all(is.wholenumber(N), is.wholenumber(D))) {
-  #     hypergeom_error <- createJaspHtml(text = sprintf("Error: Can not calculate stagewise probability. N*pd should be integer values. Check the values of N and pd."), 
-                                          # dependencies = depend_variables, position = 1)
-  #     jaspResults[["hypergeom_error"]] <- hypergeom_error
-  #     return ()
-  #   }    
-  # } 
+#' getStageProbability(pd, n, c, r, dist, N, jaspContainer, depend_variables)
+##------------------------------------------------------------------------
+getStageProbability <- function(pd, n, c, r, dist, N=1000, jaspContainer, depend_variables) {
   stage_probs <- sapply(pd, FUN=getStageProbabilityHelper, n=n, c=c, r=r, dist=dist, N=N)
   acc <- matrix(unlist(stage_probs[1,]), byrow=FALSE, nrow=length(n))
   rej <- matrix(unlist(stage_probs[2,]), byrow=FALSE, nrow=length(n))
   return (list(acc,rej))
-}
-
-# Currently in use. Need to modify.
-# TODO [############# IN PROGRESS ##############]
-getProbability <- function(N, n, c, r, dist, pd, n_def) {
-  pAcc <- NULL
-  pRej <- NULL
-  if (dist == "binom") {
-    pAcc <- pbinom(c(c), size = n, prob = pd, lower.tail = TRUE)
-    pRej <- pbinom(c(r - 1), size = n, prob = pd, lower.tail = FALSE)
-  } else if (dist == "hypergeom") {
-    pAcc <- phyper(c(c), m = n_def, n = N - n_def, k = n, lower.tail = TRUE)
-    pRej <- phyper(c(r - 1), m = n_def, n = N - n_def, k = n, lower.tail = FALSE)         
-  } else if (dist == "poisson") {
-    pAcc <- ppois(c(c), lambda = pd*n, lower.tail = TRUE)
-    pRej <- ppois(c(r - 1), lambda = pd*n, lower.tail = FALSE)
-  }
-  return (list(pAcc,pRej))
 }
