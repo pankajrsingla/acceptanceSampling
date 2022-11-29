@@ -232,7 +232,7 @@ getOCCurve <- function(jaspContainer, df_plan, planType, depend_variables, posit
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
                   ggplot2::geom_point(colour = "black", shape = 19) + 
                   ggplot2::geom_line(colour = "black", linetype = "dashed") +
-                  ggplot2::labs(x = "Proportion non-conforming", y = "P(accept)")
+                  ggplot2::labs(x = "Proportion non-conforming", y = "Probability of Acceptance")
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- positionInContainer
   ocCurve$plotObject <- plt

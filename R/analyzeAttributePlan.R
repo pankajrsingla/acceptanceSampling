@@ -101,26 +101,31 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Plan Dataframe
   df_plan <- getPlanDf(options, planType, FALSE)
 
+  # Summary table
+  if (options[[output_variables[2]]]) {
+    getSummary(jaspContainer, df_plan, planType, output_variables[2], positionInContainer=position+3)
+  }
+
   # OC Curve
   if (options[[output_variables[1]]]) {
     getOCCurve(jaspContainer, df_plan, planType, output_variables[1], positionInContainer=position+4)
   }
-  # Plan summary
-  if (options[[output_variables[2]]]) {
-    getSummary(jaspContainer, df_plan, planType, output_variables[2], positionInContainer=position+3)
-  }
+
   # Assess plan
   if (options[[output_variables[3]]]) {
     assessPlan(jaspContainer, options, planType, c(risk_variables, output_variables[3]), positionInContainer=position+1)
   }
+
   # AOQ Curve
   if (options[[output_variables[4]]]) {
     getAOQCurve(jaspContainer, df_plan, options, planType, output_variables[4], positionInContainer=position+5)
   }
+
   # ATI Curve
   if (options[[output_variables[5]]]) {
     getATICurve(jaspContainer, df_plan, options, planType, output_variables[5], positionInContainer=position+6)
   }
+  
   # ASN Curve (only for multiple sampling plan)
   if (options[[output_variables[6]]]) {
     getASNCurve(jaspContainer, options, output_variables[6], positionInContainer=position+7)

@@ -29,6 +29,25 @@
 #' @examples
 #' CreateVariablePlan(jaspResults, dataset, options)
 CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
+  # Error handling for AQL/RQL
+  if (options$pd_prp >= options$pd_crp) {
+    if (is.null(jaspResults[["pd_error"]])) {
+      pd_error <- createJaspTable(title = "", dependencies = c("pd_prp", "pd_crp"), position = 1)
+      pd_error$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+      jaspResults[["pd_error"]] <- pd_error
+      return ()
+    }    
+  }
+  # Error handling for Producer's and Consumer's Risk
+  if ((1 - options$pa_prp) <= options$pa_crp) {
+    if (is.null(jaspResults[["pa_error"]])) {
+      pa_error <- createJaspTable(title = "", dependencies = c("pa_prp", "pa_crp"), position = 2)
+      pa_error$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
+      jaspResults[["pa_error"]] <- pa_error
+      return ()
+    }    
+  }
+
   N <- options$lotSize
   sd <- "unknown"
   # sd_value <- 0
