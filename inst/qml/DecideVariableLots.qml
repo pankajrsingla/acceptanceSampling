@@ -26,7 +26,7 @@ Form
 	VariablesForm
 	{
 		AvailableVariablesList	{ name: "allVariablesList"; id: allVariablesList }
-		AssignedVariablesList	{ name: "variables"; title: qsTr("Variables"); id: variables; singleVariable: true; suggestedColumns: ["scale"]; allowedColumns: ["scale"] }
+		AssignedVariablesList	{ name: "variables"; title: qsTr("Measurement"); id: variables; singleVariable: true; suggestedColumns: ["scale"]; allowedColumns: ["scale"] }
 	}
 
 	Group
@@ -45,6 +45,7 @@ Form
 
 	Group
 	{
+		title: qsTr("Specification limits")
 		columns: 2
 		CheckBox { name: "lsl"; label: qsTr("Lower Specification Limit (LSL): "); id: lsl; checked: false }
 		DoubleField{ name: "lower_spec"; label: qsTr(""); defaultValue: 0; enabled: lsl.checked; negativeValues: true }
@@ -61,6 +62,7 @@ Form
 
 	Group
     {
+		title: qsTr("Quality constraints")
 		enabled: lsl.checked && usl.checked && sd.checked
 		columns: 2
         Text { text: qsTr("Acceptable Quality Level (AQL): ") }

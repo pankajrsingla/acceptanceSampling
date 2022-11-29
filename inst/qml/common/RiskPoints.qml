@@ -21,6 +21,7 @@ import JASP.Controls 1.0
 
 Group
 {
+    title: qsTr("Quality constraints")
     property string suffix: ""
     Group
     {

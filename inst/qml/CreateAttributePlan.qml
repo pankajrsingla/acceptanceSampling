@@ -24,7 +24,7 @@ Form
 {
 	columns: 1
 	Common.RiskPoints {}
-
+	
 	Common.ProbDefect
 	{
 		suffix: ""
@@ -45,7 +45,8 @@ Form
 	
 	Group
 	{
-		CheckBox { name: "showOCCurve"; label: qsTr("Show OC Curve") }
-		CheckBox { name: "showSummary"; label: qsTr("Show summary") }
+		title: qsTr("Output options")
+		CheckBox { name: "showSummary"; label: qsTr("Summary table") }
+		CheckBox { name: "showOCCurve"; label: qsTr("OC curve") }
 	}	
 }
