@@ -101,14 +101,14 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
       pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
       yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(0, 1.1*aoq_max))
       aoq_plot <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
-                         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "Average Outgoing Quality") +
+                         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming AOQVAR", y = "Average Outgoing Quality") +
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::geom_hline(yintercept = aoq_max, linetype = "dotted") +
                          ggplot2::annotate("text", label = sprintf("AOQL: %.2f", aoq_max), 
                                             x = max(0.09, pd_aoq_max*0.9), y = aoq_max*1.1, color = "black", size = 6) +
                          ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
                          #  ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
-      aoq_plot <- aoq_plot + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+      # aoq_plot <- aoq_plot + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
       aoq_plot$position <- 5
       aoqCurve$plotObject <- aoq_plot
     }
@@ -123,8 +123,8 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
       ati_plot <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
                       ggplot2::geom_point(colour = "black", shape = 19) +
                       ggplot2::geom_line(colour = "black", linetype = "dashed") +
-                      ggplot2::labs(x = "Proportion non-conforming", y = "Average Total Inspection")
-      ati_plot <- ati_plot + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+                      ggplot2::labs(x = "Proportion non-conforming ATIVAR", y = "Average Total Inspection")
+      # ati_plot <- ati_plot + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
       ati_plot$position <- 6
       atiCurve$plotObject <- ati_plot
     }

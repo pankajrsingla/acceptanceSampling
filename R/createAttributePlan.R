@@ -31,9 +31,9 @@
 ##---------------------------------------------------------------
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Error handling for hypergeometric distribution
-  pd_variables <- c("pd_lower", "pd_upper", "pd_step")
+  pd_vars <- c("pd_lower", "pd_upper", "pd_step")
   # Todo: make this work.
-  if (!checkHypergeom(jaspResults, pos=0, pd_variables, options, type="Single")) {
+  if (!checkHypergeom(jaspResults, pos=0, pd_vars, options, type="Single")) {
     return ()
   }
   # Error handling for AQL/RQL
@@ -54,7 +54,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
       return ()
     }    
   }
-  optionNames <- c("lotSize", pd_variables, "pd_prp", "pa_prp", "pd_crp", "pa_crp", "distribution")
+  optionNames <- c("lotSize", pd_vars, "pd_prp", "pa_prp", "pd_crp", "pa_crp", "distribution")
   .findPlan(jaspResults, options, optionNames)
 }
 

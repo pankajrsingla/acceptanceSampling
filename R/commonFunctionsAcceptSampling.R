@@ -25,6 +25,7 @@
 #' @param pd_vars <>
 #' @param options <>
 #' @param type <>
+#' @returns <>
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
@@ -45,7 +46,7 @@ checkHypergeom <- function(jaspContainer, pos, pd_vars, options, type) {
     D <- N * pd
     if (!all(is.wholenumber(N), is.wholenumber(D))) {
       if (is.null(jaspContainer[["hypergeom_error"]])) {
-        hypergeom_error <- createJaspTable(title = "", dependencies = paste0(c(pd_variables, "lotSize", "distribution"), type), position = pos)
+        hypergeom_error <- createJaspTable(title = "", dependencies = paste0(c(pd_vars, "lotSize", "distribution"), type), position = pos)
         hypergeom_error$setError(sprintf("%s\n%s", "Error: Invalid input. Can not analyze plan. N*pd should be integer values.", "Check the values of N and pd."))
         jaspContainer[["hypergeom_error"]] <- hypergeom_error        
       }
@@ -66,9 +67,9 @@ checkHypergeom <- function(jaspContainer, pos, pd_vars, options, type) {
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' getPlanVars(options, type)
+#' getPlanValues(options, type)
 ##----------------------------------------------------------------
-getPlanVars <- function(options, type) {
+getPlanValues <- function(options, type) {
   n <- c <- r <- NULL
   if (type == "Single") {
     # Single sampling plan
@@ -103,7 +104,7 @@ getPlanVars <- function(options, type) {
 #' getPlan(options, "Mult")
 ##---------------------------------------------------------------
 getPlan <- function(options, type) {
-  plan_vars <- getPlanVars(options, type)
+  plan_vars <- getPlanValues(options, type)
   n <- unlist(plan_vars[1])
   c <- unlist(plan_vars[2])
   r <- unlist(plan_vars[3])
@@ -339,14 +340,14 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
   yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(0, 1.1*aoq_max))
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
-         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "Average Outgoing Quality") +
+         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming AOQ", y = "Average Outgoing Quality") +
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
          ggplot2::geom_hline(yintercept = aoq_max, linetype = "dotted") +
          ggplot2::annotate("text", label = sprintf("AOQL: %.2f", aoq_max), 
                            x = max(0.09, pd_aoq_max*0.9), y = aoq_max*1.1, color = "black", size = 6) +
          ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
         #  ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
-  plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+  # plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- pos
   aoqCurve$plotObject <- plt
 }
@@ -408,8 +409,8 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
          ggplot2::geom_point(colour = "black", shape = 19) + 
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
-         ggplot2::labs(x = "Proportion non-conforming", y = "Average Total Inspection")
-  plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+         ggplot2::labs(x = "Proportion non-conforming ATI", y = "Average Total Inspection")
+  # plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- pos
   atiCurve$plotObject <- plt
 }
@@ -466,8 +467,8 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, options, n, c, r) {
   plt <- ggplot2::ggplot(data = df_asn, ggplot2::aes(x = PD, y = ASN)) + 
          ggplot2::geom_point(colour = "black", shape = 19) + 
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
-         ggplot2::labs(x = "Proportion non-conforming", y = "Average Sample Number")
-  plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
+         ggplot2::labs(x = "Proportion non-conforming ASN", y = "Average Sample Number")
+  # plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- pos
   asnPlot$plotObject <- plt
 }
@@ -629,9 +630,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
 ##------------------------------------------------------------------------
 getStageProbability <- function(pd, n, c, r, dist, N=1000) {
   stage_probs <- sapply(pd, FUN=getStageProbabilityHelper, n=n, c=c, r=r, dist=dist, N=N)
-  acc <- unlist(stage_probs[1])
-  rej <- unlist(stage_probs[2])
-  # acc <- matrix(unlist(stage_probs[1,]), byrow=FALSE, nrow=length(n))
-  # rej <- matrix(unlist(stage_probs[2,]), byrow=FALSE, nrow=length(n))
+  acc <- matrix(unlist(stage_probs[1,]), byrow=FALSE, nrow=length(n))
+  rej <- matrix(unlist(stage_probs[2,]), byrow=FALSE, nrow=length(n))
   return (list(acc,rej))
 }

@@ -34,7 +34,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   k <- options$kValue
   var_name <- NULL
 
-  all_vars <- unlist(options$allVariablesList)
+  # all_vars <- unlist(options$allVariablesList)
   vars <- unlist(options$variables)
   if (options$sampleStats) {
     # Take sample size, sample mean and sample SD directly from sample statistics option values.
@@ -49,6 +49,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
         # Proceed with calculations for the data sample.
         data <- na.omit(dataset[[.v(vars)]])
         # Todo: fix and uncomment this.
+        .hasErrors(dataset=dataset, type = c("infinity", "missingValues"), target = vars, exitAnalysisIfErrors = TRUE)
         # .hasErrors(dataset=dataset, type = c("infinity", "missingValues"), infinity.target = vars, missingValues.target = vars, exitAnalysisIfErrors = TRUE)
         n <- length(data)
         mean_sample <- mean(data)
