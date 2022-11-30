@@ -20,12 +20,12 @@
 ##---------------------------------------------------------------
 ##                    Create variable plan.                    --
 ##---------------------------------------------------------------
-#' @param jaspResults <>.
-#' @param dataset <>.
-#' @param options <>.
-#' @returns <>.
+#' @param jaspResults <>
+#' @param dataset <>
+#' @param options <>
+#' @returns <>
 #' @seealso
-#'   [()] for <>.
+#'   [()] for <>
 #' @examples
 #' CreateVariablePlan(jaspResults, dataset, options)
 CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
@@ -65,43 +65,43 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   oc_var <- AcceptanceSampling::OCvar(n = n, k = k, type = "normal", s.type = sd, pd = pd)
 
   # Dependency variables
-  risk_variables <- c("pd_prp", "pa_prp", "pd_crp", "pa_crp")
-  pd_variables <- c("pd_lower", "pd_upper", "pd_step")
-  output_variables <- c("showOCCurve", "showSummary", "showAOQCurve", "showATICurve")
+  risk_vars <- c("pd_prp", "pa_prp", "pd_crp", "pa_crp")
+  pd_vars <- c("pd_lower", "pd_upper", "pd_step")
+  output_vars <- c("showSummary", "showOCCurve", "showAOQCurve", "showATICurve")
   
   # Plan Dataframe
   df_plan <- data.frame(PD = pd, PA = oc_var@paccept)
   
   # Output
   # 0. Variable plan table
-  .variablePlanTable(jaspResults, sd, risk_variables, n, k, positionInContainer=1)
+  .variablePlanTable(jaspResults, sd, risk_vars, n, k, pos=1)
 
   if (is.null(jaspResults[["decision_info"]])) {    
     plan_op <- createJaspHtml(text = sprintf("%s\n\n%s", "Z.LSL = (mean - LSL) / historical standard deviation", "Accept lot if Z.LSL >= k, otherwise reject."), 
-                              dependencies = c(risk_variables, "sd"), position = 2)
+                              dependencies = c(risk_vars, "sd"), position = 2)
     jaspResults[["decision_info"]] <- plan_op
   }
-  
-  # 1. OC Curve
-  if (options$showOCCurve) {
-    getOCCurve(jaspResults, df_plan, "", c(risk_variables, pd_variables, output_variables[1]), positionInContainer=4)
-  }
-  # 2. Plan summary
+
+  # 1. Plan summary
   if (options$showSummary) {
-    getSummary(jaspResults, df_plan, "", c(risk_variables, pd_variables, output_variables[2]), positionInContainer=3)
+    getSummary(jaspResults, pos=3, c(risk_vars, pd_vars, output_vars[1]), df_plan)
+  }
+  # 2. OC Curve
+  if (options$showOCCurve) {
+    getOCCurve(jaspResults, pos=4, c(risk_vars, pd_vars, output_vars[2]), df_plan)
   }
   # 3. AOQ Curve
   if (options$showAOQCurve) {
     if (is.null(jaspResults[["aoqCurveVariable"]])) {
       aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) curve"),  width = 480, height = 320)
-      aoqCurve$dependOn(c(risk_variables, pd_variables, output_variables[3], "lotSize"))
+      aoqCurve$dependOn(c(risk_vars, pd_vars, output_vars[3], "lotSize"))
       jaspResults[["aoqCurveVariable"]] <- aoqCurve
       df_plan$AOQ <- df_plan$PA * pd * (N-n) / N
       aoq_max <- max(df_plan$AOQ)
       pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
       yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(0, 1.1*aoq_max))
       aoq_plot <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
-                         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "AOQ") +
+                         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "Average Outgoing Quality") +
                          ggplot2::geom_line(colour = "black", linetype = "dashed") +
                          ggplot2::geom_hline(yintercept = aoq_max, linetype = "dotted") +
                          ggplot2::annotate("text", label = sprintf("AOQL: %.2f", aoq_max), 
@@ -117,13 +117,13 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   if (options$showATICurve) {
     if (is.null(jaspResults[["atiCurveVariable"]])) {
       atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) curve"),  width = 480, height = 320)
-      atiCurve$dependOn(c(risk_variables, pd_variables, output_variables[4], "lotSize"))
+      atiCurve$dependOn(c(risk_vars, pd_vars, output_vars[4], "lotSize"))
       jaspResults[["atiCurveVariable"]] <- atiCurve
       df_plan$ATI <- df_plan$PA * n + (1 - df_plan$PA) * N
       ati_plot <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
                       ggplot2::geom_point(colour = "black", shape = 19) +
                       ggplot2::geom_line(colour = "black", linetype = "dashed") +
-                      ggplot2::labs(x = "Proportion non-conforming", y = "ATI")
+                      ggplot2::labs(x = "Proportion non-conforming", y = "Average Total Inspection")
       ati_plot <- ati_plot + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
       ati_plot$position <- 6
       atiCurve$plotObject <- ati_plot
@@ -136,30 +136,30 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##---------------------------------------------------------------
 ##             Create table for the variable plan.             --
 ##---------------------------------------------------------------
-#' @param jaspResults <>.
-#' @param sd <>.
-#' @param depend_variables <>.
+#' @param jaspResults <>
+#' @param sd <>
+#' @param depend_vars <>
 #' @param n <>
-#' @param k <>.
-#' @param positionInContainer <>.
-#' @returns <>.
+#' @param k <>
+#' @param pos <>
+#' @returns <>
 #' @seealso
-#'   [()] for <>.
+#'   [()] for <>
 #' @examples
-#' .variablePlanTable(jaspResults, sd, depend_variables, n, k, positionInContainer)
-.variablePlanTable <- function(jaspResults, sd, depend_variables, n, k, positionInContainer) {
+#' .variablePlanTable(jaspResults, sd, depend_vars, n, k, pos)
+.variablePlanTable <- function(jaspResults, sd, depend_vars, n, k, pos) {
   if (!is.null(jaspResults[["plan_table"]])) {
     return ()
   }
   plan_table <- createJaspTable(title = paste0("Variable Sampling Plan (Standard deviation assumed to be ", sd, ")"))
   plan_table$transpose <- TRUE
   plan_table$transposeWithOvertitle <- FALSE
-  plan_table$dependOn(c(depend_variables, "sd"))
+  plan_table$dependOn(c(depend_vars, "sd"))
   plan_table$addColumnInfo(name = "col_0", title = "", type = "string") # Dummy row
   plan_table$addColumnInfo(name = "col_1", title = "Sample size", type = "integer")
   plan_table$addColumnInfo(name = "col_2", title = "Critical Distance (k)", type = "number")
   plan_table$addRows(list("col_1" = n, "col_2" = k))
   plan_table$showSpecifiedColumnsOnly <- TRUE
-  plan_table$position <- positionInContainer
+  plan_table$position <- pos
   jaspResults[["plan_table"]] <- plan_table
 }

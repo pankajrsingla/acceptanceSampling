@@ -20,16 +20,22 @@
 ##---------------------------------------------------------------
 ##                    Create attribute plan                    --
 ##---------------------------------------------------------------
-#' @param jaspResults <>.
-#' @param dataset <>.
-#' @param options User specified options.
-#' @returns <>.
+#' @param jaspResults <>
+#' @param dataset <>
+#' @param options <>
+#' @returns <>
 #' @seealso
-#'   [()] for <>.
+#'   [()] for <>
 #' @examples
 #' CreateAttributePlan(jaspResults, dataset, options)
 ##---------------------------------------------------------------
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
+  # Error handling for hypergeometric distribution
+  pd_variables <- c("pd_lower", "pd_upper", "pd_step")
+  # Todo: make this work.
+  if (!checkHypergeom(jaspResults, pos=0, pd_variables, options, type="Single")) {
+    return ()
+  }
   # Error handling for AQL/RQL
   if (options$pd_prp >= options$pd_crp) {
     if (is.null(jaspResults[["pd_error"]])) {
@@ -48,7 +54,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
       return ()
     }    
   }
-  optionNames <- c("lotSize", "pd_lower", "pd_upper", "pd_step", "pd_prp", "pa_prp", "pd_crp", "pa_crp", "distribution")
+  optionNames <- c("lotSize", pd_variables, "pd_prp", "pa_prp", "pd_crp", "pa_crp", "distribution")
   .findPlan(jaspResults, options, optionNames)
 }
 
@@ -57,12 +63,12 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##----------------------------------------------------------------------------------
 ##  Find the sampling plan that satisfies the specified AQL and RQL constraints.  --
 ##----------------------------------------------------------------------------------
-#' @param jaspResults <>.
-#' @param options User specified options.
-#' @param names <>.
-#' @returns <>.
+#' @param jaspResults <>
+#' @param options <>
+#' @param names <>
+#' @returns <>
 #' @seealso
-#'   [()] for <>.
+#'   [()] for <>
 #' @examples
 #' .findPlan(jaspResults, options, names)
 ##----------------------------------------------------------------------------------
@@ -100,16 +106,16 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     
     df_plan <- data.frame(PD = pd, PA = plan@paccept)
     .attributePlanTable(jaspResults, names, plan_vars, options$pd_prp, df_plan$PA[df_plan$PD == options$pd_prp], 
-                        options$pd_crp, df_plan$PA[df_plan$PD == options$pd_crp], positionInContainer=1)
+                        options$pd_crp, df_plan$PA[df_plan$PD == options$pd_crp], pos=1)
 
     # OC Curve
     if (options$showOCCurve) {
-      getOCCurve(jaspResults, df_plan, "", c(names, "showOCCurve"), positionInContainer=3)
+      getOCCurve(jaspResults, pos=3, c(names, "showOCCurve"), df_plan)
     }
 
     # Summary
     if (options$showSummary) {
-      getSummary(jaspResults, df_plan, "", c(names, "showSummary"), positionInContainer=2)
+      getSummary(jaspResults, pos=3, c(names, "showSummary"), df_plan)
     }
   }
 }
@@ -119,44 +125,44 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##----------------------------------------------------------------
 ##             Create and fill the output table(s).             --
 ##----------------------------------------------------------------
-#' @param jaspResults <>.
-#' @param depend_variables <>.
-#' @param plan_vars <>.
-#' @param pd_prp <>.
-#' @param pa_prp <>.
-#' @param pd_crp <>.
-#' @param pa_crp <>.
-#' @param positionInContainer <>.
-#' @returns <>.
+#' @param jaspResults <>
+#' @param depend_vars <>
+#' @param plan_vars <>
+#' @param pd_prp <>
+#' @param pa_prp <>
+#' @param pd_crp <>
+#' @param pa_crp <>
+#' @param pos <>
+#' @returns <>
 #' @seealso
-#'   [()] for <>.
+#'   [()] for <>
 #' @examples
-#' .attributePlanTable(jaspResults, depend_variables, plan_vars, df_plan, positionInContainer)
-.attributePlanTable <- function(jaspResults, depend_variables, plan_vars, pd_prp, pa_prp, pd_crp, pa_crp, positionInContainer) {
+#' .attributePlanTable(jaspResults, depend_vars, plan_vars, df_plan, pos)
+.attributePlanTable <- function(jaspResults, depend_vars, plan_vars, pd_prp, pa_prp, pd_crp, pa_crp, pos) {
   # Simple table with sample size and acc. number
   if (is.null(jaspResults[["findPlanTable"]])) {
     plan_table <- createJaspTable(title = "Generated Sampling Plan")
-    plan_table$dependOn(depend_variables)
+    plan_table$dependOn(depend_vars)
     plan_table$addColumnInfo(name = "col_1", title = "", type = "string")
     plan_table$addColumnInfo(name = "col_2", title = "Value", type = "integer")
     plan_table$addRows(list("col_1" = "Sample size", "col_2" = plan_vars$n))
     plan_table$addRows(list("col_1" = "Acceptance Number", "col_2" = plan_vars$c))
     plan_table$showSpecifiedColumnsOnly <- TRUE
-    plan_table$position <- positionInContainer
+    plan_table$position <- pos
     jaspResults[["findPlanTable"]] <- plan_table
   }
 
   # Table with acceptance and rejection probabilities for AQL, RQL
   if (is.null(jaspResults[["findProbTable"]])) {
     prob_table <- createJaspTable(title = "")
-    prob_table$dependOn(depend_variables)
+    prob_table$dependOn(depend_vars)
     prob_table$addColumnInfo(name = "col_1", title = "Proportion Non-conforming", type = "number")
     prob_table$addColumnInfo(name = "col_2", title = "Acceptance Probability", type = "number")
     prob_table$addColumnInfo(name = "col_3", title = "Rejection Probability", type = "number")
     prob_table$addRows(list("col_1" = pd_prp, "col_2" = pa_prp, "col_3" = 1 - pa_prp))
     prob_table$addRows(list("col_1" = pd_crp, "col_2" = pa_crp, "col_3" = 1 - pa_crp))
     prob_table$showSpecifiedColumnsOnly <- TRUE
-    prob_table$position <- positionInContainer + 1
+    prob_table$position <- pos + 1
     jaspResults[["findProbTable"]] <- prob_table
   }
 
@@ -164,7 +170,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   if (is.null(jaspResults[["description"]])) {
     description <- createJaspHtml(text = sprintf("If the number of defective items out of %d sampled is <= %d, accept the lot. Reject otherwise.", 
                                                  plan_vars$n, plan_vars$c),
-                                  dependencies = depend_variables, position = positionInContainer + 2)
+                                  dependencies = depend_vars, position = pos + 2)
     description$position <- 2                                              
     jaspResults[["description"]] <- description
   }

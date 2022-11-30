@@ -20,12 +20,11 @@
 ##----------------------------------------------------------------
 ##            Decision table for variable plan lots.            --
 ##----------------------------------------------------------------
-#' @param jaspResults <>.
-#' @param dataset <>.
-#' @param options <>.
-#' @returns <>.
+#' @param jaspResults <>
+#' @param dataset <>
+#' @param options <>
 #' @seealso
-#'   [()] for <>.
+#'   [()] for <>
 #' @examples
 #' DecideVariableLots(jaspResults, dataset, options)
 DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
@@ -33,39 +32,41 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   mean_sample <- NULL
   sd_sample <- NULL
   k <- options$kValue
-  variable_name <- NULL
+  var_name <- NULL
 
-  all_variables <- unlist(options$allVariablesList)
-  variables <- unlist(options$variables)
+  all_vars <- unlist(options$allVariablesList)
+  vars <- unlist(options$variables)
   if (options$sampleStats) {
     # Take sample size, sample mean and sample SD directly from sample statistics option values.
     n <- options$sampleSize
     mean_sample <- options$sampleMean
     sd_sample <- options$sampleSD
   } else {
-    if (length(variables) == 1) {
+    if (length(vars) == 1) {
       # Dataset is available. Read it.
       if (is.null(dataset)) {
-        dataset <- .readDataSetToEnd(columns.as.numeric=variables)
+        dataset <- .readDataSetToEnd(columns.as.numeric=vars)
         # Proceed with calculations for the data sample.
-        data <- na.omit(dataset[[.v(variables)]])
+        data <- na.omit(dataset[[.v(vars)]])
+        # Todo: fix and uncomment this.
+        # .hasErrors(dataset=dataset, type = c("infinity", "missingValues"), infinity.target = vars, missingValues.target = vars, exitAnalysisIfErrors = TRUE)
         n <- length(data)
         mean_sample <- mean(data)
         sd_sample <- sd(data)
-        variable_name <- variables[1]
+        var_name <- vars[1]
       }
     }
   }
 
-  depend_variables <- c("variables", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
-  risk_variables <- c("pd_prp", "pd_crp")
+  depend_vars <- c("vars", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
+  risk_vars <- c("pd_prp", "pd_crp")
   if (!is.null(jaspResults[["decision_table"]])) {
     return ()
   }
-  decision_table <- createJaspTable(title = sprintf("Accept or Reject Lot %s", ifelse(!is.null(variable_name), paste0("(", variable_name, ")"), "")))
+  decision_table <- createJaspTable(title = sprintf("Accept or Reject Lot %s", ifelse(!is.null(var_name), paste0("(", var_name, ")"), "")))
   decision_table$transpose <- TRUE
   decision_table$transposeWithOvertitle <- FALSE
-  decision_table$dependOn(c(depend_variables, risk_variables))
+  decision_table$dependOn(c(depend_vars, risk_vars))
   jaspResults[["decision_table"]] <- decision_table
   if (sd_sample <= 0) {
     decision_table$setError(sprintf("Error: Sample standard deviation has to be greater than 0."))
@@ -203,7 +204,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
     if (!is.null(decision)) {
       if (is.null(jaspResults[["decision_output"]])) {
         decision_output <- createJaspHtml(text = sprintf("Decision: %s lot.", ifelse(decision == TRUE, "Accept", "Reject")), 
-                                          dependencies = c(depend_variables, risk_variables), position = 2)
+                                          dependencies = c(depend_vars, risk_vars), position = 2)
         decision_output$position <- 2                                              
         jaspResults[["decision_output"]] <- decision_output
       }

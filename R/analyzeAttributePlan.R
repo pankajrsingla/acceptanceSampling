@@ -20,13 +20,13 @@
 ##---------------------------------------------------------------
 ##   Analyze single stage and multiple stage attribute plans   --
 ##---------------------------------------------------------------
-#' @param jaspResults <>.
-#' @param dataset <>.
-#' @param options "Single" or "Mult".
+#' @param jaspResults <>
+#' @param dataset <>
+#' @param options <>
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' AnalyzeAttributePlan(jaspResults, dataset, optionss)
+#' AnalyzeAttributePlan(jaspResults, dataset, options)
 ##---------------------------------------------------------------
 AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   plan_variables <- c("lotSize", "distribution")
@@ -41,7 +41,7 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     # Common dependencies for all single plans
     singleContainer$dependOn(c(plan_vars_single, pd_vars_single))
     jaspResults[["singleContainer"]] <- singleContainer
-    .handleAttributePlan(singleContainer, options, plan_vars_single, pd_vars_single, "Single", position=0)
+    .handleAttributePlan(singleContainer, position=0, plan_vars_single, pd_vars_single, options, "Single")
   }
 
   # Multiple sampling plan
@@ -49,11 +49,11 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     plan_vars_mult <- paste0(plan_variables, "Mult")
     plan_vars_mult <- c(plan_vars_mult, "stages")
     pd_vars_mult <- paste0(pd_variables, "Mult")
-    multipleContainer <- createJaspContainer(title = "Multiple Sampling Plan")
+    multContainer <- createJaspContainer(title = "Multiple Sampling Plan")
     # Common dependencies for all multiple plans
-    multipleContainer$dependOn(c(plan_vars_mult, pd_vars_mult))
-    jaspResults[["multipleContainer"]] <- multipleContainer
-    .handleAttributePlan(multipleContainer, options, plan_vars_mult, pd_vars_mult, "Mult", position=100)
+    multContainer$dependOn(c(plan_vars_mult, pd_vars_mult))
+    jaspResults[["multContainer"]] <- multContainer
+    .handleAttributePlan(multContainer, position=100, plan_vars_mult, pd_vars_mult, options, "Mult")
   }
 }
 
@@ -62,72 +62,64 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##---------------------------------------------------------------
 ##                   Analyze attribute plans                   --
 ##---------------------------------------------------------------
-#' @param jaspContainer <>.
-#' @param options User specified options.
+#' @param jaspContainer <>
+#' @param position <>
 #' @param plan_variables <>
 #' @param pd_variables <>
-#' @param planType "Single" or "Mult".
-#' @param position <>
-#' @returns <>.
+#' @param options <>
+#' @param type <>
 #' @seealso
-#'   [()] for <>.
+#'   [()] for <>
 #' @examples
-#' .handleAttributePlan(jaspContainer, options, plan_variables, pd_variables, planType, position)
+#' .handleAttributePlan(jaspContainer, position, plan_variables, pd_variables, options, type)
 ##---------------------------------------------------------------
-.handleAttributePlan <- function(jaspContainer, options, plan_variables, pd_variables, planType, position) {
-  if (options[[paste0("distribution", planType)]] == "hypergeom") {
-    # Error handling for hypergeometric distribution
-    pd_lower <- options[[pd_variables[1]]]
-    pd_upper <- options[[pd_variables[2]]]
-    pd_step <- options[[pd_variables[3]]]
-    pd <- seq(pd_lower, pd_upper, pd_step)
-    N <- options[[paste0("lotSize", planType)]]
-    is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
-      abs(x - round(x)) < tol
-    }
-    D <- N * pd
-    if (!all(is.wholenumber(N), is.wholenumber(D))) {
-      if (is.null(jaspContainer[["hypergeom_error"]])) {
-        hypergeom_error <- createJaspTable(title = "", dependencies = paste0(c(pd_variables, "lotSize", "distribution"), planType), position = position)
-        hypergeom_error$setError(sprintf("%s\n%s", "Error: Invalid input. Can not analyze plan. N*pd should be integer values.", "Check the values of N and pd."))
-        jaspContainer[["hypergeom_error"]] <- hypergeom_error
-        return ()
-      }
-    }
+.handleAttributePlan <- function(jaspContainer, position, plan_variables, pd_variables, options, type) {
+  # Error handling for hypergeometric distribution
+  # Todo: make this work.
+  if (!checkHypergeom(jaspContainer, position, pd_variables, options, type)) {
+    return ()
   }
-  risk_variables <- paste0(c("pd_prp", "pa_prp", "pd_crp", "pa_crp"), planType)
-  output_variables <- paste0(c("showOCCurve", "showSummary", "assessPlan", "showAOQCurve", "showATICurve", "showASNCurve"), planType)
+  risk_vars <- paste0(c("pd_prp", "pa_prp", "pd_crp", "pa_crp"), type)
+  output_vars <- paste0(c("assessPlan", "showSummary", "showOCCurve", "showAOQCurve", "showATICurve", "showASNCurve"), type)
   
-  # Plan Dataframe
-  df_plan <- getPlanDf(options, planType, FALSE)
+  # Plan variables
+  plan_vars <- getPlanVars(options, type)
+  n <- unlist(plan_vars[1])
+  c <- unlist(plan_vars[2])
+  r <- unlist(plan_vars[3])
+
+  # Plan data
+  plan <- getPlan(options, type)
+  df_plan <- unlist(plan[1])
+  oc_plan <- unlist(plan[2])
+
+  # Assess plan
+  if (options[[output_variables[3]]]) {
+    assessPlan(jaspContainer, pos=position+1, c(output_vars[1], risk_vars), oc_plan, options, type, n, c, r)
+  }
 
   # Summary table
   if (options[[output_variables[2]]]) {
-    getSummary(jaspContainer, df_plan, planType, output_variables[2], positionInContainer=position+3)
+    getSummary(jaspContainer, pos=position+3, output_vars[2], df_plan)
   }
 
   # OC Curve
   if (options[[output_variables[1]]]) {
-    getOCCurve(jaspContainer, df_plan, planType, output_variables[1], positionInContainer=position+4)
-  }
-
-  # Assess plan
-  if (options[[output_variables[3]]]) {
-    assessPlan(jaspContainer, options, planType, c(risk_variables, output_variables[3]), positionInContainer=position+1)
+    getOCCurve(jaspContainer, pos=position+4, output_vars[3], df_plan)
   }
 
   # AOQ Curve
   if (options[[output_variables[4]]]) {
-    getAOQCurve(jaspContainer, df_plan, options, planType, output_variables[4], positionInContainer=position+5)
+    getAOQCurve(jaspContainer, pos=position+5, output_vars[4], df_plan, options, type, n, c, r)
   }
 
   # ATI Curve
   if (options[[output_variables[5]]]) {
-    getATICurve(jaspContainer, df_plan, options, planType, output_variables[5], positionInContainer=position+6)
+    getATICurve(jaspContainer, pos=position+6, output_vars[5], df_plan, options, type, n, c, r)
   }
-  
+
   # ASN Curve (only for multiple sampling plan)
   if (options[[output_variables[6]]]) {
-    getASNCurve(jaspContainer, options, output_variables[6], positionInContainer=position+7)
+    getASNCurve(jaspContainer, pos=position+7, output_vars[6], options, n, c, r)
   }
 }
