@@ -8,11 +8,11 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
 # txt = "Decision table for variable plan lots."
@@ -48,7 +48,6 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
         dataset <- .readDataSetToEnd(columns.as.numeric=vars)
         # Proceed with calculations for the data sample.
         data <- na.omit(dataset[[.v(vars)]])
-        # Todo: fix and uncomment this.
         .hasErrors(dataset=dataset, type = c("infinity", "missingValues"), target = vars, exitAnalysisIfErrors = TRUE)
         # .hasErrors(dataset=dataset, type = c("infinity", "missingValues"), infinity.target = vars, missingValues.target = vars, exitAnalysisIfErrors = TRUE)
         n <- length(data)
@@ -75,7 +74,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   }
   
   if (n > 0 & !is.null(mean_sample) & sd_sample > 0) {
-    # Initialize the decision table.    
+    # Initialize the decision table.
     sd_compare <- sd_sample
     
     sd <- "unknown"
@@ -121,8 +120,13 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
         return ()
       }
       # Both LSL and USL specified. Decide based on SD.
+      # Historical sd known
       if (options$sd) {
-        # Historical sd known
+        # Error handling for AQL/RQL
+        if (options$pd_prp >= options$pd_crp) {
+          decision_table$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+          return ()
+        }
         z.p <- (options$lower_spec - options$upper_spec) / (2 * sd_historical)
         p <- pnorm(z.p)
         if (2*p >= options$pd_crp) {
@@ -206,7 +210,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       if (is.null(jaspResults[["decision_output"]])) {
         decision_output <- createJaspHtml(text = sprintf("Decision: %s lot.", ifelse(decision == TRUE, "Accept", "Reject")), 
                                           dependencies = c(depend_vars, risk_vars), position = 2)
-        decision_output$position <- 2                                              
+        decision_output$position <- 2
         jaspResults[["decision_output"]] <- decision_output
       }
     }

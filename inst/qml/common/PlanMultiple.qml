@@ -28,7 +28,7 @@ Group
 
     IntegerField
     {
-        name: "numberOfStages"; id: numberOfStages; label: qsTr("Number of stages"); defaultValue: 2; min: 1; max: 100
+        name: "numberOfStages"; id: numberOfStages; label: qsTr("Number of stages"); defaultValue: 2; min: 2; max: 100; onEditingFinished: stages.values = value
     }
 
     ColumnLayout
@@ -44,9 +44,10 @@ Group
 
         ComponentsList
         {
+            id:                                 stages
             name:								"stages"
             addItemManually:                    false
-            values:                             numberOfStages.value
+            values:                             numberOfStages.defaultValue
 
             rowComponent: 						RowLayout
             {

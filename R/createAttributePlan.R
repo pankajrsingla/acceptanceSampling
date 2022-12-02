@@ -8,11 +8,11 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
 # txt = "Create attribute plan"
@@ -29,33 +29,63 @@
 #' @examples
 #' CreateAttributePlan(jaspResults, dataset, options)
 ##---------------------------------------------------------------
+
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
-  # Error handling for hypergeometric distribution
+  i = 0
+  risk_vars <- c("pd_prp", "pa_prp", "pd_crp", "pa_crp")
   pd_vars <- c("pd_lower", "pd_upper", "pd_step")
-  # Todo: make this work.
-  if (!checkHypergeom(jaspResults, pos=0, pd_vars, options, type="Single")) {
+  depend_vars <- c(pd_vars, risk_vars, "lotSize", "distribution")
+
+  createContainer <- createJaspContainer(title = "")
+  createContainer$dependOn(depend_vars)
+  jaspResults[["createContainer"]] <- createContainer
+
+  # Plan table outline
+  plan_table <- createJaspTable(title = "Generated Sampling Plan")
+  createContainer[[paste0("time", i+1)]] <- createJaspHtml(text = sprintf("(plan_table) initialized at %s\n", format(Sys.time(), "%X")), position = 0)
+  # plan_table$dependOn(depend_vars)
+  plan_table$addColumnInfo(name = "col_1", title = "", type = "string")
+  plan_table$addColumnInfo(name = "col_2", title = "Value", type = "integer")
+  plan_table[["col_1"]] <- c("Sample size", "Acceptance number")
+  plan_table$showSpecifiedColumnsOnly <- TRUE
+  plan_table$position <- 1
+  createContainer[["findPlanTable"]] <- plan_table
+
+  # Probability table outline
+  prob_table <- createJaspTable(title = "Plan probabilities at AQL and RQL")
+  createContainer[[paste0("time", i+2)]] <- createJaspHtml(text = sprintf("(prob_table) initialized at %s\n", format(Sys.time(), "%X")), position = 0)
+  # prob_table$dependOn(depend_vars)
+  # prob_table$dependOn(optionContainsValue = list("prob_table" = prob_table))
+  prob_table$addColumnInfo(name = "col_1", title = "", type = "string")
+  prob_table$addColumnInfo(name = "col_2", title = "Proportion Non-conforming", type = "number")
+  prob_table$addColumnInfo(name = "col_3", title = "Acceptance Probability", type = "number")
+  prob_table$addColumnInfo(name = "col_4", title = "Rejection Probability", type = "number")
+  prob_table[["col_1"]] <- c("AQL", "RQL")
+  prob_table$showSpecifiedColumnsOnly <- TRUE
+  prob_table$position <- 2
+  createContainer[["findProbTable"]] <- prob_table
+  
+  # Error handling for hypergeometric distribution
+  checkHypergeom(createContainer, pd_vars, options, type="")
+  createContainer[[paste0("time", i+3)]] <- createJaspHtml(text = sprintf("(checkHypergeom) calculated at %s\n", format(Sys.time(), "%X")), position = 0)
+  if (createContainer$getError()) {
     return ()
   }
+
   # Error handling for AQL/RQL
   if (options$pd_prp >= options$pd_crp) {
-    if (is.null(jaspResults[["pd_error"]])) {
-      pd_error <- createJaspTable(title = "", dependencies = c("pd_prp", "pd_crp"), position = 1)
-      pd_error$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
-      jaspResults[["pd_error"]] <- pd_error
-      return ()
-    }    
+    createContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+    return ()
   }
+
   # Error handling for Producer's and Consumer's Risk
   if ((1 - options$pa_prp) <= options$pa_crp) {
-    if (is.null(jaspResults[["pa_error"]])) {
-      pa_error <- createJaspTable(title = "", dependencies = c("pa_prp", "pa_crp"), position = 2)
-      pa_error$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
-      jaspResults[["pa_error"]] <- pa_error
-      return ()
-    }    
+    createContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
+    return ()
   }
-  optionNames <- c("lotSize", pd_vars, "pd_prp", "pa_prp", "pd_crp", "pa_crp", "distribution")
-  .findPlan(jaspResults, options, optionNames)
+  
+  createContainer[[paste0("time", i+4)]] <- createJaspHtml(text = sprintf("(.findPlan) called at %s\n", format(Sys.time(), "%X")), position = 0)
+  .findPlan(createContainer, options, depend_vars)
 }
 
 # txt = "Find the sampling plan that satisfies the specified AQL and RQL constraints."
@@ -63,16 +93,17 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##----------------------------------------------------------------------------------
 ##  Find the sampling plan that satisfies the specified AQL and RQL constraints.  --
 ##----------------------------------------------------------------------------------
-#' @param jaspResults <>
+#' @param jaspContainer <>
 #' @param options <>
-#' @param names <>
+#' @param depend_vars <>
 #' @returns <>
 #' @seealso
 #'   [()] for <>
 #' @examples
-#' .findPlan(jaspResults, options, names)
+#' .findPlan(jaspContainer, options, depend_vars)
 ##----------------------------------------------------------------------------------
-.findPlan <- function(jaspResults, options, names) {
+.findPlan <- function(jaspContainer, options, depend_vars) {
+  j = 100
   if (options$pd_prp && options$pa_prp && options$pd_crp && options$pa_crp) {
     pd_lower <- options$pd_lower
     pd_upper <- options$pd_upper
@@ -80,42 +111,39 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     pd <- seq(pd_lower, pd_upper, pd_step)
     pd <- c(pd, options$pd_prp, options$pd_crp)
     pd <- pd[!duplicated(pd)]
+    pd <- sort(pd)
     dist = options$distribution
-    plan_vars <- NULL
+    plan_values <- NULL
     plan <- NULL
     
     # # Create sampling plan with the specified values
     if (dist == "hypergeom") {
       # Need to provide the lot size (N) for hypergeometric distribution.
-      plan_vars <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
+      plan_values <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
                                                 CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
-      plan <- AcceptanceSampling::OC2c(N = options$lotSize, n = plan_vars$n, c = plan_vars$c, r = plan_vars$r, type = dist, pd = pd)
-    } else if (dist == "normal") {
-      # For now, the selection of normal distribution is disabled.
-      # Need to specify standard deviation (whether known or unknown) for normal distribution.
-      ## A value of known results in a sampling plan based on the population standard deviation, 
-      ## while a value of unknown results in the use of the sample standard deviation.
-      # plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, options$pa_prp), 
-                                              # CRP = c(options$pd_crp, options$pa_crp), type = dist, s.type = options$stdev)
+      plan <- AcceptanceSampling::OC2c(N = options$lotSize, n = plan_values$n, c = plan_values$c, r = plan_values$r, type = dist, pd = pd)
     } else {
       # Binomial and Poisson distributions don't require lot size (N) or standard deviation.
-      plan_vars <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
+      plan_values <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
                                                 CRP = c(options$pd_crp, options$pa_crp), type = dist)
-      plan <- AcceptanceSampling::OC2c(n = plan_vars$n, c = plan_vars$c, r = plan_vars$r, type = dist, pd = pd)
+      plan <- AcceptanceSampling::OC2c(n = plan_values$n, c = plan_values$c, r = plan_values$r, type = dist, pd = pd)
     }
     
     df_plan <- data.frame(PD = pd, PA = plan@paccept)
-    .attributePlanTable(jaspResults, names, plan_vars, options$pd_prp, df_plan$PA[df_plan$PD == options$pd_prp], 
-                        options$pd_crp, df_plan$PA[df_plan$PD == options$pd_crp], pos=1)
-
-    # OC Curve
-    if (options$showOCCurve) {
-      getOCCurve(jaspResults, pos=3, c(names, "showOCCurve"), df_plan)
-    }
+    jaspContainer[[paste0("time", j+19)]] <- createJaspHtml(text = sprintf("<.attributePlanTable> called at %s\n", format(Sys.time(), "%X")), position = 0)
+    .attributePlanTable(jaspContainer, depend_vars, plan_values, options$pd_prp, df_plan$PA[df_plan$PD == options$pd_prp], 
+                        options$pd_crp, df_plan$PA[df_plan$PD == options$pd_crp])
 
     # Summary
     if (options$showSummary) {
-      getSummary(jaspResults, pos=3, c(names, "showSummary"), df_plan)
+      jaspContainer[[paste0("time", j+20)]] <- createJaspHtml(text = sprintf("(getSummary) called at %s\n", format(Sys.time(), "%X")), position = 0)
+      getSummary(jaspContainer, pos=4, c(depend_vars, "showSummary"), df_plan)
+    }
+
+    # OC Curve
+    if (options$showOCCurve) {
+      jaspContainer[[paste0("time", j+30)]] <- createJaspHtml(text = sprintf("(getOCCurve) called at %s\n", format(Sys.time(), "%X")), position = 0)      
+      getOCCurve(jaspContainer, pos=5, c(depend_vars, "showOCCurve"), df_plan)
     }
   }
 }
@@ -125,53 +153,61 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##----------------------------------------------------------------
 ##             Create and fill the output table(s).             --
 ##----------------------------------------------------------------
-#' @param jaspResults <>
+#' @param jaspContainer <>
 #' @param depend_vars <>
-#' @param plan_vars <>
+#' @param plan_values <>
 #' @param pd_prp <>
 #' @param pa_prp <>
 #' @param pd_crp <>
 #' @param pa_crp <>
-#' @param pos <>
 #' @returns <>
 #' @seealso
 #'   [()] for <>
 #' @examples
-#' .attributePlanTable(jaspResults, depend_vars, plan_vars, df_plan, pos)
-.attributePlanTable <- function(jaspResults, depend_vars, plan_vars, pd_prp, pa_prp, pd_crp, pa_crp, pos) {
+#' .attributePlanTable(jaspContainer, depend_vars, plan_values, df_plan)
+.attributePlanTable <- function(jaspContainer, depend_vars, plan_values, pd_prp, pa_prp, pd_crp, pa_crp) {
+  k = 1000
   # Simple table with sample size and acc. number
-  if (is.null(jaspResults[["findPlanTable"]])) {
-    plan_table <- createJaspTable(title = "Generated Sampling Plan")
-    plan_table$dependOn(depend_vars)
-    plan_table$addColumnInfo(name = "col_1", title = "", type = "string")
-    plan_table$addColumnInfo(name = "col_2", title = "Value", type = "integer")
-    plan_table$addRows(list("col_1" = "Sample size", "col_2" = plan_vars$n))
-    plan_table$addRows(list("col_1" = "Acceptance Number", "col_2" = plan_vars$c))
-    plan_table$showSpecifiedColumnsOnly <- TRUE
-    plan_table$position <- pos
-    jaspResults[["findPlanTable"]] <- plan_table
+  plan_table <- jaspContainer[["findPlanTable"]]
+  if (is.null(jaspContainer[["planTableValues"]])) {
+  # if (is.null(plan_table)) {
+    for (i in 1:10000) {
+      for (j in 1:1000) {
+        k = i * j
+      }
+    }
+    # jaspContainer[[paste0("time", k+123)]] <- plan_table[["col_2"]]
+    plan_table[["col_2"]] <- c(plan_values$n, plan_values$c)
+    x <- createJaspState()
+    jaspContainer[["planTableValues"]] <- x
+    x$dependOn(depend_vars)
+    x$object <- plan_table
+    # createJaspState(plan_table, dependencies = depend_vars)
+    # jaspContainer[[paste0("time", k+456)]] <- plan_table[["col_2"]]
+    jaspContainer[[paste0("time", k+100)]] <- createJaspHtml(text = sprintf("(plan_table) filled at %s\n", format(Sys.time(), "%X")), position = 0)                    
   }
 
   # Table with acceptance and rejection probabilities for AQL, RQL
-  if (is.null(jaspResults[["findProbTable"]])) {
-    prob_table <- createJaspTable(title = "")
-    prob_table$dependOn(depend_vars)
-    prob_table$addColumnInfo(name = "col_1", title = "Proportion Non-conforming", type = "number")
-    prob_table$addColumnInfo(name = "col_2", title = "Acceptance Probability", type = "number")
-    prob_table$addColumnInfo(name = "col_3", title = "Rejection Probability", type = "number")
-    prob_table$addRows(list("col_1" = pd_prp, "col_2" = pa_prp, "col_3" = 1 - pa_prp))
-    prob_table$addRows(list("col_1" = pd_crp, "col_2" = pa_crp, "col_3" = 1 - pa_crp))
-    prob_table$showSpecifiedColumnsOnly <- TRUE
-    prob_table$position <- pos + 1
-    jaspResults[["findProbTable"]] <- prob_table
+  prob_table <- jaspContainer[["findProbTable"]]
+  # if (is.null(prob_table) || is.null(prob_table[["col_2"]])) {
+  if (is.null(jaspContainer[["findTableValues"]])) {
+    for (i in 1:10000) {
+      for (j in 1:1000) {
+        k = i * j
+      }
+    }
+    prob_table[["col_2"]] <- c(pd_prp, pd_crp)
+    prob_table[["col_3"]] <- c(pa_prp, pa_crp)
+    prob_table[["col_4"]] <- c(1-pa_prp, 1-pa_crp)
+    jaspContainer[["findTableValues"]] <- createJaspState(prob_table, dependencies = depend_vars)
+    jaspContainer[[paste0("time", k+200)]] <- createJaspHtml(text = sprintf("(prob_table) filled at %s\n", format(Sys.time(), "%X")), position = 0)                 
   }
 
   # Description of the sampling plan:
-  if (is.null(jaspResults[["description"]])) {
+  if (is.null(jaspContainer[["description"]])) {
     description <- createJaspHtml(text = sprintf("If the number of defective items out of %d sampled is <= %d, accept the lot. Reject otherwise.", 
-                                                 plan_vars$n, plan_vars$c),
-                                  dependencies = depend_vars, position = pos + 2)
-    description$position <- 2                                              
-    jaspResults[["description"]] <- description
+                                                 plan_values$n, plan_values$c), position = 3)
+    jaspContainer[["description"]] <- description
+    jaspContainer[[paste0("time", k+300)]] <- createJaspHtml(text = sprintf("(description) created at %s\n", format(Sys.time(), "%X")), position = 0)                    
   }
 }

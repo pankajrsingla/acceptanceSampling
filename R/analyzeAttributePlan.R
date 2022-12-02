@@ -8,11 +8,11 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
 # txt = "Analyze single stage and multiple stage attribute plans"
@@ -74,27 +74,61 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #' .handleAttributePlan(jaspContainer, position, plan_vars, pd_vars, options, type)
 ##---------------------------------------------------------------
 .handleAttributePlan <- function(jaspContainer, position, plan_vars, pd_vars, options, type) {
-  # Error handling for hypergeometric distribution
-  # Todo: make this work.
-  if (!checkHypergeom(jaspContainer, position, pd_vars, options, type)) {
+  plan_table <- createJaspTable(title = "Acceptance Sampling Plan")
+  if (type == "Single") {
+    plan_table$dependOn(paste0(c("sampleSize", "acceptNumber", "rejectNumber"), type))
+  } else {
+    plan_table$dependOn(c("stages"))
+  }
+  plan_table$showSpecifiedColumnsOnly <- TRUE
+  plan_table$position <- position
+  jaspContainer[["plan_table"]] <- plan_table
+  
+  plan_values <- getPlanValues(jaspContainer, options, type)
+  # Error handling for plan values
+  if (jaspContainer$getError()) {
     return ()
   }
+
+  # Error handling for hypergeometric distribution
+  checkHypergeom(jaspContainer, pd_vars, options, type)
+  if (jaspContainer$getError()) {
+    return ()
+  }
+  
+  n <- plan_values$n
+  c <- plan_values$c
+  r <- plan_values$r
+  
+  # Sampling plan table
+  if (type == "Single") {
+    # Single plan table
+    plan_table$addColumnInfo(name = "table_1_col_1", title = "", type = "string")
+    plan_table$addColumnInfo(name = "table_1_col_2", title = "Value", type = "integer")
+    plan_table$addRows(list("table_1_col_1" = "Sample size", "table_1_col_2" = n))
+    plan_table$addRows(list("table_1_col_1" = "Acceptance Number", "table_1_col_2" = c))
+  } else {
+    # Multiple plan table
+    stages <- options[["stages"]]
+    plan_table$addColumnInfo(name = "table_1_col_1", title = "Sample", type = "integer")
+    plan_table$addColumnInfo(name = "table_1_col_2", title = "Sample Size", type = "integer")
+    plan_table$addColumnInfo(name = "table_1_col_3", title = "Cum. Sample Size", type = "integer")
+    plan_table$addColumnInfo(name = "table_1_col_4", title = "Acc. Number", type = "integer")
+    plan_table$addColumnInfo(name = "table_1_col_5", title = "Rej. Number", type = "integer")
+    plan_table$setData(list(table_1_col_1 = 1:length(stages), table_1_col_2 = n, table_1_col_3 = cumsum(n), 
+                            table_1_col_4 = c, table_1_col_5 = r))
+  }
+
   risk_vars <- paste0(c("pd_prp", "pa_prp", "pd_crp", "pa_crp"), type)
   output_vars <- paste0(c("assessPlan", "showSummary", "showOCCurve", "showAOQCurve", "showATICurve", "showASNCurve"), type)
   
-  # Plan vars
-  plan_vars <- getPlanValues(options, type)
-  n <- unlist(plan_vars[1])
-  c <- unlist(plan_vars[2])
-  r <- unlist(plan_vars[3])
-
   # Plan data
-  plan <- getPlan(options, type)
-  df_plan <- unlist(plan[1])
-  oc_plan <- unlist(plan[2])
+  plan <- getPlan(options, type, n, c, r)
+  oc_plan <- plan$oc_plan
+  df_plan <- na.omit(plan$df_plan)
 
   # Assess plan
-  if (options[[output_vars[3]]]) {
+  if (options[[output_vars[1]]]) {
     assessPlan(jaspContainer, pos=position+1, c(output_vars[1], risk_vars), oc_plan, options, type, n, c, r)
   }
 
@@ -104,16 +138,16 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
 
   # OC Curve
-  if (options[[output_vars[1]]]) {
+  if (options[[output_vars[3]]]) {
     getOCCurve(jaspContainer, pos=position+4, output_vars[3], df_plan)
   }
 
-  # AOQ Curve
+  # AOQ Curve (for plans with rectification)
   if (options[[output_vars[4]]]) {
     getAOQCurve(jaspContainer, pos=position+5, output_vars[4], df_plan, options, type, n, c, r)
   }
 
-  # ATI Curve
+  # ATI Curve (for plans with rectification)
   if (options[[output_vars[5]]]) {
     getATICurve(jaspContainer, pos=position+6, output_vars[5], df_plan, options, type, n, c, r)
   }
