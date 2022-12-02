@@ -57,6 +57,87 @@ checkHypergeom <- function(jaspContainer, pd_vars, options, type) {
   # return (TRUE)
 }
 
+# txt = "Check for errors in single stage attribute sampling plan."
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##  Check for errors in single stage attribute sampling plan.  --
+##---------------------------------------------------------------
+#' @param jaspContainer <>
+#' @param N <>
+#' @param n <>
+#' @param c <>
+#' @param r <>
+#' @returns <>
+#' @seealso
+#'   [getOCCurve()] for operating characteristics of the plan.
+#' @examples
+#' checkErrorsSinglePlan(jaspContainer, N, n, c, r)
+##---------------------------------------------------------------
+checkErrorsSinglePlan <- function(jaspContainer, N, n, c, r) {
+  if (n > N) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Sample size (n) cannot be larger than the lot size (N)."))
+    return ()
+  } else if (c > n) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Acceptance number (c) cannot be larger than the sample size (n)."))
+    return ()
+  } else if (r > n) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) cannot be larger than the sample size (n)."))
+    return ()
+  } else if (r <= c) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) has to be larger than the acceptance number (c)."))
+  }
+}
+
+# txt = "Check for errors in multiple stage attribute sampling plan."
+# banner(txt, centre = TRUE, bandChar = "-")
+##-----------------------------------------------------------------
+##  Check for errors in multiple stage attribute sampling plan.  --
+##-----------------------------------------------------------------
+#' @param jaspContainer <>
+#' @param N <>
+#' @param n <>
+#' @param c <>
+#' @param r <>
+#' @returns <>
+#' @seealso
+#'   [getOCCurve()] for operating characteristics of the plan.
+#' @examples
+#' checkErrorsMultiplePlan(jaspContainer, N, n, c, r)
+##-----------------------------------------------------------------
+checkErrorsMultiplePlan <- function(jaspContainer, N, n, c, r) {
+  cum_n <- sum(n)
+  cumsum_n <- cumsum(n)
+  num_stages <- length(n)
+  if (cum_n > N) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Cumulative sample size (n1+n2+...) cannot be larger than the lot size (N)."))
+    return ()
+  } else if (any(c > cumsum_n)) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Acceptance number (c) cannot be larger than the sample size (n)."))
+    return ()
+  } else if (any(r > cumsum_n)) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) cannot be larger than the sample size (n)."))
+    return ()
+  } else if (any(r <= c)) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) for every stage has to be larger than the corresponding acceptance number (c)."))
+    return ()
+  } else if (any(c[1:(num_stages-1)] > r[1:(num_stages-1)] - 2)) {
+    # Check for r[i] > c[i] + 1 for i in 1:stages-1
+    jaspContainer$setError(sprintf("%s\n%s", "Error: Invalid input. For all stages except the last stage, rejection numbers (r) have to be at at least 2 greater than the acceptance numbers (c).",
+                                    "Else, subsequent stages are redundant."))
+    return ()
+  } else if (any(c != sort(c))) {
+    # Check for non-decreasing seqeuence of c
+    jaspContainer$setError(sprintf("Error: Invalid input. Acceptance numbers (c) are cumulative, so they need to be in a non-decreasing sequence."))
+    return ()
+  } else if (any(r != sort(r))) {
+    # Check for non-decreasing seqeuence of r
+    jaspContainer$setError(sprintf("Error: Invalid input. Rejection numbers (r) are cumulative, so they need to be in a non-decreasing sequence."))
+    return ()
+  } else if (r[num_stages] != c[num_stages] + 1) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Final rejection number (r) needs to be 1 more than the final acceptance number (c)."))
+  }
+}
+
 # txt = "Return the plan variables - n, c, and r."
 # banner(txt, centre = TRUE, bandChar = "-")
 ##----------------------------------------------------------------
@@ -79,18 +160,9 @@ getPlanValues <- function(jaspContainer, options, type) {
     n <- options[["sampleSizeSingle"]]
     c <- options[["acceptNumberSingle"]]
     r <- options[["rejectNumberSingle"]]
-    # Error checking
-    if (n > N) {
-      jaspContainer$setError(sprintf("Error: Invalid input. Sample size (n) cannot be larger than the lot size (N)."))
-      return ()
-    } else if (c > n) {
-      jaspContainer$setError(sprintf("Error: Invalid input. Acceptance number (c) cannot be larger than the sample size (n)."))
-      return ()
-    } else if (r > n) {
-      jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) cannot be larger than the sample size (n)."))
-      return ()
-    } else if (r <= c) {
-      jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) has to be larger than the acceptance number (c)."))
+    # Error checking for single stage plan
+    checkErrorsSinglePlan(jaspContainer, N, n, c, r)
+    if (jaspContainer$getError()) {
       return ()
     }
   } else {
@@ -101,22 +173,9 @@ getPlanValues <- function(jaspContainer, options, type) {
       c[i] <- stages[[i]]$acceptNumberMult
       r[i] <- stages[[i]]$rejectNumberMult
     }
-    # Error checking
-    cum_n = sum(n)
-    if (cum_n > N) {
-      jaspContainer$setError(sprintf("Error: Invalid input. Cumulative sample size (n1+n2+...) cannot be larger than the lot size (N)."))
-      return ()
-    } else if (any(c > n)) {
-      jaspContainer$setError(sprintf("Error: Invalid input. Acceptance number (c) cannot be larger than the sample size (n)."))
-      return ()
-    } else if (any(r > n)) {
-      jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) cannot be larger than the sample size (n)."))
-      return ()
-    } else if (any(r <= c)) {
-      jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) has to be larger than the acceptance number (c)."))
-      return ()
-    } else if (r[length(stages)] != c[length(stages)] + 1) {
-      jaspContainer$setError(sprintf("Error: Invalid input. Final rejection number (r) has to be 1 more than the final acceptance number (c)."))
+    # Error checking for multiple stage plan
+    checkErrorsMultiplePlan(jaspContainer, N, n, c, r)
+    if (jaspContainer$getError()) {
       return ()
     }
   }
@@ -146,6 +205,13 @@ getPlan <- function(options, type, n, c, r) {
   pd_upper <- options[[paste0("pd_upper", type)]]
   pd_step <- options[[paste0("pd_step", type)]]
   pd <- seq(pd_lower, pd_upper, pd_step)
+  if (options[[paste0("assessPlan", type)]]) {
+    # If assess plan option is specified, add the AQL and RQL values to pd.
+    pd <- c(pd, options[[paste0("pd_prp", type)]], options[[paste0("pd_crp", type)]])
+    pd <- sort(pd)
+    pd <- round(pd, 3)
+    pd <- pd[!duplicated(pd)]
+  }
   dist <- options[[paste0("distribution", type)]]
 
   oc_plan <- NULL
@@ -156,6 +222,7 @@ getPlan <- function(options, type, n, c, r) {
     oc_plan <- AcceptanceSampling::OC2c(n = n, c = c, r = r, type = dist, pd = pd)
   }
   df_plan <- data.frame(PD = oc_plan@pd, PA = oc_plan@paccept)
+  df_plan$PA <- round(df_plan$PA, 3)
   return (list(oc_plan=oc_plan, df_plan=df_plan))
 }
 
@@ -202,7 +269,7 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, 
     table$addRows(list("col_1" = "AQL", "col_2" = pd_prp, "col_3" = pa_prp, "col_4" = pa_prp_actual))
     table$addRows(list("col_1" = "RQL", "col_2" = pd_crp, "col_3" = pa_crp, "col_4" = pa_crp_actual))
     table$showSpecifiedColumnsOnly <- TRUE
-    table$position <- pos+1
+    table$position <- pos
     jaspContainer[["riskTable"]] <- table
 
     if (!assess$OK) {
@@ -211,7 +278,7 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, 
       } else if (pa_crp_actual > pa_crp) {
         text = gettextf("Probability of acceptance (%.3f) at RQL (%.3f) is <b>higher</b> than the required probability of acceptance (%.3f) at RQL.", pa_crp_actual, pd_crp, pa_crp)
       }
-      explanation <- createJaspHtml(text = gettextf("Current plan <b>can not</b> meet the specified risk points because:\n\n%s", text))
+      explanation <- createJaspHtml(text = text, position=pos+1)
       if (is.null(jaspContainer[["explanation"]])) {
         jaspContainer[["explanation"]] <- explanation
       }
@@ -332,6 +399,7 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
     }
     AOQ <- AOQ * pd / N
   }
+  AOQ <- round(AOQ, 3)
   df_plan$AOQ <- AOQ
   df_plan <- na.omit(df_plan)
   aoq_max <- max(df_plan$AOQ)
@@ -404,7 +472,7 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
     }
     ATI <- ATI + N * colSums(rej_probs) # For any stage, if lot gets rejected, all N items are inspected under rectification plan.
   }
-
+  AT <- round(ATI, 3)
   df_plan$ATI <- ATI
   df_plan <- na.omit(df_plan)
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
@@ -462,6 +530,7 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, options, n, c, r) {
     pDecide_i <- stage_probs[i,]
     ASN <- ASN + pDecide_i * cum_n[i]
   }
+  ASN <- round(ASN, 3)
   df_asn <- data.frame(PD = pd, ASN = ASN)
   df_asn <- na.omit(df_asn)
 

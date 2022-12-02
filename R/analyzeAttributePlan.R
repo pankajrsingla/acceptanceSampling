@@ -129,6 +129,16 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # Assess plan
   if (options[[output_vars[1]]]) {
+    # Error handling for AQL/RQL => AQL < RQL, or pd_prp < pd_crp
+    if (options[[risk_vars[1]]] >= options[[risk_vars[3]]]) {
+      jaspContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+      return ()
+    }
+    # Error handling for Producer's and Consumer's Risk => 1 - α > β, or (1-pa_prp) > pa_crp
+    if ((1 - options[[risk_vars[2]]]) <= options[[risk_vars[4]]]) {
+      jaspContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
+      return ()
+    }
     assessPlan(jaspContainer, pos=position+1, c(output_vars[1], risk_vars), oc_plan, options, type, n, c, r)
   }
 

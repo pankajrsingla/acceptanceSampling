@@ -23,7 +23,7 @@ Group
 {
     IntegerField
     { 
-        name: "lotSizeMult"; label: qsTr("Lot size (N): "); defaultValue: 100; min: 1
+        name: "lotSizeMult"; label: qsTr("Lot size (N): "); defaultValue: 1000; min: 1
     }
 
     IntegerField
@@ -70,7 +70,7 @@ Group
                         id:						sampleSizeMult
                         label: 					""
                         name: 					"sampleSizeMult"
-                        defaultValue:           10
+                        defaultValue:           30
                         min:                    1
                         placeholderText:		qsTr("n") + (rowIndex + 1)
                         fieldWidth:				50 * preferencesModel.uiScale
@@ -86,7 +86,7 @@ Group
                     {
                         label: 					""
                         name: 					"acceptNumberMult"
-                        defaultValue:           rowIndex
+                        defaultValue:           rowIndex * 3
                         min:                    0
                         placeholderText:		qsTr("c") + (rowIndex + 1)
                         fieldWidth:				50 * preferencesModel.uiScale
@@ -102,7 +102,7 @@ Group
                     {
                         label: 					""
                         name: 					"rejectNumberMult"
-                        defaultValue:           2
+                        defaultValue:           (rowIndex + 1) == numberOfStages.value ? (rowIndex * 3 + 1) : (rowIndex * 3 + 2)
                         min:                    1
                         placeholderText:		qsTr("r") + (rowIndex + 1)
                         fieldWidth:				50 * preferencesModel.uiScale
