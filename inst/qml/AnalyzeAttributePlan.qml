@@ -36,7 +36,7 @@ Form
 
 		Group
     	{
-			CheckBox { name: "assessPlanSingle"; label: qsTr("Assess sampling plan "); id: assessSingle }
+			CheckBox { name: "assessPlanSingle"; label: qsTr("Assess sampling plan"); id: assessSingle }
 			Common.RiskPoints
 			{
 			    suffix: "Single"
@@ -69,7 +69,7 @@ Form
 
 		Group
     	{
-			CheckBox { name: "assessPlanMult"; label: qsTr("Assess sampling plan "); id: assessMult }
+			CheckBox { name: "assessPlanMult"; label: qsTr("Assess sampling plan"); id: assessMult }
 			Common.RiskPoints
 			{
 			    suffix: "Mult"

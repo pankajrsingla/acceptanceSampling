@@ -38,7 +38,7 @@ Form
 		Group
 		{
 			RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom}
-			IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 1000; min: 1; enabled: hypergeom.checked }
+			IntegerField { name: "lotSize"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1; enabled: hypergeom.checked }
 		}
 		RadioButton { value: "poisson"; label: qsTr("Poisson") }
 	}

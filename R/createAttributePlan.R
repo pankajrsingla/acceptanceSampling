@@ -95,6 +95,10 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     pd_lower <- options$pd_lower
     pd_upper <- options$pd_upper
     pd_step <- options$pd_step
+    checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
+    if (jaspContainer$getError()) {
+      return ()
+    }
     pd <- seq(pd_lower, pd_upper, pd_step)
     pd <- c(pd, options$pd_prp, options$pd_crp)
     pd <- pd[!duplicated(pd)]

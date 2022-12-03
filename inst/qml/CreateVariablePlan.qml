@@ -28,10 +28,10 @@ Form
 	Group
 	{
 		columns: 2
-		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known "); id: sd; checked: true }
+		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known"); id: sd; checked: true }
 	}
 
-	IntegerField { name: "lotSize"; label: qsTr("Lot size (N): "); defaultValue: 1000; min: 1}
+	IntegerField { name: "lotSizeSingle"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1}
 
 	Common.ProbDefect {}
 	

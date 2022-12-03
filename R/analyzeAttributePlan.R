@@ -47,7 +47,7 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Multiple sampling plan
   if (length(options$stages) > 1) {
     plan_vars_mult <- paste0(plan_vars, "Mult")
-    plan_vars_mult <- c(plan_vars_mult, "stages")
+    plan_vars_mult <- c(plan_vars_mult, "stages", "numberOfStages")
     pd_vars_mult <- paste0(pd_vars, "Mult")
     multContainer <- createJaspContainer(title = "Multiple Sampling Plan")
     # Common dependencies for all multiple plans
@@ -123,7 +123,7 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   output_vars <- paste0(c("assessPlan", "showSummary", "showOCCurve", "showAOQCurve", "showATICurve", "showASNCurve"), type)
   
   # Plan data
-  plan <- getPlan(options, type, n, c, r)
+  plan <- getPlan(jaspContainer, options, type, n, c, r)
   oc_plan <- plan$oc_plan
   df_plan <- na.omit(plan$df_plan)
 

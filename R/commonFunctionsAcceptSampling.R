@@ -15,6 +15,31 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+# txt = "Check if values specified for PD are valid."
+# banner(txt, centre = TRUE, bandChar = "-")
+##---------------------------------------------------------------
+##         Check if values specified for PD are valid.         --
+##---------------------------------------------------------------
+#' @param jaspContainer <>
+#' @param pd_lower <>
+#' @param pd_upper <>
+#' @param pd_step <>
+#' @returns <>
+#' @seealso
+#'   [getOCCurve()] for operating characteristics of the plan.
+#' @examples
+#' checkPdErrors(jaspContainer, pos, pd_vars, options, type)
+##---------------------------------------------------------------
+checkPdErrors <- function(jaspContainer, pd_lower, pd_upper, pd_step) {
+  if (pd_lower > pd_upper) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Lower limit for PD needs to be smaller than the upper limit."))
+    return ()
+  }
+  if (pd_step > (pd_upper - pd_lower)) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Step size for PD needs to be smaller than the difference between the upper and limits."))
+  }
+}
+
 # txt = "Check if D*pd values for the hypergeomtric distribution are whole numbers."
 # banner(txt, centre = TRUE, bandChar = "-")
 ##--------------------------------------------------------------------------------
@@ -35,6 +60,10 @@ checkHypergeom <- function(jaspContainer, pd_vars, options, type) {
     pd_lower <- options[[pd_vars[1]]]
     pd_upper <- options[[pd_vars[2]]]
     pd_step <- options[[pd_vars[3]]]
+    checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
+    if (jaspContainer$getError()) {
+      return ()
+    }
     pd <- seq(pd_lower, pd_upper, pd_step)
 
     # Function to check for whole numbers
@@ -46,15 +75,8 @@ checkHypergeom <- function(jaspContainer, pd_vars, options, type) {
     D <- N * pd
     if (!all(is.wholenumber(N), is.wholenumber(D))) {
       jaspContainer$setError(sprintf("%s\n%s", "Error: Invalid input. For hypergeometric distribution, N*pd should be integer values.", "Check the values of N and pd."))
-      # if (is.null(jaspContainer[["hypergeom_error"]])) {
-        # hypergeom_error <- createJaspTable(title = "", dependencies = paste0(c(pd_vars, "lotSize", "distribution"), type), position = pos)
-        # hypergeom_error$setError(sprintf("%s \n %s", "Error: Invalid input. Can not analyze plan. For hypergeometric distribution, N*pd should be integer values.", "Check the values of N and pd."))
-        # jaspContainer[["hypergeom_error"]] <- hypergeom_error
-      # }
-      # return (FALSE)
     }
   }
-  # return (TRUE)
 }
 
 # txt = "Check for errors in single stage attribute sampling plan."
@@ -77,13 +99,16 @@ checkErrorsSinglePlan <- function(jaspContainer, N, n, c, r) {
   if (n > N) {
     jaspContainer$setError(sprintf("Error: Invalid input. Sample size (n) cannot be larger than the lot size (N)."))
     return ()
-  } else if (c > n) {
+  }
+  if (c > n) {
     jaspContainer$setError(sprintf("Error: Invalid input. Acceptance number (c) cannot be larger than the sample size (n)."))
     return ()
-  } else if (r > n) {
+  }
+  if (r > n) {
     jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) cannot be larger than the sample size (n)."))
     return ()
-  } else if (r <= c) {
+  }
+  if (r <= c) {
     jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) has to be larger than the acceptance number (c)."))
   }
 }
@@ -111,30 +136,37 @@ checkErrorsMultiplePlan <- function(jaspContainer, N, n, c, r) {
   if (cum_n > N) {
     jaspContainer$setError(sprintf("Error: Invalid input. Cumulative sample size (n1+n2+...) cannot be larger than the lot size (N)."))
     return ()
-  } else if (any(c > cumsum_n)) {
+  }
+  if (r[num_stages] != c[num_stages] + 1) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Final rejection number (r) needs to be 1 more than the final acceptance number (c)."))
+    return ()
+  }
+  if (any(c > cumsum_n)) {
     jaspContainer$setError(sprintf("Error: Invalid input. Acceptance number (c) cannot be larger than the sample size (n)."))
     return ()
-  } else if (any(r > cumsum_n)) {
+  }
+  if (any(r > cumsum_n)) {
     jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) cannot be larger than the sample size (n)."))
     return ()
-  } else if (any(r <= c)) {
+  }
+  if (any(r <= c)) {
     jaspContainer$setError(sprintf("Error: Invalid input. Rejection number (r) for every stage has to be larger than the corresponding acceptance number (c)."))
     return ()
-  } else if (any(c[1:(num_stages-1)] > r[1:(num_stages-1)] - 2)) {
+  }
+  if (any(c[1:(num_stages-1)] > r[1:(num_stages-1)] - 2)) {
     # Check for r[i] > c[i] + 1 for i in 1:stages-1
     jaspContainer$setError(sprintf("%s\n%s", "Error: Invalid input. For all stages except the last stage, rejection numbers (r) have to be at at least 2 greater than the acceptance numbers (c).",
-                                    "Else, subsequent stages are redundant."))
+                                    "Else, subsequent stages become redundant."))
     return ()
-  } else if (any(c != sort(c))) {
+  }
+  if (any(c != sort(c))) {
     # Check for non-decreasing seqeuence of c
     jaspContainer$setError(sprintf("Error: Invalid input. Acceptance numbers (c) are cumulative, so they need to be in a non-decreasing sequence."))
     return ()
-  } else if (any(r != sort(r))) {
+  }
+  if (any(r != sort(r))) {
     # Check for non-decreasing seqeuence of r
-    jaspContainer$setError(sprintf("Error: Invalid input. Rejection numbers (r) are cumulative, so they need to be in a non-decreasing sequence."))
-    return ()
-  } else if (r[num_stages] != c[num_stages] + 1) {
-    jaspContainer$setError(sprintf("Error: Invalid input. Final rejection number (r) needs to be 1 more than the final acceptance number (c)."))
+    jaspContainer$setError(sprintf("Error: Invalid input. Rejection numbers (r) are cumulative, so they need to be in a non-decreasing sequence."))    
   }
 }
 
@@ -187,6 +219,7 @@ getPlanValues <- function(jaspContainer, options, type) {
 ##---------------------------------------------------------------
 ##            Create and return a plan and its data            --
 ##---------------------------------------------------------------
+#' @param jaspContainer <>
 #' @param options <>
 #' @param type <>
 #' @param n <>
@@ -197,13 +230,17 @@ getPlanValues <- function(jaspContainer, options, type) {
 #'   [()] for <>,
 #'   [()] for <>
 #' @examples
-#' getPlan(options, "Single", n, c, r)
-#' getPlan(options, "Mult", n, c, r)
+#' getPlan(jaspContainer, options, "Single", n, c, r)
+#' getPlan(jaspContainer, options, "Mult", n, c, r)
 ##---------------------------------------------------------------
-getPlan <- function(options, type, n, c, r) {
+getPlan <- function(jaspContainer, options, type, n, c, r) {
   pd_lower <- options[[paste0("pd_lower", type)]]
   pd_upper <- options[[paste0("pd_upper", type)]]
   pd_step <- options[[paste0("pd_step", type)]]
+  checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
+  if (jaspContainer$getError()) {
+    return ()
+  }
   pd <- seq(pd_lower, pd_upper, pd_step)
   if (options[[paste0("assessPlan", type)]]) {
     # If assess plan option is specified, add the AQL and RQL values to pd.
@@ -369,7 +406,7 @@ getOCCurve <- function(jaspContainer, pos, depend_vars, df_plan) {
 #' @examples
 #' getAOQCurve(jaspContainer, pos, depend_vars, df_plan, options, type, n, c, r)
 ##------------------------------------------------------------------------------
-getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c, r) {
+getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c=NULL, r=NULL) {
   if (!is.null(jaspContainer[["aoqCurve"]])) {
     return ()
   }
@@ -378,12 +415,12 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   jaspContainer[["aoqCurve"]] <- aoqCurve
 
   N <-  options[[paste0("lotSize", type)]]
-  dist <- options[[paste0("distribution", type)]]
   pd <- df_plan$PD
   AOQ <- numeric(length(pd))
   if (type == "Single") {
     AOQ <- df_plan$PA * pd * (N-n) / N
   } else {
+    dist <- options[[paste0("distribution", type)]]
     stages <- length(n)
     probs_prod <- 1
     cum_n <- cumsum(n)
@@ -410,14 +447,15 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
          ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "Average Outgoing Quality") +
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
          ggplot2::geom_hline(yintercept = aoq_max, linetype = "dotted") +
-         ggplot2::annotate("text", label = sprintf("AOQL: %.2f", aoq_max), 
+         ggplot2::annotate("text", label = sprintf("AOQL: %.3f", aoq_max), 
                            x = max(min(df_plan$PD)+0.09, pd_aoq_max*0.9), y = aoq_max*1.1, color = "black", size = 6) +
-         ggplot2::scale_x_continuous(breaks = xBreaks, limits = range(xBreaks))
+         ggplot2::scale_x_continuous(breaks = xBreaks, limits = range(xBreaks)) +
          ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
         # ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- pos
   aoqCurve$plotObject <- plt
+  # jaspContainer[["aoq_debug"]] <- createJaspHtml(text = sprintf("AOQ computed at %s\n", format(Sys.time(), "%X")), position = 0)
 }
 
 # txt = "Generate the average total inspection curve for the plan."
@@ -439,7 +477,7 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 #' @examples
 #' getATICurve(jaspContainer, pos, depend_vars, df_plan, options, type, n, c, r)
 ##---------------------------------------------------------------
-getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c, r) {
+getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c=NULL, r=NULL) {
   if (!is.null(jaspContainer[["atiCurve"]])) {
     return ()
   }
@@ -448,7 +486,6 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   jaspContainer[["atiCurve"]] <- atiCurve
 
   N <-  options[[paste0("lotSize", type)]]
-  dist <- options[[paste0("distribution", type)]]
   pd <- df_plan$PD
   ATI <- numeric(length(pd))
 
@@ -457,6 +494,7 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
     ATI <- df_plan$PA * n + (1 - df_plan$PA) * N
   } else {
     # Multiple plan
+    dist <- options[[paste0("distribution", type)]]
     stages <- length(n)
     cum_n <- cumsum(n)
     stage_probs <- getStageProbability(pd, n, c, r, dist, N)
@@ -472,13 +510,18 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
     }
     ATI <- ATI + N * colSums(rej_probs) # For any stage, if lot gets rejected, all N items are inspected under rectification plan.
   }
-  AT <- round(ATI, 3)
+  ATI <- round(ATI, 3)
   df_plan$ATI <- ATI
   df_plan <- na.omit(df_plan)
+  xBreaks <- jaspGraphs::getPrettyAxisBreaks(df_plan$PD)
+  yBreaks <- jaspGraphs::getPrettyAxisBreaks(df_plan$ATI)
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
          ggplot2::geom_point(colour = "black", shape = 19) + 
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
-         ggplot2::labs(x = "Proportion non-conforming", y = "Average Total Inspection")
+         ggplot2::labs(x = "Proportion non-conforming", y = "Average Total Inspection") +
+         ggplot2::scale_x_continuous(breaks = xBreaks, limits = range(xBreaks)) +
+         ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
+        #  ggplot2::scale_y_continuous(breaks = pretty(df_plan$ATI))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- pos
   atiCurve$plotObject <- plt
@@ -505,7 +548,7 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, options, n, c, r) {
   if (!is.null(jaspContainer[["asnPlot"]])) {
     return ()
   }
-  asnPlot <- createJaspPlot(title = "ASN Curve",  width = 480, height = 320)
+  asnPlot <- createJaspPlot(title = "ASN (Average Sample Number) Curve",  width = 480, height = 320)
   asnPlot$dependOn(depend_vars)
   jaspContainer[["asnPlot"]] <- asnPlot
 
@@ -515,6 +558,10 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, options, n, c, r) {
   pd_lower <- options$pd_lowerMult
   pd_upper <- options$pd_upperMult
   pd_step <- options$pd_stepMult
+  checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
+  if (jaspContainer$getError()) {
+    return ()
+  }
   pd = seq(pd_lower, pd_upper, pd_step)
   stages <- length(n)
   num_values <- length(pd)
@@ -531,14 +578,18 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, options, n, c, r) {
     ASN <- ASN + pDecide_i * cum_n[i]
   }
   ASN <- round(ASN, 3)
-  df_asn <- data.frame(PD = pd, ASN = ASN)
-  df_asn <- na.omit(df_asn)
+  df_plan <- data.frame(PD = pd, ASN = ASN)
+  df_plan <- na.omit(df_plan)
 
   # Draw ASN plot
-  plt <- ggplot2::ggplot(data = df_asn, ggplot2::aes(x = PD, y = ASN)) + 
+  xBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$PD), max(df_plan$PD)))
+  yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$ASN), max(df_plan$ASN)))
+  plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ASN)) + 
          ggplot2::geom_point(colour = "black", shape = 19) + 
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
-         ggplot2::labs(x = "Proportion non-conforming", y = "Average Sample Number")
+         ggplot2::labs(x = "Proportion non-conforming", y = "Average Sample Number") +
+         ggplot2::scale_x_continuous(breaks = xBreaks, limits = range(xBreaks)) +
+         ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- pos
   asnPlot$plotObject <- plt

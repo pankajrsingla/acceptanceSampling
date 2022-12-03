@@ -25,7 +25,7 @@ RadioButtonGroup
     property string suffix: ""
     name: "distribution" + suffix
     // property alias hgeom: hypergeom.checked
-    RadioButton { value: "binom"; label: qsTr("Binomial "); checked: true }
-    RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric ") }
-    RadioButton { value: "poisson"; label: qsTr("Poisson ") }
+    RadioButton { value: "binom"; label: qsTr("Binomial"); checked: true }
+    RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric") }
+    RadioButton { value: "poisson"; label: qsTr("Poisson") }
 }

@@ -23,7 +23,7 @@ Group
 {
     IntegerField
     { 
-        name: "lotSizeMult"; label: qsTr("Lot size (N): "); defaultValue: 1000; min: 1
+        name: "lotSizeMult"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1
     }
 
     IntegerField

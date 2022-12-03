@@ -38,7 +38,7 @@ Form
 	{
 		enabled: variables.count != 1
 		CheckBox { name: "sampleStats"; label: qsTr("Specify sample statistics directly (used if dataset is not available)"); id: sampleStats; checked: (variables.count != 1); enabled: false }
-		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n): "); defaultValue: 1; min: 1 }
+		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n)"); defaultValue: 1; min: 1 }
 		DoubleField { name: "sampleMean"; label: qsTr("Sample mean"); defaultValue: 0 }
 		DoubleField { name: "sampleSD"; label: qsTr("Sample standard deviation"); defaultValue: 1; min: 0 }
 	}
@@ -47,16 +47,16 @@ Form
 	{
 		title: qsTr("Specification limits")
 		columns: 2
-		CheckBox { name: "lsl"; label: qsTr("Lower Specification Limit (LSL): "); id: lsl; checked: false }
+		CheckBox { name: "lsl"; label: qsTr("Lower Specification Limit (LSL)"); id: lsl; checked: false }
 		DoubleField{ name: "lower_spec"; label: qsTr(""); defaultValue: 0; enabled: lsl.checked; negativeValues: true }
-		CheckBox { name: "usl"; label: qsTr("Upper Specification Limit (USL): "); id: usl; checked: false }
+		CheckBox { name: "usl"; label: qsTr("Upper Specification Limit (USL)"); id: usl; checked: false }
 		DoubleField { name: "upper_spec"; label: qsTr(""); enabled: usl.checked; negativeValues: true }
 	}
 
 	Group
 	{
 		columns: 2
-		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known "); id: sd; checked: false }
+		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known"); id: sd; checked: false }
 		DoubleField { name: "stdev"; label: qsTr(""); enabled: sd.checked; defaultValue: 1; min: 0; negativeValues: false }
 	}
 
@@ -65,9 +65,9 @@ Form
 		title: qsTr("Quality constraints")
 		enabled: lsl.checked && usl.checked && sd.checked
 		columns: 2
-        Text { text: qsTr("Acceptable Quality Level (AQL): ") }
+        Text { text: qsTr("Acceptable Quality Level (AQL)") }
         DoubleField{ name: "pd_prp"; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1 }
-        Text { text: qsTr("Rejectable Quality Level (RQL / LTPD): ") }
+        Text { text: qsTr("Rejectable Quality Level (RQL / LTPD)") }
         DoubleField { name: "pd_crp"; label: qsTr(""); negativeValues: false; defaultValue: 0.15; min: 0; max: 1 }
 	}
 }
