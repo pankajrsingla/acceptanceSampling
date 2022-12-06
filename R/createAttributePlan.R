@@ -90,49 +90,52 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #' @examples
 #' .findPlan(jaspContainer, options, depend_vars)
 ##----------------------------------------------------------------------------------
-.findPlan <- function(jaspContainer, options, depend_vars) {
-  if (options$pd_prp && options$pa_prp && options$pd_crp && options$pa_crp) {
-    pd_lower <- options$pd_lower
-    pd_upper <- options$pd_upper
-    pd_step <- options$pd_step
-    checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
-    if (jaspContainer$getError()) {
-      return ()
-    }
-    pd <- seq(pd_lower, pd_upper, pd_step)
-    pd <- c(pd, options$pd_prp, options$pd_crp)
-    pd <- pd[!duplicated(pd)]
-    pd <- sort(pd)
-    dist = options$distribution
-    plan_values <- NULL
-    plan <- NULL
-    
-    # # Create sampling plan with the specified values
-    if (dist == "hypergeom") {
-      # Need to provide the lot size (N) for hypergeometric distribution.
-      plan_values <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
-                                                CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
-      plan <- AcceptanceSampling::OC2c(N = options$lotSize, n = plan_values$n, c = plan_values$c, r = plan_values$r, type = dist, pd = pd)
-    } else {
-      # Binomial and Poisson distributions don't require lot size (N) or standard deviation.
-      plan_values <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
-                                                CRP = c(options$pd_crp, options$pa_crp), type = dist)
-      plan <- AcceptanceSampling::OC2c(n = plan_values$n, c = plan_values$c, r = plan_values$r, type = dist, pd = pd)
-    }
-    
-    df_plan <- data.frame(PD = pd, PA = plan@paccept)
-    .attributePlanTable(jaspContainer, depend_vars, plan_values, options$pd_prp, df_plan$PA[df_plan$PD == options$pd_prp], 
-                        options$pd_crp, df_plan$PA[df_plan$PD == options$pd_crp])
+.findPlan <- function(jaspContainer, options, depend_vars) {  
+  pd_lower <- options$pd_lower
+  pd_upper <- options$pd_upper
+  pd_step <- options$pd_step
+  checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
+  if (jaspContainer$getError()) {
+    return ()
+  }
+  pd <- seq(pd_lower, pd_upper, pd_step)
+  pd <- c(pd, options$pd_prp, options$pd_crp)
+  pd <- pd[!duplicated(pd)]
+  pd <- sort(pd)
+  dist <- options$distribution
+  plan_values <- NULL
+  plan <- NULL
+  
+  # # Create sampling plan with the specified values
+  if (dist == "hypergeom") {
+    # Need to provide the lot size (N) for hypergeometric distribution.
+    plan_values <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
+                                              CRP = c(options$pd_crp, options$pa_crp), type = dist, N = options$lotSize)
+    plan <- AcceptanceSampling::OC2c(N = options$lotSize, n = plan_values$n, c = plan_values$c, r = plan_values$r, type = dist, pd = pd)
+  } else {
+    # Binomial and Poisson distributions don't require lot size (N) or standard deviation.
+    plan_values <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), 
+                                              CRP = c(options$pd_crp, options$pa_crp), type = dist)
+    plan <- AcceptanceSampling::OC2c(n = plan_values$n, c = plan_values$c, r = plan_values$r, type = dist, pd = pd)
+  }
+  
+  df_plan <- data.frame(PD = pd, PA = plan@paccept)
+  df_plan <- na.omit(df_plan)
+  if (nrow(df_plan) == 0) {
+    jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
+    return ()
+  }
+  .attributePlanTable(jaspContainer, depend_vars, plan_values, options$pd_prp, df_plan$PA[df_plan$PD == options$pd_prp], 
+                      options$pd_crp, df_plan$PA[df_plan$PD == options$pd_crp])
 
-    # Summary
-    if (options$showSummary) {
-      getSummary(jaspContainer, pos=4, c(depend_vars, "showSummary"), df_plan)
-    }
+  # Summary
+  if (options$showSummary) {
+    getSummary(jaspContainer, pos=4, c(depend_vars, "showSummary"), df_plan)
+  }
 
-    # OC Curve
-    if (options$showOCCurve) {
-      getOCCurve(jaspContainer, pos=5, c(depend_vars, "showOCCurve"), df_plan)
-    }
+  # OC Curve
+  if (options$showOCCurve) {
+    getOCCurve(jaspContainer, pos=5, c(depend_vars, "showOCCurve"), df_plan)
   }
 }
 

@@ -37,6 +37,14 @@ checkPdErrors <- function(jaspContainer, pd_lower, pd_upper, pd_step) {
   }
   if (pd_step > (pd_upper - pd_lower)) {
     jaspContainer$setError(sprintf("Error: Invalid input. Step size for PD needs to be smaller than the difference between the upper and limits."))
+    return ()
+  }
+  is.zero <- function(x, tol = .Machine$double.eps^0.5) {
+    abs(x - 0) < tol
+  }
+  if (is.zero(pd_step) && (pd_upper != pd_lower)) {
+    jaspContainer$setError(sprintf("Error: Invalid input. Step size of 0 is allowed only if lower and upper limits for PD are identical."))
+    return ()
   }
 }
 
@@ -56,14 +64,14 @@ checkPdErrors <- function(jaspContainer, pd_lower, pd_upper, pd_step) {
 #' checkHypergeom(jaspContainer, pos, pd_vars, options, type)
 ##--------------------------------------------------------------------------------
 checkHypergeom <- function(jaspContainer, pd_vars, options, type) {
+  pd_lower <- options[[pd_vars[1]]]
+  pd_upper <- options[[pd_vars[2]]]
+  pd_step <- options[[pd_vars[3]]]
+  checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
+  if (jaspContainer$getError()) {
+    return ()
+  }
   if (options[[paste0("distribution", type)]] == "hypergeom") {
-    pd_lower <- options[[pd_vars[1]]]
-    pd_upper <- options[[pd_vars[2]]]
-    pd_step <- options[[pd_vars[3]]]
-    checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
-    if (jaspContainer$getError()) {
-      return ()
-    }
     pd <- seq(pd_lower, pd_upper, pd_step)
 
     # Function to check for whole numbers
@@ -259,6 +267,11 @@ getPlan <- function(jaspContainer, options, type, n, c, r) {
     oc_plan <- AcceptanceSampling::OC2c(n = n, c = c, r = r, type = dist, pd = pd)
   }
   df_plan <- data.frame(PD = oc_plan@pd, PA = oc_plan@paccept)
+  df_plan <- na.omit(df_plan)
+  if (nrow(df_plan) == 0) {
+    jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
+    return ()
+  }
   df_plan$PA <- round(df_plan$PA, 3)
   return (list(oc_plan=oc_plan, df_plan=df_plan))
 }
@@ -287,38 +300,48 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, 
   pa_prp <- 1 - options[[paste0("pa_prp", type)]]
   pd_crp <- options[[paste0("pd_crp", type)]]
   pa_crp <- options[[paste0("pa_crp", type)]]
-  
-  if (pd_prp > 0 && pa_prp > 0 && pd_crp > 0 && pa_crp > 0) {
-    # Assessment of the sampling plan
-    assess <- AcceptanceSampling::assess(oc_plan, PRP = c(pd_prp, pa_prp), CRP = c(pd_crp, pa_crp))
-    pa_prp_actual <- round(assess$PRP[3], 3)
-    pa_crp_actual <- round(assess$CRP[3], 3)
-    # Table with the specified and actual acceptance probabilities
-    if (!is.null(jaspContainer[["riskTable"]])) {
-      return ()
-    }
-    table <- createJaspTable(title = gettextf("Current plan <b>CAN %s</b> meet the specified risk point(s).", ifelse(assess$OK, "", "NOT")))
-    table$dependOn(depend_vars)
-    table$addColumnInfo(name = "col_1", title = "", type = "string")
-    table$addColumnInfo(name = "col_2", title = "Proportion Non-conforming", type = "number")
-    table$addColumnInfo(name = "col_3", title = "Required P(accept)", type = "number")
-    table$addColumnInfo(name = "col_4", title = "Actual P(accept)", type = "number")
-    table$addRows(list("col_1" = "AQL", "col_2" = pd_prp, "col_3" = pa_prp, "col_4" = pa_prp_actual))
-    table$addRows(list("col_1" = "RQL", "col_2" = pd_crp, "col_3" = pa_crp, "col_4" = pa_crp_actual))
-    table$showSpecifiedColumnsOnly <- TRUE
-    table$position <- pos
-    jaspContainer[["riskTable"]] <- table
 
-    if (!assess$OK) {
-      if (pa_crp_actual < pa_crp) {
-        text = gettextf("Probability of acceptance (%.3f) at AQL (%.3f) is <b>lower</b> than the required probability of acceptance (%.3f) at AQL.", pa_prp_actual, pd_prp, pa_prp)
-      } else if (pa_crp_actual > pa_crp) {
-        text = gettextf("Probability of acceptance (%.3f) at RQL (%.3f) is <b>higher</b> than the required probability of acceptance (%.3f) at RQL.", pa_crp_actual, pd_crp, pa_crp)
-      }
-      explanation <- createJaspHtml(text = text, position=pos+1)
-      if (is.null(jaspContainer[["explanation"]])) {
-        jaspContainer[["explanation"]] <- explanation
-      }
+  # Error handling for AQL/RQL
+  if (pd_prp >= pd_crp) {
+    jaspContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+    return ()
+  }
+
+  # Error handling for Producer's and Consumer's Risk
+  if (pa_prp <= pa_crp) {
+    jaspContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
+    return ()
+  }
+  
+  # Assessment of the sampling plan
+  assess <- AcceptanceSampling::assess(oc_plan, PRP = c(pd_prp, pa_prp), CRP = c(pd_crp, pa_crp))
+  pa_prp_actual <- round(assess$PRP[3], 3)
+  pa_crp_actual <- round(assess$CRP[3], 3)
+  # Table with the specified and actual acceptance probabilities
+  if (!is.null(jaspContainer[["riskTable"]])) {
+    return ()
+  }
+  table <- createJaspTable(title = gettextf("Current plan <b>CAN %s</b> meet the specified risk point(s).", ifelse(assess$OK, "", "NOT")))
+  table$dependOn(depend_vars)
+  table$addColumnInfo(name = "col_1", title = "", type = "string")
+  table$addColumnInfo(name = "col_2", title = "Proportion Non-conforming", type = "number")
+  table$addColumnInfo(name = "col_3", title = "Required P(accept)", type = "number")
+  table$addColumnInfo(name = "col_4", title = "Actual P(accept)", type = "number")
+  table$addRows(list("col_1" = "AQL", "col_2" = pd_prp, "col_3" = pa_prp, "col_4" = pa_prp_actual))
+  table$addRows(list("col_1" = "RQL", "col_2" = pd_crp, "col_3" = pa_crp, "col_4" = pa_crp_actual))
+  table$showSpecifiedColumnsOnly <- TRUE
+  table$position <- pos
+  jaspContainer[["riskTable"]] <- table
+
+  if (!assess$OK) {
+    if (pa_crp_actual < pa_crp) {
+      text <- gettextf("Probability of acceptance (%.3f) at AQL (%.3f) is <b>lower</b> than the required probability of acceptance (%.3f) at AQL.", pa_prp_actual, pd_prp, pa_prp)
+    } else if (pa_crp_actual > pa_crp) {
+      text <- gettextf("Probability of acceptance (%.3f) at RQL (%.3f) is <b>higher</b> than the required probability of acceptance (%.3f) at RQL.", pa_crp_actual, pd_crp, pa_crp)
+    }
+    explanation <- createJaspHtml(text = text, position=pos+1)
+    if (is.null(jaspContainer[["explanation"]])) {
+      jaspContainer[["explanation"]] <- explanation
     }
   }
 }
@@ -381,7 +404,6 @@ getOCCurve <- function(jaspContainer, pos, depend_vars, df_plan) {
                   ggplot2::scale_x_continuous(breaks = xBreaks, limits = range(xBreaks)) +
                   ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
-  # plt$position <- pos
   ocCurve$plotObject <- plt
   ocCurve$position <- pos
   jaspContainer[["ocCurve"]] <- ocCurve
@@ -439,12 +461,16 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   AOQ <- round(AOQ, 3)
   df_plan$AOQ <- AOQ
   df_plan <- na.omit(df_plan)
+  if (nrow(df_plan) == 0) {
+    jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
+    return ()
+  }
   aoq_max <- max(df_plan$AOQ)
   pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
   xBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$PD), max(df_plan$PD)))
   yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$AOQ), 1.2*aoq_max))
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
-         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "Proportion non-conforming", y = "Average Outgoing Quality") +
+         ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "(Incoming) Proportion non-conforming", y = "Average Outgoing Quality") +
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
          ggplot2::geom_hline(yintercept = aoq_max, linetype = "dotted") +
          ggplot2::annotate("text", label = sprintf("AOQL: %.3f", aoq_max), 
@@ -454,8 +480,7 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
         # ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- pos
-  aoqCurve$plotObject <- plt
-  # jaspContainer[["aoq_debug"]] <- createJaspHtml(text = sprintf("AOQ computed at %s\n", format(Sys.time(), "%X")), position = 0)
+  aoqCurve$plotObject <- plt  
 }
 
 # txt = "Generate the average total inspection curve for the plan."
@@ -513,6 +538,10 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   ATI <- round(ATI, 3)
   df_plan$ATI <- ATI
   df_plan <- na.omit(df_plan)
+  if (nrow(df_plan) == 0) {
+    jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
+    return ()
+  }
   xBreaks <- jaspGraphs::getPrettyAxisBreaks(df_plan$PD)
   yBreaks <- jaspGraphs::getPrettyAxisBreaks(df_plan$ATI)
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = ATI)) + 
@@ -535,6 +564,7 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 #' @param jaspContainer <>
 #' @param pos <>
 #' @param depend_vars <>
+#' @param df_plan <>
 #' @param options <>
 #' @param n <>
 #' @param c <>
@@ -542,9 +572,9 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 #' @seealso
 #'   [getSummaryTable()] for the summary table of the plan.
 #' @examples
-#' getASNCurve(jaspContainer, pos, depend_vars, options, n, c, r) 
+#' getASNCurve(jaspContainer, pos, depend_vars, df_plan, options, n, c, r) 
 ##---------------------------------------------------------------------------------------------------------
-getASNCurve <- function(jaspContainer, pos, depend_vars, options, n, c, r) {
+getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c, r) {
   if (!is.null(jaspContainer[["asnPlot"]])) {
     return ()
   }
@@ -555,21 +585,14 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, options, n, c, r) {
   # Parse option values
   dist <- options$distributionMult
   N <- options$lotSizeMult
-  pd_lower <- options$pd_lowerMult
-  pd_upper <- options$pd_upperMult
-  pd_step <- options$pd_stepMult
-  checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
-  if (jaspContainer$getError()) {
-    return ()
-  }
-  pd = seq(pd_lower, pd_upper, pd_step)
+  pd <- df_plan$PD
   stages <- length(n)
   num_values <- length(pd)
   ASN <- numeric(num_values)
   cum_n <- cumsum(n)
   stage_probs <- getStageProbability(pd, n, c, r, dist, N)
   if (is.null(stage_probs)) {
-    asnPlot$setError(sprintf("Error: Invalid input. Can not calculate ASN. Check the plan parameters."))
+    jaspContainer$setError(sprintf("Error: Invalid input. Can not calculate ASN. Check the plan parameters."))
     return ()
   }
   stage_probs <- stage_probs[[1]] + stage_probs[[2]] # Decision prob = p_acc + p_rej
@@ -578,8 +601,11 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, options, n, c, r) {
     ASN <- ASN + pDecide_i * cum_n[i]
   }
   ASN <- round(ASN, 3)
-  df_plan <- data.frame(PD = pd, ASN = ASN)
+  df_plan$ASN <- ASN
   df_plan <- na.omit(df_plan)
+  if (nrow(df_plan) == 0) {
+    jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
+  }
 
   # Draw ASN plot
   xBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$PD), max(df_plan$PD)))
@@ -684,7 +710,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
           return (phyper(q=r[1]-1, m=el, n=N-el, k=n[1], lower.tail = FALSE))
         }
       })
-      rej_probs[k,] = p.rej
+      rej_probs[k,] <- p.rej
       ## p.acc and p.rej now exist and can be used in the following stages.
     }
     else if (k == 2) {
@@ -697,12 +723,12 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
       x <- data.frame(X1 = seq(c.s[1], r.s[1], by=1),
                       X.acc = c[2]-seq(c.s[1], r.s[1], by=1),
                       X.rej = r[2]-1-seq(c.s[1], r.s[1], by=1))
-      p.acc_2 <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd, dist = dist, N=N))
+      p.acc_2 <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd, dist=dist, N=N))
       p.acc <- p.acc + p.acc_2
-      acc_probs[k,] = p.acc_2
-      p.rej_2 <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd, dist = dist, N=N))
+      acc_probs[k,] <- p.acc_2
+      p.rej_2 <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd, dist=dist, N=N))
       p.rej <- p.rej + p.rej_2
-      rej_probs[k,] = p.rej_2
+      rej_probs[k,] <- p.rej_2
     }
     else {
       ## More than two sampling stages.
@@ -723,12 +749,12 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
       }
       x <- cbind(x, X.acc = c[k] - rowSums(x[,1:(k-1)]))
       x <- cbind(x, X.rej = r[k]-1 - rowSums(x[,1:(k-1)]))
-      p.acc_k <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd, dist = dist, N=N))
+      p.acc_k <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd, dist=dist, N=N))
       p.acc <- p.acc + p.acc_k
-      acc_probs[k,] = p.acc_k
-      p.rej_k <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd, dist = dist, N=N))
+      acc_probs[k,] <- p.acc_k
+      p.rej_k <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd, dist=dist, N=N))
       p.rej <- p.rej + p.rej_k
-      rej_probs[k,] = p.rej_k
+      rej_probs[k,] <- p.rej_k
     }
   }
   return(list(acc_probs,rej_probs))

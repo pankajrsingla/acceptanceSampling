@@ -49,7 +49,6 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
         # Proceed with calculations for the data sample.
         data <- na.omit(dataset[[.v(vars)]])
         .hasErrors(dataset=dataset, type = c("infinity", "missingValues"), target = vars, exitAnalysisIfErrors = TRUE)
-        # .hasErrors(dataset=dataset, type = c("infinity", "missingValues"), infinity.target = vars, missingValues.target = vars, exitAnalysisIfErrors = TRUE)
         n <- length(data)
         mean_sample <- mean(data)
         sd_sample <- sd(data)
@@ -57,6 +56,8 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       }
     }
   }
+  # Todo: Need to check this - are negative values of sample mean to be allowed?
+  mean_sample <- abs(mean_sample)
 
   depend_vars <- c("vars", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
   risk_vars <- c("pd_prp", "pd_crp")

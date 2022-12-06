@@ -97,6 +97,11 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   
   # Plan Dataframe
   df_plan <- data.frame(PD = pd, PA = round(oc_var@paccept, 3))
+  df_plan <- na.omit(df_plan)
+  if (nrow(df_plan) == 0) {
+    varContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
+    return ()
+  }
   
   # Output
   output_vars <- c("showSummary", "showOCCurve", "showAOQCurve", "showATICurve")
@@ -116,6 +121,9 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # 3. AOQ Curve
   if (options$showAOQCurve) {
     getAOQCurve(varContainer, pos=5, c(pd_vars, output_vars[3], "lotSizeSingle"), df_plan, options, "Single", n)    
+    if (varContainer$getError()) {
+      return ()
+    }
   }
   # 4. ATI Curve
   if (options$showATICurve) {

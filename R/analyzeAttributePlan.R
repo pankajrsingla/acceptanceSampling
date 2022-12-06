@@ -124,22 +124,18 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   
   # Plan data
   plan <- getPlan(jaspContainer, options, type, n, c, r)
+  if (jaspContainer$getError()) {
+    return ()
+  }
+  df_plan <- plan$df_plan
   oc_plan <- plan$oc_plan
-  df_plan <- na.omit(plan$df_plan)
-
+  
   # Assess plan
-  if (options[[output_vars[1]]]) {
-    # Error handling for AQL/RQL => AQL < RQL, or pd_prp < pd_crp
-    if (options[[risk_vars[1]]] >= options[[risk_vars[3]]]) {
-      jaspContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
-      return ()
-    }
-    # Error handling for Producer's and Consumer's Risk => 1 - α > β, or (1-pa_prp) > pa_crp
-    if ((1 - options[[risk_vars[2]]]) <= options[[risk_vars[4]]]) {
-      jaspContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
-      return ()
-    }
+  if (options[[output_vars[1]]]) {    
     assessPlan(jaspContainer, pos=position+1, c(output_vars[1], risk_vars), oc_plan, options, type, n, c, r)
+    if (jaspContainer$getError()) {
+      return ()
+    }
   }
 
   # Summary table
@@ -155,15 +151,21 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # AOQ Curve (for plans with rectification)
   if (options[[output_vars[4]]]) {
     getAOQCurve(jaspContainer, pos=position+5, output_vars[4], df_plan, options, type, n, c, r)
+    if (jaspContainer$getError()) {
+      return ()
+    }
   }
 
   # ATI Curve (for plans with rectification)
   if (options[[output_vars[5]]]) {
     getATICurve(jaspContainer, pos=position+6, output_vars[5], df_plan, options, type, n, c, r)
+    if (jaspContainer$getError()) {
+      return ()
+    }
   }
 
   # ASN Curve (only for multiple sampling plan)
   if (options[[output_vars[6]]]) {
-    getASNCurve(jaspContainer, pos=position+7, output_vars[6], options, n, c, r)
+    getASNCurve(jaspContainer, pos=position+7, output_vars[6], df_plan, options, n, c, r)    
   }
 }
