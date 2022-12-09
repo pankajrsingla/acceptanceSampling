@@ -19,6 +19,7 @@ import QtQuick 2.8
 import QtQuick.Layouts 1.3
 import JASP.Controls 1.0
 import "./common" as Common
+import JASP
 
 Form
 {
@@ -31,16 +32,16 @@ Form
 
 	Group
 	{
-		DoubleField { name: "kValue"; label: qsTr("k value"); defaultValue: 1; min: 0; negativeValues: false }
+		enabled: variables.count != 1
+		CheckBox { name: "sampleStats"; label: qsTr("Specify sample statistics directly (used if dataset is not available)"); id: sampleStats; checked: (variables.count != 1); enabled: false }
+		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n)"); defaultValue: 24; min: 1 }
+		DoubleField { name: "sampleMean"; label: qsTr("Sample mean"); defaultValue: 1.5 }
+		DoubleField { name: "sampleSD"; label: qsTr("Sample standard deviation"); defaultValue: 1; min: 0; inclusive: JASP.None }
 	}
 
 	Group
 	{
-		enabled: variables.count != 1
-		CheckBox { name: "sampleStats"; label: qsTr("Specify sample statistics directly (used if dataset is not available)"); id: sampleStats; checked: (variables.count != 1); enabled: false }
-		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n)"); defaultValue: 1; min: 1 }
-		DoubleField { name: "sampleMean"; label: qsTr("Sample mean"); defaultValue: 0 }
-		DoubleField { name: "sampleSD"; label: qsTr("Sample standard deviation"); defaultValue: 1; min: 0 }
+		DoubleField { name: "kValue"; label: qsTr("k value"); defaultValue: 1.309; min: 0; negativeValues: false; inclusive: JASP.None }
 	}
 
 	Group
@@ -56,8 +57,8 @@ Form
 	Group
 	{
 		columns: 2
-		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known"); id: sd; checked: false }
-		DoubleField { name: "stdev"; label: qsTr(""); enabled: sd.checked; defaultValue: 1; min: 0; negativeValues: false }
+		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical)"); id: sd; checked: false }
+		DoubleField { name: "stdev"; label: qsTr(""); enabled: sd.checked; defaultValue: 1; min: 0; negativeValues: false; inclusive: JASP.None }
 	}
 
 	Group
@@ -66,8 +67,8 @@ Form
 		enabled: lsl.checked && usl.checked && sd.checked
 		columns: 2
         Text { text: qsTr("Acceptable Quality Level (AQL)") }
-        DoubleField{ name: "pd_prp"; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1 }
+        DoubleField{ name: "pd_prp"; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1; inclusive: JASP.None }
         Text { text: qsTr("Rejectable Quality Level (RQL / LTPD)") }
-        DoubleField { name: "pd_crp"; label: qsTr(""); negativeValues: false; defaultValue: 0.15; min: 0; max: 1 }
+        DoubleField { name: "pd_crp"; label: qsTr(""); negativeValues: false; defaultValue: 0.15; min: 0; max: 1; inclusive: JASP.None }
 	}
 }

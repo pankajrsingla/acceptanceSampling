@@ -60,17 +60,21 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   plan_table$position <- 2
   varContainer[["plan_table"]] <- plan_table
   
+  pd_prp <- round(options$pd_prp, 3)
+  pd_crp <- round(options$pd_crp, 3)
+  pa_prp <- round(1 - options$pa_prp, 3)
+  pa_crp <- round(options$pa_crp, 3)
+
   # Error handling for AQL/RQL
-  if (options$pd_prp >= options$pd_crp) {
+  if (pd_prp >= pd_crp) {
     varContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
     return ()
   }
   # Error handling for Producer's and Consumer's Risk
-  if ((1 - options$pa_prp) <= options$pa_crp) {
+  if (pa_prp <= pa_crp) {
     varContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
     return ()
   }
-
   N <- options$lotSizeSingle
   pd_lower <- options$pd_lower
   pd_upper <- options$pd_upper
@@ -80,18 +84,34 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
     return ()
   }
   pd <- seq(pd_lower, pd_upper, pd_step)
-  pd <- c(pd, options$pd_prp, options$pd_crp)
+  pd <- c(pd, pd_prp, pd_crp)
   pd <- sort(pd)
   pd <- round(pd, 3)
   pd <- pd[!duplicated(pd)]
-  var_plan <- AcceptanceSampling::find.plan(PRP = c(options$pd_prp, 1-options$pa_prp), CRP = c(options$pd_crp, options$pa_crp), type = "normal", s.type = sd)
+  var_plan <- tryCatch(AcceptanceSampling::find.plan(PRP = c(pd_prp, pa_prp), CRP = c(pd_crp, pa_crp), type = "normal", s.type = sd), error = function(x) "error")
+  # find.plan can result in invalid sampling plans for certain quality constraints.
+  # We want to check for such outputs.
+  if (class(var_plan) == "character" && var_plan == "error") {
+    varContainer$setError(sprintf("Error: Variable plan generated for the current quality constraints is invalid. Modify the quality constraints."))  
+    return ()
+  }
   n <- var_plan$n
   k <- var_plan$k
+  # Error check for n
+  if (is.null(n) || is.na(n) || is.infinite(n) || is.nan(n) || (n <= 0) || (!options$sd && (n <= 1))) {
+    varContainer$setError(sprintf("Error: Variable plan generated for the current quality constraints has an invalid sample size (n). Modify the quality constraints."))  
+    return ()
+  }
+  # Error check for k
+  if (is.na(k) || is.null(k) || is.infinite(k) || is.nan(k) || k <= 0) {
+    varContainer$setError(sprintf("Error: Variable plan generated for the current quality constraints has an invalid k value. Modify the quality constraints."))
+    return ()
+  }
   oc_var <- AcceptanceSampling::OCvar(n = n, k = k, type = "normal", s.type = sd, pd = pd)
 
-  # Error checking
+  # Error check for lot size
   if (N < n) {
-    varContainer$setError(sprintf("Error: Invalid input. Lot size (N = %d) cannot be smaller than the sample size (n = %d) of the generated variable plan.", N, n))
+    varContainer$setError(sprintf("Error: Invalid input. Lot size (N = %.0f) cannot be smaller than the sample size (n = %.0f) of the generated variable plan.", N, n))
     return ()
   }
   

@@ -23,7 +23,10 @@ import "./common" as Common
 Form
 {
 	columns: 1
-	Common.RiskPoints {}
+	Common.RiskPoints
+	{
+		include_limits: false
+	}
 	
 	Group
 	{

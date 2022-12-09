@@ -18,28 +18,28 @@
 import QtQuick 2.8
 import QtQuick.Layouts 1.3
 import JASP.Controls 1.0
+import JASP
 
 Group
 {
     title: qsTr("Quality constraints")
     property string suffix: ""
+    property bool include_limits: true
     Group
     {
         columns: 2
-        // Layout.columnSpan: 2
         Text { text: qsTr("Acceptable Quality Level (AQL)") }
-        DoubleField{ name: "pd_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1 }
+        DoubleField{ name: "pd_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None }
         Text { text: qsTr("Rejectable Quality Level (RQL / LTPD)") }
-        DoubleField { name: "pd_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.15; min: 0; max: 1 }
+        DoubleField { name: "pd_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.15; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None }
     }
     
     Group
     {
         columns: 2
-        // Layout.columnSpan: 2
         Text { text: qsTr("Producer's Risk (α)") }
-        DoubleField{ name: "pa_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1 }
+        DoubleField{ name: "pa_prp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None }
         Text { text: qsTr("Consumer's Risk (β)") }
-        DoubleField { name: "pa_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.10; min: 0; max: 1 }
+        DoubleField { name: "pa_crp" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.10; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None }
     }
 }

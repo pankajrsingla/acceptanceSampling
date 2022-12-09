@@ -5,7 +5,7 @@ Create Variable Plan
 ## Input
 -------
 ## Options
-- **Quality constraints**: user-specified constraints associated with AQL and RQL.
+- **Quality constraints**: user-specified constraints associated with AQL and RQL. All values have to lie between 0 and 1, both exclusive.
  - *Acceptable Quality Level (AQL)*: the smallest proportion of non-conforming items that makes the lot definitely acceptable.
  - *Rejectable Quality Level (RQL / LTPD)*: the proportion of non-conforming items in the lot that is unacceptable to the user.
  - *Producer's Risk (α)*: Risk associated with the rejection of a lot that has acceptable quality. Equals the probability of rejecting a lot at AQL.

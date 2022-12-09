@@ -57,11 +57,11 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   createContainer[["findProbTable"]] <- prob_table
   
   # Error handling for hypergeometric distribution
-  checkHypergeom(createContainer, pd_vars, options, type="")
+  checkHypergeom(createContainer, pd_vars, options, type="", options$pd_prp, options$pd_crp)
   if (createContainer$getError()) {
     return ()
   }
-
+  
   # Error handling for AQL/RQL
   if (options$pd_prp >= options$pd_crp) {
     createContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
@@ -90,14 +90,10 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #' @examples
 #' .findPlan(jaspContainer, options, depend_vars)
 ##----------------------------------------------------------------------------------
-.findPlan <- function(jaspContainer, options, depend_vars) {  
+.findPlan <- function(jaspContainer, options, depend_vars) {
   pd_lower <- options$pd_lower
   pd_upper <- options$pd_upper
   pd_step <- options$pd_step
-  checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
-  if (jaspContainer$getError()) {
-    return ()
-  }
   pd <- seq(pd_lower, pd_upper, pd_step)
   pd <- c(pd, options$pd_prp, options$pd_crp)
   pd <- pd[!duplicated(pd)]

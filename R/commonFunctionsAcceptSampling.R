@@ -57,13 +57,15 @@ checkPdErrors <- function(jaspContainer, pd_lower, pd_upper, pd_step) {
 #' @param pd_vars <>
 #' @param options <>
 #' @param type <>
+#' @param pd_prp <>
+#' @param pd_crp <>
 #' @returns <>
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
 #' checkHypergeom(jaspContainer, pos, pd_vars, options, type)
 ##--------------------------------------------------------------------------------
-checkHypergeom <- function(jaspContainer, pd_vars, options, type) {
+checkHypergeom <- function(jaspContainer, pd_vars, options, type, pd_prp=NULL, pd_crp=NULL) {
   pd_lower <- options[[pd_vars[1]]]
   pd_upper <- options[[pd_vars[2]]]
   pd_step <- options[[pd_vars[3]]]
@@ -73,6 +75,9 @@ checkHypergeom <- function(jaspContainer, pd_vars, options, type) {
   }
   if (options[[paste0("distribution", type)]] == "hypergeom") {
     pd <- seq(pd_lower, pd_upper, pd_step)
+    if (!is.null(pd_prp) && !is.null(pd_crp)) {
+      pd <- c(pd, pd_prp, pd_crp)
+    }
 
     # Function to check for whole numbers
     is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
@@ -250,13 +255,22 @@ getPlan <- function(jaspContainer, options, type, n, c, r) {
     return ()
   }
   pd <- seq(pd_lower, pd_upper, pd_step)
+  
+  # If assess plan option is specified, add the AQL and RQL values to pd.
   if (options[[paste0("assessPlan", type)]]) {
-    # If assess plan option is specified, add the AQL and RQL values to pd.
     pd <- c(pd, options[[paste0("pd_prp", type)]], options[[paste0("pd_crp", type)]])
     pd <- sort(pd)
     pd <- round(pd, 3)
     pd <- pd[!duplicated(pd)]
   }
+  
+  # If PD has only <= 1 point(s), add 0 and 1 to the range to make the output more interpretable. 
+  if (length(pd) <= 1) {
+    pd <- c(pd, 0, 1)
+    pd <- sort(pd)
+    pd <- pd[!duplicated(pd)]
+  }
+
   dist <- options[[paste0("distribution", type)]]
 
   oc_plan <- NULL
@@ -321,6 +335,7 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, 
   if (!is.null(jaspContainer[["riskTable"]])) {
     return ()
   }
+  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(Assess plan table) created at %s\n", format(Sys.time(), "%X")), position = 0)
   table <- createJaspTable(title = gettextf("Current plan <b>CAN %s</b> meet the specified risk point(s).", ifelse(assess$OK, "", "NOT")))
   table$dependOn(depend_vars)
   table$addColumnInfo(name = "col_1", title = "", type = "string")
@@ -362,8 +377,10 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, 
 ##---------------------------------------------------------------
 getSummary <- function(jaspContainer, pos, depend_vars, df_plan) {
   if (!is.null(jaspContainer[["summaryTable"]])) {
+    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(Summary table) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)    
     return()
   }
+  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(Summary table) created at %s\n", format(Sys.time(), "%X")), position = 0)
   summaryTable <- createJaspTable(title = "Acceptance Probabilities")
   summaryTable$dependOn(depend_vars)
   summaryTable$addColumnInfo(name = "col_1", title = "Prop. non-conforming", type = "number")
@@ -390,8 +407,10 @@ getSummary <- function(jaspContainer, pos, depend_vars, df_plan) {
 ##----------------------------------------------------------------
 getOCCurve <- function(jaspContainer, pos, depend_vars, df_plan) {
   if (!is.null(jaspContainer[["ocCurve"]])) {
+    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(OC CURVE) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)    
     return()
   }
+  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(OC CURVE) created at %s\n", format(Sys.time(), "%X")), position = 0)
   ocCurve <- createJaspPlot(title = paste0("OC (Operating Characteristics) Curve"),  width = 480, height = 320)
   ocCurve$dependOn(depend_vars)
   df_plan <- na.omit(df_plan)
@@ -430,8 +449,10 @@ getOCCurve <- function(jaspContainer, pos, depend_vars, df_plan) {
 ##------------------------------------------------------------------------------
 getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c=NULL, r=NULL) {
   if (!is.null(jaspContainer[["aoqCurve"]])) {
+    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(AOQ CURVE) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)    
     return ()
   }
+  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(AOQ CURVE) created at %s\n", format(Sys.time(), "%X")), position = 0)
   aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) Curve"), width = 480, height = 320)
   aoqCurve$dependOn(depend_vars)
   jaspContainer[["aoqCurve"]] <- aoqCurve
@@ -466,7 +487,7 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
     return ()
   }
   aoq_max <- max(df_plan$AOQ)
-  pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
+  # pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
   xBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$PD), max(df_plan$PD)))
   yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$AOQ), 1.2*aoq_max))
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
@@ -474,7 +495,7 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
          ggplot2::geom_hline(yintercept = aoq_max, linetype = "dotted") +
          ggplot2::annotate("text", label = sprintf("AOQL: %.3f", aoq_max), 
-                           x = max(min(df_plan$PD)+0.09, pd_aoq_max*0.9), y = aoq_max*1.1, color = "black", size = 6) +
+                           x = (min(df_plan$PD) + max(df_plan$PD)) / 2, y = aoq_max*1.1, color = "black", size = 6) +
          ggplot2::scale_x_continuous(breaks = xBreaks, limits = range(xBreaks)) +
          ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
         # ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
@@ -504,8 +525,10 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 ##---------------------------------------------------------------
 getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c=NULL, r=NULL) {
   if (!is.null(jaspContainer[["atiCurve"]])) {
+    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(ATI CURVE) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)    
     return ()
   }
+  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(ATI CURVE) created at %s\n", format(Sys.time(), "%X")), position = 0)
   atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) Curve"), width = 480, height = 320)
   atiCurve$dependOn(depend_vars)
   jaspContainer[["atiCurve"]] <- atiCurve
@@ -576,8 +599,10 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 ##---------------------------------------------------------------------------------------------------------
 getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c, r) {
   if (!is.null(jaspContainer[["asnPlot"]])) {
+    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(ASN CURVE) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)
     return ()
   }
+  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(ASN CURVE) created at %s\n", format(Sys.time(), "%X")), position = 0)
   asnPlot <- createJaspPlot(title = "ASN (Average Sample Number) Curve",  width = 480, height = 320)
   asnPlot$dependOn(depend_vars)
   jaspContainer[["asnPlot"]] <- asnPlot
@@ -596,10 +621,13 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c,
     return ()
   }
   stage_probs <- stage_probs[[1]] + stage_probs[[2]] # Decision prob = p_acc + p_rej
-  for (i in 1:(stages-1)) {
+  # for (i in 1:(stages-1)) {
+  for (i in 1:stages) {
     pDecide_i <- stage_probs[i,]
     ASN <- ASN + pDecide_i * cum_n[i]
   }
+  # Todo: Correct the calculation of ASN.
+  # ASN <- ASN + stage_probs[stages,] * cum_n[stages]
   ASN <- round(ASN, 3)
   df_plan$ASN <- ASN
   df_plan <- na.omit(df_plan)
