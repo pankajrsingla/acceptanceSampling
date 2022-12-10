@@ -43,7 +43,8 @@ Form
 	{
 		DoubleField { name: "kValue"; label: qsTr("k value"); defaultValue: 1.309; min: 0; negativeValues: false; inclusive: JASP.None }
 	}
-
+	
+	// Todo: Decide if more than 3 decimals are to be allowed for LSL and USL specification. Right now, you can't.
 	Group
 	{
 		title: qsTr("Specification limits")

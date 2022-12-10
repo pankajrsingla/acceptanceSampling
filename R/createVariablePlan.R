@@ -33,9 +33,13 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   risk_vars <- c("pd_prp", "pa_prp", "pd_crp", "pa_crp")
   pd_vars <- c("pd_lower", "pd_upper", "pd_step")
   
-  varContainer <- createJaspContainer(title = "Variable Sampling Plan")
-  varContainer$dependOn(risk_vars) # Common dependencies
-  jaspResults[["varContainer"]] <- varContainer
+  if (is.null(jaspResults[["varContainer"]])) {
+    varContainer <- createJaspContainer(title = "Variable Sampling Plan")
+    varContainer$dependOn(risk_vars) # Common dependencies
+    jaspResults[["varContainer"]] <- varContainer
+  } else {
+    varContainer <- jaspResults[["varContainer"]]
+  }
   
   # Information
   plan_op <- createJaspHtml(text = sprintf("%s\n\n%s", "Z.LSL = (mean - LSL) / historical standard deviation", "Accept lot if Z.LSL >= k, otherwise reject."))                              
@@ -43,10 +47,8 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   varContainer[["decision_info"]] <- plan_op
 
   sd <- "unknown"
-  # sd_value <- 0
   if (options$sd) {
     sd <- "known"
-    # sd_value <- options$stdev
   }
 
   plan_table <- createJaspTable(title = gettextf("Variable Sampling Plan (Standard deviation assumed to be <b>%s</b>)", sd))
@@ -128,8 +130,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # 0. Variable plan table
   plan_table$addRows(list("col_1" = n, "col_2" = k))
-  # .variablePlanTable(varContainer, sd, risk_vars, n, k, pos=2)
-
+  
   # 1. Plan summary
   if (options$showSummary) {
     getSummary(varContainer, pos=3, c(pd_vars, output_vars[1]), df_plan)
@@ -140,7 +141,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
   # 3. AOQ Curve
   if (options$showAOQCurve) {
-    getAOQCurve(varContainer, pos=5, c(pd_vars, output_vars[3], "lotSizeSingle"), df_plan, options, "Single", n)    
+    getAOQCurve(varContainer, pos=5, c(pd_vars, output_vars[3], "lotSizeSingle"), df_plan, options, "Single", n) 
     if (varContainer$getError()) {
       return ()
     }
@@ -150,36 +151,3 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
     getATICurve(varContainer, pos=6, c(pd_vars, output_vars[4], "lotSizeSingle"), df_plan, options, "Single", n)
   }
 }
-
-# txt = "Create table for the variable plan."
-# banner(txt, centre = TRUE, bandChar = "-")
-##---------------------------------------------------------------
-##             Create table for the variable plan.             --
-##---------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param sd <>
-#' @param depend_vars <>
-#' @param n <>
-#' @param k <>
-#' @param pos <>
-#' @returns <>
-#' @seealso
-#'   [()] for <>
-#' @examples
-#' .variablePlanTable(jaspContainer, sd, depend_vars, n, k, pos)
-# .variablePlanTable <- function(jaspContainer, sd, depend_vars, n, k, pos) {
-  # if (!is.null(jaspContainer[["plan_table"]])) {
-  #   return ()
-  # }
-  # plan_table <- createJaspTable(title = gettextf("Variable Sampling Plan (Standard deviation assumed to be <b>%s</b>)", sd))
-  # plan_table$transpose <- TRUE
-  # plan_table$transposeWithOvertitle <- FALSE
-  # plan_table$dependOn(c(depend_vars, "sd"))
-  # plan_table$addColumnInfo(name = "col_0", title = "", type = "string") # Dummy row
-  # plan_table$addColumnInfo(name = "col_1", title = "Sample size", type = "integer")
-  # plan_table$addColumnInfo(name = "col_2", title = "Critical Distance (k)", type = "number")
-  # plan_table$addRows(list("col_1" = n, "col_2" = k))
-  # plan_table$showSpecifiedColumnsOnly <- TRUE
-  # plan_table$position <- pos
-  # jaspContainer[["plan_table"]] <- plan_table
-# }

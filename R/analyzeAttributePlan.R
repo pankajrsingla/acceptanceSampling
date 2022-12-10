@@ -37,10 +37,15 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     plan_vars_single <- c(plan_vars, "sampleSize", "acceptNumber", "rejectNumber")
     plan_vars_single <- paste0(plan_vars_single, "Single")
     pd_vars_single <- paste0(pd_vars, "Single")
-    singleContainer <- createJaspContainer(title = "Single Sampling Plan")
-    # Common dependencies for all single plans
-    singleContainer$dependOn(c(plan_vars_single, pd_vars_single))
-    jaspResults[["singleContainer"]] <- singleContainer
+    # Check if the container already exists
+    if (is.null(jaspResults[["singleContainer"]])) {
+      singleContainer <- createJaspContainer(title = "Single Sampling Plan")
+      # Common dependencies for all single plans
+      singleContainer$dependOn(c(plan_vars_single, pd_vars_single))
+      jaspResults[["singleContainer"]] <- singleContainer
+    } else {
+      singleContainer <- jaspResults[["singleContainer"]]      
+    }
     .handleAttributePlan(singleContainer, position=0, plan_vars_single, pd_vars_single, options, "Single")
   }
 
@@ -49,10 +54,15 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     plan_vars_mult <- paste0(plan_vars, "Mult")
     plan_vars_mult <- c(plan_vars_mult, "stages", "numberOfStages")
     pd_vars_mult <- paste0(pd_vars, "Mult")
-    multContainer <- createJaspContainer(title = "Multiple Sampling Plan")
-    # Common dependencies for all multiple plans
-    multContainer$dependOn(c(plan_vars_mult, pd_vars_mult))
-    jaspResults[["multContainer"]] <- multContainer
+    # Check if the container already exists
+    if (is.null(jaspResults[["multContainer"]])) {
+      multContainer <- createJaspContainer(title = "Multiple Sampling Plan")
+      # Common dependencies for all multiple plans
+      multContainer$dependOn(c(plan_vars_mult, pd_vars_mult))
+      jaspResults[["multContainer"]] <- multContainer
+    } else {
+      multContainer <- jaspResults[["multContainer"]]
+    }
     .handleAttributePlan(multContainer, position=100, plan_vars_mult, pd_vars_mult, options, "Mult")
   }
 }
@@ -115,7 +125,7 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     plan_table$addColumnInfo(name = "table_1_col_3", title = "Cum. Sample Size", type = "integer")
     plan_table$addColumnInfo(name = "table_1_col_4", title = "Acc. Number", type = "integer")
     plan_table$addColumnInfo(name = "table_1_col_5", title = "Rej. Number", type = "integer")
-    plan_table$setData(list(table_1_col_1 = 1:length(stages), table_1_col_2 = n, table_1_col_3 = cumsum(n), 
+    plan_table$setData(list(table_1_col_1 = 1:length(stages), table_1_col_2 = n, table_1_col_3 = cumsum(n),
                             table_1_col_4 = c, table_1_col_5 = r))
   }
 
@@ -132,8 +142,7 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   
   # Assess plan
   if (options[[output_vars[1]]]) {    
-    # assessPlan(jaspContainer, pos=position+1, c(output_vars[1], risk_vars), oc_plan, options, type, n, c, r)
-    assessPlan(jaspContainer, pos=position+1, c(plan_vars, pd_vars, output_vars[1], risk_vars), oc_plan, options, type, n, c, r)
+    assessPlan(jaspContainer, pos=position+1, c(output_vars[1], risk_vars), oc_plan, options, type, n, c, r)
     if (jaspContainer$getError()) {
       return ()
     }
@@ -141,20 +150,17 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # Summary table
   if (options[[output_vars[2]]]) {
-    # getSummary(jaspContainer, pos=position+3, output_vars[2], df_plan)
-    getSummary(jaspContainer, pos=position+3, c(plan_vars, pd_vars, risk_vars, output_vars[2]), df_plan)
+    getSummary(jaspContainer, pos=position+3, output_vars[2], df_plan)
   }  
 
   # OC Curve
   if (options[[output_vars[3]]]) {
-    # getOCCurve(jaspContainer, pos=position+4, output_vars[3], df_plan)
-    getOCCurve(jaspContainer, pos=position+4, c(plan_vars, pd_vars, risk_vars, output_vars[3]), df_plan)
+    getOCCurve(jaspContainer, pos=position+4, output_vars[3], df_plan)
   }
 
   # AOQ Curve (for plans with rectification)
   if (options[[output_vars[4]]]) {
-    # getAOQCurve(jaspContainer, pos=position+5, output_vars[4], df_plan, options, type, n, c, r)
-    getAOQCurve(jaspContainer, pos=position+5, c(plan_vars, pd_vars, risk_vars, output_vars[4]), df_plan, options, type, n, c, r)
+    getAOQCurve(jaspContainer, pos=position+5, output_vars[4], df_plan, options, type, n, c, r)
     if (jaspContainer$getError()) {
       return ()
     }
@@ -162,8 +168,7 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # ATI Curve (for plans with rectification)
   if (options[[output_vars[5]]]) {
-    # getATICurve(jaspContainer, pos=position+6, output_vars[5], df_plan, options, type, n, c, r)
-    getATICurve(jaspContainer, pos=position+6, c(plan_vars, pd_vars, risk_vars, output_vars[5]), df_plan, options, type, n, c, r)
+    getATICurve(jaspContainer, pos=position+6, output_vars[5], df_plan, options, type, n, c, r)
     if (jaspContainer$getError()) {
       return ()
     }
@@ -171,7 +176,6 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # ASN Curve (only for multiple sampling plan)
   if (options[[output_vars[6]]]) {
-    # getASNCurve(jaspContainer, pos=position+7, output_vars[6], df_plan, options, n, c, r)    
-    getASNCurve(jaspContainer, pos=position+7, c(plan_vars, pd_vars, risk_vars, output_vars[6]), df_plan, options, n, c, r)
+    getASNCurve(jaspContainer, pos=position+7, output_vars[6], df_plan, options, n, c, r)    
   }
 }

@@ -50,7 +50,7 @@
 <circle cx='690.85' cy='487.89' r='1.95' style='stroke-width: 0.71; fill: #000000;' />
 <polyline points='107.89,226.49 137.04,182.00 166.18,148.63 195.33,137.50 224.48,148.63 253.63,182.00 282.78,226.49 311.92,282.11 341.07,332.16 370.22,376.66 399.37,415.59 428.52,437.84 457.67,460.08 486.81,471.21 515.96,476.77 545.11,482.33 574.26,487.89 603.41,487.89 632.56,487.89 661.70,487.89 690.85,487.89 ' style='stroke-width: 1.07; stroke-dasharray: 5.69,5.69; stroke-linecap: butt;' />
 <line x1='78.74' y1='137.50' x2='720.00' y2='137.50' style='stroke-width: 1.07; stroke-dasharray: 1.42,4.27; stroke-linecap: butt;' />
-<text x='370.22' y='108.34' text-anchor='middle' style='font-size: 17.07px; font-family: sans;' textLength='99.66px' lengthAdjust='spacingAndGlyphs'>AOQL: 0.063</text>
+<text x='399.37' y='108.34' text-anchor='middle' style='font-size: 17.07px; font-family: sans;' textLength='99.66px' lengthAdjust='spacingAndGlyphs'>AOQL: 0.063</text>
 <line x1='107.57' y1='510.14' x2='691.17' y2='510.14' style='stroke-width: 0.64; stroke-linecap: butt;' />
 <line x1='78.74' y1='488.21' x2='78.74' y2='42.64' style='stroke-width: 0.64; stroke-linecap: butt;' />
 <rect x='78.74' y='20.71' width='641.26' height='489.43' style='stroke-width: 0.00; stroke: none;' />

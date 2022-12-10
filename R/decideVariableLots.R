@@ -28,6 +28,18 @@
 #' @examples
 #' DecideVariableLots(jaspResults, dataset, options)
 DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
+  depend_vars <- c("vars", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
+  risk_vars <- c("pd_prp", "pd_crp")
+
+  # Check if container already exists.
+  if (is.null(jaspResults[["lotContainer"]])) {
+    lotContainer <- createJaspContainer(title = "")
+    lotContainer$dependOn(c(depend_vars, risk_vars)) # Common dependencies
+    jaspResults[["lotContainer"]] <- lotContainer
+  } else {
+    lotContainer <- jaspResults[["lotContainer"]]
+  }
+
   n <- NULL
   mean_sample <- NULL
   sd_sample <- NULL
@@ -58,16 +70,10 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   }
   # Todo: Need to check this - are negative values of sample mean to be allowed?
   mean_sample <- abs(mean_sample)
-
-  depend_vars <- c("vars", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
-  risk_vars <- c("pd_prp", "pd_crp")
-  # if (!is.null(jaspResults[["decision_table"]])) {
-  #   return ()
-  # }
-  decision_table <- createJaspTable(title = sprintf("Accept or Reject Lot %s", ifelse(!is.null(var_name), paste0("(", var_name, ")"), "")))
+  
+  decision_table <- createJaspTable(title = sprintf("Accept or Reject Lot %s", ifelse(!is.null(var_name), paste0("(Variable: <b>", var_name, "</b>)"), "")))
   decision_table$transpose <- TRUE
   decision_table$transposeWithOvertitle <- FALSE
-  decision_table$dependOn(c(depend_vars, risk_vars))
   # Initializing the table
   decision_table$addColumnInfo(name = "col_0", title = "", type = "string") # Dummy row for title. Add title if needed.
   decision_table$addColumnInfo(name = "col_1", title = "Sample Size", type = "integer")
@@ -90,18 +96,17 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   }
   decision_table$addColumnInfo(name = "col_9", title = "Critical Distance (k)", type = "number")
 
-  jaspResults[["decision_table"]] <- decision_table
+  lotContainer[["decision_table"]] <- decision_table
   if (sd_sample <= 0) {
-    decision_table$setError(sprintf("Error: Sample standard deviation has to be greater than 0."))
+    lotContainer$setError(sprintf("Error: Sample standard deviation has to be greater than 0."))
     return ()
   }
   
   if (is.null(mean_sample)) {
-    decision_table$setError(sprintf("Error: Sample mean is invalid."))
+    lotContainer$setError(sprintf("Error: Sample mean is invalid."))
     return ()
   }
 
-  # Initialize the decision table.
   sd_compare <- sd_sample
   sd <- "unknown"
   sd_historical <- 0
@@ -115,7 +120,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   z.usl <- NULL
   decision <- NULL
 
-  if (!options$lsl & !options$usl) {
+  if (!options$lsl && !options$usl) {
     # decision_table$setError(sprintf("Error: Either LSL or USL needs to be specified for the lot to be accepted/rejected."))
     decision <- NULL
   }
@@ -140,7 +145,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
 
   if (options$lsl & options$usl) {
     if (options$upper_spec < options$lower_spec) {
-      decision_table$setError(sprintf("Error: USL can not be lower than LSL."))
+      lotContainer$setError(sprintf("Error: USL can not be lower than LSL."))
       return ()
     }
     # Both LSL and USL specified. Decide based on SD.
@@ -150,7 +155,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       pd_prp <- round(options$pd_prp, 3)
       pd_crp <- round(options$pd_crp, 3)
       if (pd_prp >= pd_crp) {
-        decision_table$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+        lotContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
         return ()
       }
       z.p <- (options$lower_spec - options$upper_spec) / (2 * sd_historical)
@@ -162,7 +167,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
         decision <- (z.lsl >= k) & (z.usl >= k)
       } else {
         if (n <= 1) {
-          decision_table$setError(sprintf("Error: can not accept or reject lot: sample size has to be greater than 1."))
+          lotContainer$setError(sprintf("Error: can not accept or reject lot: sample size has to be greater than 1."))
           return ()
         } else {
           q.l <- z.lsl * sqrt(n/(n-1))
@@ -180,7 +185,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
     } else {
       # Historical sd unknown
       if (n <= 1) {
-        decision_table$setError(sprintf("Error: Sample size has to be > 1 if both LSL and USL are provided, and historical standard deviation is unknown."))
+        lotContainer$setError(sprintf("Error: Sample size has to be > 1 if both LSL and USL are provided, and historical standard deviation is unknown."))
         return ()
       } else {
         a <- (n - 2) / 2
@@ -198,6 +203,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       }
     }
   }
+  # Filling up the decision table
   row = list("col_1" = n, "col_2" = mean_sample, "col_3" = sd_sample, "col_4" = sd_compare)
   if (options$lsl) {
     row = append(row, list("col_5" = options$lower_spec))
@@ -218,11 +224,10 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   decision_table$position <- 1
 
   if (!is.null(decision)) {
-    if (is.null(jaspResults[["decision_output"]])) {
-      decision_output <- createJaspHtml(text = sprintf("<u>Decision:</u> <b>%s</b> lot.", ifelse(decision == TRUE, "Accept", "Reject")), 
-                                        dependencies = c(depend_vars, risk_vars), position = 2)
+    if (is.null(lotContainer[["decision_output"]])) {
+      decision_output <- createJaspHtml(text = sprintf("<u>Decision:</u> <b>%s</b> lot.", ifelse(decision == TRUE, "Accept", "Reject")), position = 2)
       decision_output$position <- 2
-      jaspResults[["decision_output"]] <- decision_output
+      lotContainer[["decision_output"]] <- decision_output
     }
   }
 }

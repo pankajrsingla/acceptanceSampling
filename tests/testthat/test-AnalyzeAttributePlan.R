@@ -21,7 +21,7 @@ test_that("Analyze attribute plan single - plan table match", {
   options$showAOQCurveSingle <- FALSE
   options$showATICurveSingle <- FALSE
   
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plan_table <- results[["results"]][["singleContainer"]][["collection"]][["singleContainer_plan_table"]][["data"]]
   jaspTools::expect_equal_tables(plan_table, list("Sample size", 250, "Acceptance number", 10))
 })
@@ -50,7 +50,7 @@ test_that("Analyze attribute plan single - assess table match", {
   options$showAOQCurveSingle <- FALSE
   options$showATICurveSingle <- FALSE
   
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   assess_table <- results[["results"]][["singleContainer"]][["collection"]][["singleContainer_riskTable"]][["data"]]
   jaspTools::expect_equal_tables(assess_table, list("AQL", 0.05, 0.95, 0.5, "RQL", 0.15, 0.1, 0.002))
 })
@@ -76,7 +76,7 @@ test_that("Analyze attribute plan single - AOQ Curve match", {
   
   # 1. Binomial
   options$distributionSingle <- "binom"
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["singleContainer"]][["collection"]][["singleContainer_aoqCurve"]][["data"]]
   aoqPlotBinom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(aoqPlotBinom, "aoq-curve-single-binom")
@@ -86,7 +86,7 @@ test_that("Analyze attribute plan single - AOQ Curve match", {
   options$lotSize <- 1000
   options$sampleSizeSingle <- 100
   options$pd_step <- 0.05
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["singleContainer"]][["collection"]][["singleContainer_aoqCurve"]][["data"]]
   aoqPlotHypergeom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(aoqPlotHypergeom, "aoq-curve-single-hypergeom")
@@ -96,7 +96,7 @@ test_that("Analyze attribute plan single - AOQ Curve match", {
   options$lotSize <-  500 
   options$sampleSizeSingle <- 50
   options$pd_step <- 0.1
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["singleContainer"]][["collection"]][["singleContainer_aoqCurve"]][["data"]]
   aoqPlotPoisson <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(aoqPlotPoisson, "aoq-curve-single-poisson")
@@ -123,7 +123,7 @@ test_that("Analyze attribute plan single - ATI Curve match", {
   
   # 1. Binomial
   options$distributionSingle <- "binom"
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["singleContainer"]][["collection"]][["singleContainer_atiCurve"]][["data"]]
   atiPlotBinom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(atiPlotBinom, "ati-curve-single-binom")
@@ -133,7 +133,7 @@ test_that("Analyze attribute plan single - ATI Curve match", {
   options$lotSize <- 600
   options$sampleSizeSingle <- 70
   options$pd_step <- 0.03
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["singleContainer"]][["collection"]][["singleContainer_atiCurve"]][["data"]]
   atiPlotHypergeom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(atiPlotHypergeom, "ati-curve-single-hypergeom")
@@ -143,22 +143,32 @@ test_that("Analyze attribute plan single - ATI Curve match", {
   options$lotSize <- 100
   options$sampleSizeSingle <- 20
   options$pd_step <- 0.005
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["singleContainer"]][["collection"]][["singleContainer_atiCurve"]][["data"]]
   atiPlotPoisson <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(atiPlotPoisson, "ati-curve-single-poisson")
 })
 #################################################################################################################
-
-# 2. Multiple sampling plan
+if (0) {
 # Todo: add legit values for testing multiple plans.
+# Todo: need to figure out how to populate the stages variable.
+# 2. Multiple sampling plan
 #################################################################################################################
 # 2.1 Test for plan table - generated by default
 test_that("Analyze attribute plan multiple - plan table match", {
   options <- jaspTools::analysisOptions("AnalyzeAttributePlan")
   options$lotSizeMult <- 500
   options$numberOfStages <- 6
+  n <- c(46,46,46,46,46,46)
+  c <- c(0,1,2,3,4,6)
+  r <- c(3,3,4,5,6,7)
   # Todo: add legit values for "stages" - the table variable
+  stages <- NULL
+  for (i in 1:options$numberOfStages) {
+    stages[[i]]$sampleSizeMult <- n[i]
+    stages[[i]]$acceptNumberMult <- c[i]
+    stages[[i]]$rejectNumberMult <- r[i]
+  }
   # options$sampleSizeMult <- c(46,46,46,46,46,46)
   # options$acceptNumberMult <- c(0,1,2,3,4,6)
   # options$rejectNumberMult <- c(3,3,4,5,6,7)
@@ -168,6 +178,7 @@ test_that("Analyze attribute plan multiple - plan table match", {
   options$distributionMult <- "binom"
   
   # There has to be a way to avoid this. Somehow the default values of the options are not being read during testing.
+  options$sampleSizeSingle <- 0 # To avoid single plan calculations
   options$assessPlanMult <- FALSE
   options$showSummaryMult <- FALSE
   options$showOCCurveMult <- FALSE
@@ -175,7 +186,7 @@ test_that("Analyze attribute plan multiple - plan table match", {
   options$showATICurveMult <- FALSE
   options$showASNCurveMult <- FALSE
   
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plan_table <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_plan_table"]][["data"]]
   jaspTools::expect_equal_tables(plan_table, list("Sample size", 250, "Acceptance number", 10))
 })
@@ -203,7 +214,7 @@ test_that("Analyze attribute plan Mult - assess table match", {
   options$showAOQCurveMult <- FALSE
   options$showATICurveMult <- FALSE
   
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   assess_table <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_riskTable"]][["data"]]
   jaspTools::expect_equal_tables(assess_table, list("AQL", 0.05, 0.95, 0.5, "RQL", 0.15, 0.1, 0.002))
 })
@@ -228,7 +239,7 @@ test_that("Analyze attribute plan Mult - AOQ Curve match", {
   
   # 1. Binomial
   options$distributionMult <- "binom"
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_aoqCurve"]][["data"]]
   aoqPlotBinom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(aoqPlotBinom, "aoq-curve-Mult-binom")
@@ -238,7 +249,7 @@ test_that("Analyze attribute plan Mult - AOQ Curve match", {
   options$lotSize <- 1000
   options$sampleSizeMult <- 100
   options$pd_step <- 0.05
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_aoqCurve"]][["data"]]
   aoqPlotHypergeom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(aoqPlotHypergeom, "aoq-curve-Mult-hypergeom")
@@ -248,7 +259,7 @@ test_that("Analyze attribute plan Mult - AOQ Curve match", {
   options$lotSize <-  500 
   options$sampleSizeMult <- 50
   options$pd_step <- 0.1
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_aoqCurve"]][["data"]]
   aoqPlotPoisson <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(aoqPlotPoisson, "aoq-curve-Mult-poisson")
@@ -274,7 +285,7 @@ test_that("Analyze attribute plan Mult - ATI Curve match", {
   
   # 1. Binomial
   options$distributionMult <- "binom"
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_atiCurve"]][["data"]]
   atiPlotBinom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(atiPlotBinom, "ati-curve-Mult-binom")
@@ -284,7 +295,7 @@ test_that("Analyze attribute plan Mult - ATI Curve match", {
   options$lotSize <- 600
   options$sampleSizeMult <- 70
   options$pd_step <- 0.03
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_atiCurve"]][["data"]]
   atiPlotHypergeom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(atiPlotHypergeom, "ati-curve-Mult-hypergeom")
@@ -294,7 +305,7 @@ test_that("Analyze attribute plan Mult - ATI Curve match", {
   options$lotSize <- 100
   options$sampleSizeMult <- 20
   options$pd_step <- 0.005
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_atiCurve"]][["data"]]
   atiPlotPoisson <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(atiPlotPoisson, "ati-curve-Mult-poisson")
@@ -320,7 +331,7 @@ test_that("Analyze attribute plan Mult - ATI Curve match", {
   
   # 1. Binomial
   options$distributionMult <- "binom"
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_atiCurve"]][["data"]]
   atiPlotBinom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(atiPlotBinom, "ati-curve-Mult-binom")
@@ -330,7 +341,7 @@ test_that("Analyze attribute plan Mult - ATI Curve match", {
   options$lotSize <- 600
   options$sampleSizeMult <- 70
   options$pd_step <- 0.03
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_atiCurve"]][["data"]]
   atiPlotHypergeom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(atiPlotHypergeom, "ati-curve-Mult-hypergeom")
@@ -340,8 +351,9 @@ test_that("Analyze attribute plan Mult - ATI Curve match", {
   options$lotSize <- 100
   options$sampleSizeMult <- 20
   options$pd_step <- 0.005
-  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options, makeTests = TRUE)
+  results <- jaspTools::runAnalysis("AnalyzeAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["MultContainer"]][["collection"]][["MultContainer_atiCurve"]][["data"]]
   atiPlotPoisson <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(atiPlotPoisson, "ati-curve-Mult-poisson")
 })
+}

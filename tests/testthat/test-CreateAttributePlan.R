@@ -99,7 +99,7 @@ test_that("Create plan - OC Curve match", {
   options$pd_upper <- 0.72
   options$showOCCurve <- TRUE
   options$distribution <- "binom" 
-  options$pd_step <- 0.02  
+  options$pd_step <- 0.02
   results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["createContainer"]][["collection"]][["createContainer_ocCurve"]][["data"]]
   testPlotBinom <- results[["state"]][["figures"]][[plotName]][["obj"]]

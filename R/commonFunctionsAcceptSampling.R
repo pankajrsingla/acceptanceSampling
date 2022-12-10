@@ -310,10 +310,10 @@ getPlan <- function(jaspContainer, options, type, n, c, r) {
 #' assessPlan(jaspContainer, pos, depend_vars, oc_plan, options, type, n, c, r)
 ##---------------------------------------------------------------------------------------
 assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, n, c, r) {
-  pd_prp <- options[[paste0("pd_prp", type)]]
-  pa_prp <- 1 - options[[paste0("pa_prp", type)]]
-  pd_crp <- options[[paste0("pd_crp", type)]]
-  pa_crp <- options[[paste0("pa_crp", type)]]
+  pd_prp <- round(options[[paste0("pd_prp", type)]], 3)
+  pa_prp <- round(1 - options[[paste0("pa_prp", type)]], 3)
+  pd_crp <- round(options[[paste0("pd_crp", type)]], 3)
+  pa_crp <- round(options[[paste0("pa_crp", type)]], 3)
 
   # Error handling for AQL/RQL
   if (pd_prp >= pd_crp) {
@@ -335,7 +335,6 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, 
   if (!is.null(jaspContainer[["riskTable"]])) {
     return ()
   }
-  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(Assess plan table) created at %s\n", format(Sys.time(), "%X")), position = 0)
   table <- createJaspTable(title = gettextf("Current plan <b>CAN %s</b> meet the specified risk point(s).", ifelse(assess$OK, "", "NOT")))
   table$dependOn(depend_vars)
   table$addColumnInfo(name = "col_1", title = "", type = "string")
@@ -377,10 +376,8 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, 
 ##---------------------------------------------------------------
 getSummary <- function(jaspContainer, pos, depend_vars, df_plan) {
   if (!is.null(jaspContainer[["summaryTable"]])) {
-    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(Summary table) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)    
     return()
   }
-  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(Summary table) created at %s\n", format(Sys.time(), "%X")), position = 0)
   summaryTable <- createJaspTable(title = "Acceptance Probabilities")
   summaryTable$dependOn(depend_vars)
   summaryTable$addColumnInfo(name = "col_1", title = "Prop. non-conforming", type = "number")
@@ -407,13 +404,10 @@ getSummary <- function(jaspContainer, pos, depend_vars, df_plan) {
 ##----------------------------------------------------------------
 getOCCurve <- function(jaspContainer, pos, depend_vars, df_plan) {
   if (!is.null(jaspContainer[["ocCurve"]])) {
-    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(OC CURVE) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)    
     return()
   }
-  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(OC CURVE) created at %s\n", format(Sys.time(), "%X")), position = 0)
   ocCurve <- createJaspPlot(title = paste0("OC (Operating Characteristics) Curve"),  width = 480, height = 320)
   ocCurve$dependOn(depend_vars)
-  df_plan <- na.omit(df_plan)
   xBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$PD), max(df_plan$PD)))
   yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$PA), max(df_plan$PA)))
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = PA)) + 
@@ -449,10 +443,8 @@ getOCCurve <- function(jaspContainer, pos, depend_vars, df_plan) {
 ##------------------------------------------------------------------------------
 getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c=NULL, r=NULL) {
   if (!is.null(jaspContainer[["aoqCurve"]])) {
-    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(AOQ CURVE) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)    
     return ()
   }
-  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(AOQ CURVE) created at %s\n", format(Sys.time(), "%X")), position = 0)
   aoqCurve <- createJaspPlot(title = paste0("AOQ (Average Outgoing Quality) Curve"), width = 480, height = 320)
   aoqCurve$dependOn(depend_vars)
   jaspContainer[["aoqCurve"]] <- aoqCurve
@@ -525,10 +517,8 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 ##---------------------------------------------------------------
 getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c=NULL, r=NULL) {
   if (!is.null(jaspContainer[["atiCurve"]])) {
-    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(ATI CURVE) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)    
     return ()
   }
-  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(ATI CURVE) created at %s\n", format(Sys.time(), "%X")), position = 0)
   atiCurve <- createJaspPlot(title = paste0("ATI (Average Total Inspection) Curve"), width = 480, height = 320)
   atiCurve$dependOn(depend_vars)
   jaspContainer[["atiCurve"]] <- atiCurve
@@ -599,10 +589,8 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 ##---------------------------------------------------------------------------------------------------------
 getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c, r) {
   if (!is.null(jaspContainer[["asnPlot"]])) {
-    jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(ASN CURVE) not found, returning at %s\n", format(Sys.time(), "%X")), position = 0)
     return ()
   }
-  jaspContainer[[paste0("time", runif(1,1,10000))]] <- createJaspHtml(text = sprintf("(ASN CURVE) created at %s\n", format(Sys.time(), "%X")), position = 0)
   asnPlot <- createJaspPlot(title = "ASN (Average Sample Number) Curve",  width = 480, height = 320)
   asnPlot$dependOn(depend_vars)
   jaspContainer[["asnPlot"]] <- asnPlot
