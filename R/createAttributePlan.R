@@ -126,6 +126,9 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     plan_values <- AcceptanceSampling::find.plan(PRP = c(pd_prp, pa_prp), CRP = c(pd_crp, pa_crp), type = dist)
     plan <- AcceptanceSampling::OC2c(n = plan_values$n, c = plan_values$c, r = plan_values$r, type = dist, pd = pd)
   }
+  n <- plan_values$n
+  c <- plan_values$c
+  r <- plan_values$r
   
   df_plan <- data.frame(PD = pd, PA = plan@paccept)
   df_plan <- na.omit(df_plan)
@@ -133,7 +136,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
     return ()
   }
-  .attributePlanTable(jaspContainer, depend_vars, plan_values, pd_prp, df_plan$PA[df_plan$PD == pd_prp], pd_crp, df_plan$PA[df_plan$PD == pd_crp])
+  .attributePlanTable(jaspContainer, depend_vars, pd_prp, df_plan$PA[df_plan$PD == pd_prp], pd_crp, df_plan$PA[df_plan$PD == pd_crp], n, c, r)
 
   # Summary
   if (options$showSummary) {
@@ -144,6 +147,22 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   if (options$showOCCurve) {
     getOCCurve(jaspContainer, pos=5, c(depend_vars, "showOCCurve"), df_plan)
   }
+
+  # AOQ Curve (for plans with rectification)
+  if (options$showAOQCurve) {
+    getAOQCurve(jaspContainer, pos=6, "showAOQCurve", df_plan, options, "", n)
+    if (jaspContainer$getError()) {
+      return ()
+    }
+  }
+
+  # ATI Curve (for plans with rectification)
+  if (options$showATICurve) {
+    getATICurve(jaspContainer, pos=7, "showATICurve", df_plan, options, "", n)
+    if (jaspContainer$getError()) {
+      return ()
+    }
+  }
 }
 
 # txt = "Create and fill the output table(s)."
@@ -153,21 +172,23 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##----------------------------------------------------------------
 #' @param jaspContainer <>
 #' @param depend_vars <>
-#' @param plan_values <>
 #' @param pd_prp <>
 #' @param pa_prp <>
 #' @param pd_crp <>
 #' @param pa_crp <>
+#' @param n <>
+#' @param c <>
+#' @param r <>
 #' @returns <>
 #' @seealso
 #'   [()] for <>
 #' @examples
 #' .attributePlanTable(jaspContainer, depend_vars, plan_values, df_plan)
 ##----------------------------------------------------------------
-.attributePlanTable <- function(jaspContainer, depend_vars, plan_values, pd_prp, pa_prp, pd_crp, pa_crp) {
+.attributePlanTable <- function(jaspContainer, depend_vars, pd_prp, pa_prp, pd_crp, pa_crp, n, c, r) {
   # Simple table with sample size and acc. number
   plan_table <- jaspContainer[["findPlanTable"]]
-  plan_table[["col_2"]] <- c(plan_values$n, plan_values$c)
+  plan_table[["col_2"]] <- c(n, c)
 
   # Table with acceptance and rejection probabilities for AQL, RQL
   prob_table <- jaspContainer[["findProbTable"]]
@@ -177,8 +198,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # Description of the sampling plan:
   if (is.null(jaspContainer[["description"]])) {
-    description <- createJaspHtml(text = sprintf("If the number of defective items out of %d sampled is <= %d, accept the lot. Reject otherwise.", 
-                                                 plan_values$n, plan_values$c), position = 3)
+    description <- createJaspHtml(text = sprintf("If the number of defective items out of %d sampled is <= %d, accept the lot. Reject otherwise.", n, c), position = 3)
     jaspContainer[["description"]] <- description                        
   }
 }

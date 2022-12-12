@@ -1,18 +1,18 @@
-Create Variable Plan 
+Create and Analyze Plan 
 ==========================
-*Create Variable Plan* allows the user to generate a single stage variable sampling plan that satisfies the user-specified constraints. This type of sampling involves measuring a continuous variable using a sample.
+*Create and Analyze Plan* allows the user to generate a single stage variable sampling plan that satisfies the user-specified constraints. This type of sampling involves measuring a continuous variable using a sample.
 
 ## Input
 -------
 ## Options
+- **Lot size (N)**: total number of items in the lot.
 - **Quality constraints**: user-specified constraints associated with AQL and RQL. All values have to lie between 0 and 1, both exclusive.
  - *Acceptable Quality Level (AQL)*: the smallest proportion of non-conforming items that makes the lot definitely acceptable.
  - *Rejectable Quality Level (RQL / LTPD)*: the proportion of non-conforming items in the lot that is unacceptable to the user.
  - *Producer's Risk (α)*: Risk associated with the rejection of a lot that has acceptable quality. Equals the probability of rejecting a lot at AQL.
  - *Consumer's Risk (β)*: Risk associated with the acceptance of an RQL quality lot.
 - **Standard Deviation (Historical) known**: whether or not the historical standard deviation is known.
-- **Lot size (N)**: total number of items in the lot.
-- **PD (Proportion non-conforming items)**: the range of quality levels at which the plan will be analyzed.
+- **Proportion non-conforming items**: the range of quality levels at which the plan will be analyzed.
  - *From*: lower bound of the quality level range.
  - *To*: upper bound of the quality level range.
  - *Step size*: difference between consecutive quality levels.

@@ -23,30 +23,9 @@ import "./common" as Common
 Form
 {
 	columns: 1
+	IntegerField { name: "lotSize"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1}
 	Common.RiskPoints {}
-	
-	Common.ProbDefect
-	{
-		suffix: ""
-	}
-
-	RadioButtonGroup
-	{
-		title: qsTr("Distribution")
-		name: "distribution"
-		RadioButton { value: "binom"; label: qsTr("Binomial"); checked: true }
-		Group
-		{
-			RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric"); id: hypergeom}
-			IntegerField { name: "lotSize"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1; enabled: hypergeom.checked }
-		}
-		RadioButton { value: "poisson"; label: qsTr("Poisson") }
-	}
-	
-	Group
-	{
-		title: qsTr("Output options")
-		CheckBox { name: "showSummary"; label: qsTr("Summary table") }
-		CheckBox { name: "showOCCurve"; label: qsTr("OC curve") }
-	}	
+	Common.ProbDefect {}
+	Common.Distribution {}	
+	Common.OutputOptions {}
 }

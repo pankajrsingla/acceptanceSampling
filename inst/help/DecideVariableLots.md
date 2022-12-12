@@ -8,11 +8,11 @@ Accept/Reject Lots
 - **Measurement**: the observations/data collected for the sample.
 
 ## Options
-- **k value**: the value used to compare the sample mean with the specification limits.
 - **Specify sample statistics directly (used if dataset is not available)**: sample statistics used for evaluating the lot in the absence of a dataset.
  - *Sample size (n)*: number of items in the sample.
  - *Sample mean*: mean of the sample values.
  - *Sample standard deviation*: Standard deviation of the sample values.
+- **k value**: the value used to compare the sample mean with the specification limits.
 - **Specification limits**: the lower and the upper specification limits.
  - *Lower Specification Limit (LSL)*: the lower specification limit.
  - *Upper Specification Limit (USL)*: the upper specification limit.

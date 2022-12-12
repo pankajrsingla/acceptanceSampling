@@ -23,6 +23,7 @@ import "./common" as Common
 Form
 {
 	columns: 1
+	IntegerField { name: "lotSizeSingle"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1}
 	Common.RiskPoints
 	{
 		include_limits: false
@@ -32,9 +33,7 @@ Form
 	{
 		columns: 2
 		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known"); id: sd; checked: true }
-	}
-
-	IntegerField { name: "lotSizeSingle"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1}
+	}	
 
 	Common.ProbDefect {}
 	

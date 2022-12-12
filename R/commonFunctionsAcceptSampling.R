@@ -452,7 +452,7 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   N <-  options[[paste0("lotSize", type)]]
   pd <- df_plan$PD
   AOQ <- numeric(length(pd))
-  if (type == "Single") {
+  if (type == "Single" || type == "") {
     AOQ <- df_plan$PA * pd * (N-n) / N
   } else {
     dist <- options[[paste0("distribution", type)]]
@@ -527,7 +527,7 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   pd <- df_plan$PD
   ATI <- numeric(length(pd))
 
-  if (type != "Mult") {
+  if (type == "Single" || type == "") {
     # Single plan
     ATI <- df_plan$PA * n + (1 - df_plan$PA) * N
   } else {

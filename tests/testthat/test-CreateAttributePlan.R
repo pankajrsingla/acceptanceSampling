@@ -98,6 +98,12 @@ test_that("Create plan - OC Curve match", {
   options$pd_lower <- 0.15
   options$pd_upper <- 0.72
   options$showOCCurve <- TRUE
+  # There has to be a way to avoid this. Somehow the default values of the options are not being read during testing.
+  options$showSummary <- FALSE
+  options$showAOQCurve <- FALSE
+  options$showATICurve <- FALSE
+
+  # 1. Binomial
   options$distribution <- "binom" 
   options$pd_step <- 0.02
   results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
@@ -114,11 +120,101 @@ test_that("Create plan - OC Curve match", {
   testPlotHypergeom <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(testPlotHypergeom, "oc-operating-characteristics-curve-hypergeom")
 
-  # # 3. Poisson
+  # 3. Poisson
   options$distribution <- "poisson"
   options$pd_step <- 0.05
   results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
   plotName <- results[["results"]][["createContainer"]][["collection"]][["createContainer_ocCurve"]][["data"]]
   testPlotPoisson <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(testPlotPoisson, "oc-operating-characteristics-curve-poisson")
+})
+
+# 4. Test for AOQ Curve
+test_that("Create attribute plan - AOQ Curve match", {
+  options <- jaspTools::analysisOptions("CreateAttributePlan")
+  options$pd_prp <- 0.20
+  options$pd_crp <- 0.40
+  options$pa_prp <- 0.25
+  options$pa_crp <- 0.45
+  options$pd_lower <- 0.1
+  options$pd_upper <- 0.9
+  options$showAOQCurve <- TRUE
+  # There has to be a way to avoid this. Somehow the default values of the options are not being read during testing.
+  options$showSummary <- FALSE
+  options$showOCCurve <- FALSE
+  options$showATICurve <- FALSE
+  
+  # 1. Binomial
+  options$distribution <- "binom"
+  options$lotSize <- 1000
+  options$pd_step <- 0.1
+  results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
+  plotName <- results[["results"]][["createContainer"]][["collection"]][["createContainer_aoqCurve"]][["data"]]
+  aoqPlotBinom <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(aoqPlotBinom, "aoq-curve--binom")
+  
+  # 2. Hypergeometric
+  options$distribution <- "hypergeom"
+  options$lotSize <- 500
+  options$sampleSize <- 100
+  options$pd_step <- 0.05
+  results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
+  plotName <- results[["results"]][["createContainer"]][["collection"]][["createContainer_aoqCurve"]][["data"]]
+  aoqPlotHypergeom <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(aoqPlotHypergeom, "aoq-curve--hypergeom")
+
+  # # 3. Poisson
+  options$distribution <- "poisson"
+  options$lotSize <- 400
+  options$sampleSize <- 50
+  options$pd_step <- 0.01
+  results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
+  plotName <- results[["results"]][["createContainer"]][["collection"]][["createContainer_aoqCurve"]][["data"]]
+  aoqPlotPoisson <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(aoqPlotPoisson, "aoq-curve--poisson")
+})
+#################################################################################################################
+
+# 5. Test for ATI Curve
+test_that("Create attribute plan - ATI Curve match", {
+  options <- jaspTools::analysisOptions("CreateAttributePlan")
+  options$pd_prp <- 0.08
+  options$pd_crp <- 0.65
+  options$pa_prp <- 0.18
+  options$pa_crp <- 0.38
+  options$pd_lower <- 0.04
+  options$pd_upper <- 0.78
+  
+  options$showATICurve <- TRUE
+  # There has to be a way to avoid this. Somehow the default values of the options are not being read during testing.
+  options$showSummary <- FALSE
+  options$showOCCurve <- FALSE
+  options$showAOQCurve <- FALSE
+  
+  # 1. Binomial
+  options$distribution <- "binom"
+  options$lotSize <- 750
+  options$pd_step <- 0.2
+  results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
+  plotName <- results[["results"]][["createContainer"]][["collection"]][["createContainer_atiCurve"]][["data"]]
+  atiPlotBinom <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(atiPlotBinom, "ati-curve--binom")
+  
+  # 2. Hypergeometric
+  options$distribution <- "hypergeom"
+  options$lotSize <- 600
+  options$pd_step <- 0.1
+  results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
+  plotName <- results[["results"]][["createContainer"]][["collection"]][["createContainer_atiCurve"]][["data"]]
+  atiPlotHypergeom <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(atiPlotHypergeom, "ati-curve--hypergeom")
+
+  # # 3. Poisson
+  options$distribution <- "poisson"
+  options$lotSize <- 300
+  options$pd_step <- 0.05
+  results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
+  plotName <- results[["results"]][["createContainer"]][["collection"]][["createContainer_atiCurve"]][["data"]]
+  atiPlotPoisson <- results[["state"]][["figures"]][[plotName]][["obj"]]
+  jaspTools::expect_equal_plots(atiPlotPoisson, "ati-curve--poisson")
 })
