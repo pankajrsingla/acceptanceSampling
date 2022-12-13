@@ -78,10 +78,10 @@ test_that("Analyze plan - assess table match", {
   options$pd_upper <- 0.99
   options$pd_step <- 0.001
   options$assessPlan <- TRUE
-  options$pd_prp <- 0.001
-  options$pd_crp <- 0.09
-  options$pa_prp <- 0.15
-  options$pa_crp <- 0.23
+  options$aql <- 0.001
+  options$rql <- 0.09
+  options$prod_risk <- 0.15
+  options$cons_risk <- 0.23
   # Remove this later, if possible.
   options$showSummary <- FALSE
   options$showOCCurve <- FALSE
@@ -101,8 +101,8 @@ test_that("Analyze plan - assess table match", {
   
   # 3.2 SD unknown
   options$sd <- FALSE
-  options$pa_prp <- 0.05
-  options$pa_crp <- 0.915
+  options$prod_risk <- 0.05
+  options$cons_risk <- 0.915
   results <- jaspTools::runAnalysis("AnalyzeVariablePlan", "test.csv", options)
   assessTableTitle <- results[["results"]][["analyzeVarContainer"]][["collection"]][["analyzeVarContainer_riskTable"]][["title"]]
   expect_that(assessTableTitle, equals("Current plan <b>CAN </b> meet the specified risk point(s)."))

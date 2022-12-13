@@ -30,7 +30,7 @@
 #' CreateAttributePlan(jaspResults, dataset, options)
 ##---------------------------------------------------------------
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
-  risk_vars <- c("pd_prp", "pa_prp", "pd_crp", "pa_crp")
+  risk_vars <- c("aql", "prod_risk", "rql", "cons_risk")
   pd_vars <- c("pd_lower", "pd_upper", "pd_step")
   depend_vars <- c(pd_vars, risk_vars, "lotSize", "distribution")
 
@@ -62,27 +62,27 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   createContainer[["findProbTable"]] <- prob_table
   
   # Error handling for hypergeometric distribution
-  pd_prp <- round(options$pd_prp, 3)
-  pd_crp <- round(options$pd_crp, 3)
-  checkHypergeom(createContainer, pd_vars, options, type="", pd_prp, pd_crp)
+  aql <- round(options$aql, 3)
+  rql <- round(options$rql, 3)
+  checkHypergeom(createContainer, pd_vars, options, type="", aql, rql)
   if (createContainer$getError()) {
     return ()
   }
   
   # Error handling for AQL/RQL
-  if (pd_prp >= pd_crp) {
+  if (aql >= rql) {
     createContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
     return ()
   }
 
   # Error handling for Producer's and Consumer's Risk
-  pa_prp <- round((1 - options$pa_prp), 3)
-  pa_crp <- round(options$pa_crp, 3)
-  if (pa_prp <= pa_crp) {
+  pa_prod <- round((1 - options$prod_risk), 3)
+  pa_cons <- round(options$cons_risk, 3)
+  if (pa_prod <= pa_cons) {
     createContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
     return ()
   }
-  .findPlan(createContainer, options, depend_vars, pd_prp, pd_crp, pa_prp, pa_crp)
+  .findPlan(createContainer, options, depend_vars, aql, rql, pa_prod, pa_cons)
 }
 
 # txt = "Find the sampling plan that satisfies the specified AQL and RQL constraints."
@@ -93,22 +93,22 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #' @param jaspContainer <>
 #' @param options <>
 #' @param depend_vars <>
-#' @param pd_prp <>
-#' @param pa_prp <>
-#' @param pd_crp <>
-#' @param pa_crp <>
+#' @param aql <>
+#' @param pa_prod <>
+#' @param rql <>
+#' @param pa_cons <>
 #' @returns <>
 #' @seealso
 #'   [()] for <>
 #' @examples
-#' .findPlan(jaspContainer, options, depend_vars, pd_prp, pd_crp, pa_prp, pa_crp)
+#' .findPlan(jaspContainer, options, depend_vars, aql, rql, pa_prod, pa_cons)
 ##----------------------------------------------------------------------------------
-.findPlan <- function(jaspContainer, options, depend_vars, pd_prp, pd_crp, pa_prp, pa_crp) {
+.findPlan <- function(jaspContainer, options, depend_vars, aql, rql, pa_prod, pa_cons) {
   pd_lower <- options$pd_lower
   pd_upper <- options$pd_upper
   pd_step <- options$pd_step
   pd <- seq(pd_lower, pd_upper, pd_step)
-  pd <- c(pd, pd_prp, pd_crp)
+  pd <- c(pd, aql, rql)
   pd <- round(pd, 3)
   pd <- pd[!duplicated(pd)]
   pd <- sort(pd)
@@ -119,11 +119,11 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # # Create sampling plan with the specified values
   if (dist == "hypergeom") {
     # Need to provide the lot size (N) for hypergeometric distribution.
-    plan_values <- AcceptanceSampling::find.plan(PRP = c(pd_prp, pa_prp), CRP = c(pd_crp, pa_crp), type = dist, N = options$lotSize)
+    plan_values <- AcceptanceSampling::find.plan(PRP = c(aql, pa_prod), CRP = c(rql, pa_cons), type = dist, N = options$lotSize)
     plan <- AcceptanceSampling::OC2c(N = options$lotSize, n = plan_values$n, c = plan_values$c, r = plan_values$r, type = dist, pd = pd)
   } else {
     # Binomial and Poisson distributions don't require lot size (N) or standard deviation.
-    plan_values <- AcceptanceSampling::find.plan(PRP = c(pd_prp, pa_prp), CRP = c(pd_crp, pa_crp), type = dist)
+    plan_values <- AcceptanceSampling::find.plan(PRP = c(aql, pa_prod), CRP = c(rql, pa_cons), type = dist)
     plan <- AcceptanceSampling::OC2c(n = plan_values$n, c = plan_values$c, r = plan_values$r, type = dist, pd = pd)
   }
   n <- plan_values$n
@@ -136,7 +136,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
     return ()
   }
-  .attributePlanTable(jaspContainer, depend_vars, pd_prp, df_plan$PA[df_plan$PD == pd_prp], pd_crp, df_plan$PA[df_plan$PD == pd_crp], n, c, r)
+  .attributePlanTable(jaspContainer, depend_vars, aql, df_plan$PA[df_plan$PD == aql], rql, df_plan$PA[df_plan$PD == rql], n, c, r)
 
   # Summary
   if (options$showSummary) {
@@ -172,10 +172,10 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##----------------------------------------------------------------
 #' @param jaspContainer <>
 #' @param depend_vars <>
-#' @param pd_prp <>
-#' @param pa_prp <>
-#' @param pd_crp <>
-#' @param pa_crp <>
+#' @param aql <>
+#' @param pa_prod <>
+#' @param rql <>
+#' @param pa_cons <>
 #' @param n <>
 #' @param c <>
 #' @param r <>
@@ -185,16 +185,16 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #' @examples
 #' .attributePlanTable(jaspContainer, depend_vars, plan_values, df_plan)
 ##----------------------------------------------------------------
-.attributePlanTable <- function(jaspContainer, depend_vars, pd_prp, pa_prp, pd_crp, pa_crp, n, c, r) {
+.attributePlanTable <- function(jaspContainer, depend_vars, aql, pa_prod, rql, pa_cons, n, c, r) {
   # Simple table with sample size and acc. number
   plan_table <- jaspContainer[["findPlanTable"]]
   plan_table[["col_2"]] <- c(n, c)
 
   # Table with acceptance and rejection probabilities for AQL, RQL
   prob_table <- jaspContainer[["findProbTable"]]
-  prob_table[["col_2"]] <- c(pd_prp, pd_crp)
-  prob_table[["col_3"]] <- c(pa_prp, pa_crp)
-  prob_table[["col_4"]] <- c(1-pa_prp, 1-pa_crp)
+  prob_table[["col_2"]] <- c(aql, rql)
+  prob_table[["col_3"]] <- c(pa_prod, pa_cons)
+  prob_table[["col_4"]] <- c(1-pa_prod, 1-pa_cons)
 
   # Description of the sampling plan:
   if (is.null(jaspContainer[["description"]])) {

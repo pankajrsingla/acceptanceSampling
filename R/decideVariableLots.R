@@ -29,7 +29,7 @@
 #' DecideVariableLots(jaspResults, dataset, options)
 DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   depend_vars <- c("vars", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
-  risk_vars <- c("pd_prp", "pd_crp")
+  risk_vars <- c("aql", "rql")
 
   # Check if container already exists.
   if (is.null(jaspResults[["lotContainer"]]) || jaspResults[["lotContainer"]]$getError()) {
@@ -152,18 +152,18 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
     # Historical sd known
     if (options$sd) {
       # Error handling for AQL/RQL
-      pd_prp <- round(options$pd_prp, 3)
-      pd_crp <- round(options$pd_crp, 3)
-      if (pd_prp >= pd_crp) {
+      aql <- round(options$aql, 3)
+      rql <- round(options$rql, 3)
+      if (aql >= rql) {
         lotContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
         return ()
       }
       z.p <- (options$lower_spec - options$upper_spec) / (2 * sd_historical)
       p <- pnorm(z.p)
       p <- round(p, 3)
-      if (2*p >= pd_crp) {
+      if (2*p >= rql) {
         decision <- FALSE
-      } else if (2*p <= pd_prp) {
+      } else if (2*p <= aql) {
         decision <- (z.lsl >= k) & (z.usl >= k)
       } else {
         if (n <= 1) {

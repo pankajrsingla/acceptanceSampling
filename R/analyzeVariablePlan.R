@@ -79,7 +79,7 @@ AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   df_plan <- plan$df_plan
   oc_plan <- plan$oc_plan
     
-  risk_vars <- c("pd_prp", "pa_prp", "pd_crp", "pa_crp")
+  risk_vars <- c("aql", "prod_risk", "rql", "cons_risk")
   pd_vars <- c("pd_lower", "pd_upper", "pd_step")
 
   # 1. Assess plan

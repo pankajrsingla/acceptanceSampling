@@ -115,8 +115,8 @@ test_that("Decide lots - no dataset, lsl & usl", {
   # 3.2 Historical SD known
   options$sd <- TRUE
   options$stdev <- 10.12
-  options$pd_prp <- 0.05
-  options$pd_crp <- 0.15
+  options$aql <- 0.05
+  options$rql <- 0.15
   options$lower_spec <- 10
   
   # 3.2.1 Reject
@@ -195,8 +195,8 @@ test_that("Decide lots - no dataset, usl", {
   # 5.2 Historical SD known
   options$sd <- TRUE
   options$stdev <- 2.5
-  options$pd_prp <- 0.05
-  options$pd_crp <- 0.15
+  options$aql <- 0.05
+  options$rql <- 0.15
   # 5.2.1 Reject
   options$upper_spec <- 6
   results <- jaspTools::runAnalysis("DecideVariableLots", "test.csv", options)
@@ -246,8 +246,8 @@ test_that("Decide lots - dataset, lsl & usl", {
   # 6.2 Historical SD known
   options$sd <- TRUE
   options$stdev <- 1.42
-  options$pd_prp <- 0.05
-  options$pd_crp <- 0.15
+  options$aql <- 0.05
+  options$rql <- 0.15
   options$upper_spec <- 6
   
   # 6.2.1 Reject

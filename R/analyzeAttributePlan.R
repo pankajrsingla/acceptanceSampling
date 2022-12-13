@@ -129,7 +129,7 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
                             table_1_col_4 = c, table_1_col_5 = r))
   }
 
-  risk_vars <- paste0(c("pd_prp", "pa_prp", "pd_crp", "pa_crp"), type)
+  risk_vars <- paste0(c("aql", "prod_risk", "rql", "cons_risk"), type)
   output_vars <- paste0(c("assessPlan", "showSummary", "showOCCurve", "showAOQCurve", "showATICurve", "showASNCurve"), type)
   
   # Plan data

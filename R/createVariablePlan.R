@@ -30,7 +30,7 @@
 #' CreateVariablePlan(jaspResults, dataset, options)
 CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Dependency variables
-  risk_vars <- c("pd_prp", "pa_prp", "pd_crp", "pa_crp")
+  risk_vars <- c("aql", "prod_risk", "rql", "cons_risk")
   pd_vars <- c("pd_lower", "pd_upper", "pd_step")
   
   if (is.null(jaspResults[["createVarContainer"]]) || jaspResults[["createVarContainer"]]$getError()) {
@@ -62,18 +62,18 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   plan_table$position <- 2
   createVarContainer[["plan_table"]] <- plan_table
   
-  pd_prp <- round(options$pd_prp, 3)
-  pd_crp <- round(options$pd_crp, 3)
-  pa_prp <- round(1 - options$pa_prp, 3)
-  pa_crp <- round(options$pa_crp, 3)
+  aql <- round(options$aql, 3)
+  rql <- round(options$rql, 3)
+  pa_prod <- round(1 - options$prod_risk, 3)
+  pa_cons <- round(options$cons_risk, 3)
 
   # Error handling for AQL/RQL
-  if (pd_prp >= pd_crp) {
+  if (aql >= rql) {
     createVarContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
     return ()
   }
   # Error handling for Producer's and Consumer's Risk
-  if (pa_prp <= pa_crp) {
+  if (pa_prod <= pa_cons) {
     createVarContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
     return ()
   }
@@ -86,11 +86,11 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
     return ()
   }
   pd <- seq(pd_lower, pd_upper, pd_step)
-  pd <- c(pd, pd_prp, pd_crp)
+  pd <- c(pd, aql, rql)
   pd <- sort(pd)
   pd <- round(pd, 3)
   pd <- pd[!duplicated(pd)]
-  var_plan <- tryCatch(AcceptanceSampling::find.plan(PRP = c(pd_prp, pa_prp), CRP = c(pd_crp, pa_crp), type = "normal", s.type = sd), error = function(x) "error")
+  var_plan <- tryCatch(AcceptanceSampling::find.plan(PRP = c(aql, pa_prod), CRP = c(rql, pa_cons), type = "normal", s.type = sd), error = function(x) "error")
   # find.plan can result in invalid sampling plans for certain quality constraints.
   # We want to check for such outputs.
   if (class(var_plan) == "character" && var_plan == "error") {

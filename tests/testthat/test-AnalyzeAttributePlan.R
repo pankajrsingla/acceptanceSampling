@@ -40,10 +40,10 @@ test_that("Analyze attribute plan single - assess table match", {
   options$distributionSingle <- "hypergeom"
   
   options$assessPlanSingle <- TRUE
-  options$pd_prpSingle <- 0.05
-  options$pd_crpSingle <- 0.15
-  options$pa_prpSingle <- 0.05
-  options$pa_crpSingle <- 0.1
+  options$aqlSingle <- 0.05
+  options$rqlSingle <- 0.15
+  options$prod_riskSingle <- 0.05
+  options$cons_riskSingle <- 0.1
   # There has to be a way to avoid this. Somehow the default values of the options are not being read during testing.
   options$showSummarySingle <- FALSE
   options$showOCCurveSingle <- FALSE
@@ -204,10 +204,10 @@ test_that("Analyze attribute plan Mult - assess table match", {
   options$distributionMult <- "hypergeom"
   
   options$assessPlanMult <- TRUE
-  options$pd_prpMult <- 0.05
-  options$pd_crpMult <- 0.15
-  options$pa_prpMult <- 0.05
-  options$pa_crpMult <- 0.1
+  options$aqlMult <- 0.05
+  options$rqlMult <- 0.15
+  options$prod_riskMult <- 0.05
+  options$cons_riskMult <- 0.1
   # There has to be a way to avoid this. Somehow the default values of the options are not being read during testing.
   options$showSummaryMult <- FALSE
   options$showOCCurveMult <- FALSE

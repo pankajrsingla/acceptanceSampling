@@ -57,15 +57,15 @@ checkPdErrors <- function(jaspContainer, pd_lower, pd_upper, pd_step) {
 #' @param pd_vars <>
 #' @param options <>
 #' @param type <>
-#' @param pd_prp <>
-#' @param pd_crp <>
+#' @param aql <>
+#' @param rql <>
 #' @returns <>
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
 #' checkHypergeom(jaspContainer, pos, pd_vars, options, type)
 ##--------------------------------------------------------------------------------
-checkHypergeom <- function(jaspContainer, pd_vars, options, type, pd_prp=NULL, pd_crp=NULL) {
+checkHypergeom <- function(jaspContainer, pd_vars, options, type, aql=NULL, rql=NULL) {
   pd_lower <- options[[pd_vars[1]]]
   pd_upper <- options[[pd_vars[2]]]
   pd_step <- options[[pd_vars[3]]]
@@ -75,8 +75,8 @@ checkHypergeom <- function(jaspContainer, pd_vars, options, type, pd_prp=NULL, p
   }
   if (options[[paste0("distribution", type)]] == "hypergeom") {
     pd <- seq(pd_lower, pd_upper, pd_step)
-    if (!is.null(pd_prp) && !is.null(pd_crp)) {
-      pd <- c(pd, pd_prp, pd_crp)
+    if (!is.null(aql) && !is.null(rql)) {
+      pd <- c(pd, aql, rql)
     }
 
     # Function to check for whole numbers
@@ -258,7 +258,7 @@ getPlan <- function(jaspContainer, options, type, n, c=NULL, r=NULL, k=NULL, sd=
   
   # If assess plan option is specified, add the AQL and RQL values to pd.
   if (options[[paste0("assessPlan", type)]]) {
-    pd <- c(pd, options[[paste0("pd_prp", type)]], options[[paste0("pd_crp", type)]])
+    pd <- c(pd, options[[paste0("aql", type)]], options[[paste0("rql", type)]])
     pd <- sort(pd)
     pd <- round(pd, 3)
     pd <- pd[!duplicated(pd)]
@@ -312,27 +312,27 @@ getPlan <- function(jaspContainer, options, type, n, c=NULL, r=NULL, k=NULL, sd=
 #' assessPlan(jaspContainer, pos, depend_vars, oc_plan, options, type)
 ##---------------------------------------------------------------------------------------
 assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type) {
-  pd_prp <- round(options[[paste0("pd_prp", type)]], 3)
-  pa_prp <- round(1 - options[[paste0("pa_prp", type)]], 3)
-  pd_crp <- round(options[[paste0("pd_crp", type)]], 3)
-  pa_crp <- round(options[[paste0("pa_crp", type)]], 3)
+  aql <- round(options[[paste0("aql", type)]], 3)
+  pa_prod <- round(1 - options[[paste0("prod_risk", type)]], 3)
+  rql <- round(options[[paste0("rql", type)]], 3)
+  pa_cons <- round(options[[paste0("cons_risk", type)]], 3)
 
   # Error handling for AQL/RQL
-  if (pd_prp >= pd_crp) {
+  if (aql >= rql) {
     jaspContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
     return ()
   }
 
   # Error handling for Producer's and Consumer's Risk
-  if (pa_prp <= pa_crp) {
+  if (pa_prod <= pa_cons) {
     jaspContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
     return ()
   }
   
   # Assessment of the sampling plan
-  assess <- AcceptanceSampling::assess(oc_plan, PRP = c(pd_prp, pa_prp), CRP = c(pd_crp, pa_crp))
-  pa_prp_actual <- round(assess$PRP[3], 3)
-  pa_crp_actual <- round(assess$CRP[3], 3)
+  assess <- AcceptanceSampling::assess(oc_plan, PRP = c(aql, pa_prod), CRP = c(rql, pa_cons))
+  pa_prod_actual <- round(assess$PRP[3], 3)
+  pa_cons_actual <- round(assess$CRP[3], 3)
   # Table with the specified and actual acceptance probabilities
   if (!is.null(jaspContainer[["riskTable"]])) {
     return ()
@@ -343,17 +343,17 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type) 
   table$addColumnInfo(name = "col_2", title = "Proportion Non-conforming", type = "number")
   table$addColumnInfo(name = "col_3", title = "Required P(accept)", type = "number")
   table$addColumnInfo(name = "col_4", title = "Actual P(accept)", type = "number")
-  table$addRows(list("col_1" = "AQL", "col_2" = pd_prp, "col_3" = pa_prp, "col_4" = pa_prp_actual))
-  table$addRows(list("col_1" = "RQL", "col_2" = pd_crp, "col_3" = pa_crp, "col_4" = pa_crp_actual))
+  table$addRows(list("col_1" = "AQL", "col_2" = aql, "col_3" = pa_prod, "col_4" = pa_prod_actual))
+  table$addRows(list("col_1" = "RQL", "col_2" = rql, "col_3" = pa_cons, "col_4" = pa_cons_actual))
   table$showSpecifiedColumnsOnly <- TRUE
   table$position <- pos
   jaspContainer[["riskTable"]] <- table
 
   if (!assess$OK) {
-    if (pa_prp_actual < pa_prp) {
-      text <- gettextf("Probability of acceptance (%.3f) at AQL (%.3f) is <b>lower</b> than the required probability of acceptance (%.3f) at AQL.", pa_prp_actual, pd_prp, pa_prp)
-    } else if (pa_crp_actual > pa_crp) {
-      text <- gettextf("Probability of acceptance (%.3f) at RQL (%.3f) is <b>higher</b> than the required probability of acceptance (%.3f) at RQL.", pa_crp_actual, pd_crp, pa_crp)
+    if (pa_prod_actual < pa_prod) {
+      text <- gettextf("Probability of acceptance (%.3f) at AQL (%.3f) is <b>lower</b> than the required probability of acceptance (%.3f) at AQL.", pa_prod_actual, aql, pa_prod)
+    } else if (pa_cons_actual > pa_cons) {
+      text <- gettextf("Probability of acceptance (%.3f) at RQL (%.3f) is <b>higher</b> than the required probability of acceptance (%.3f) at RQL.", pa_cons_actual, rql, pa_cons)
     }
     explanation <- createJaspHtml(text = text, position=pos+1, dependencies=depend_vars)
     if (is.null(jaspContainer[["explanation"]])) {
