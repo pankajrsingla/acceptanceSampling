@@ -246,7 +246,7 @@ getPlanValues <- function(jaspContainer, options, type) {
 #' getPlan(jaspContainer, options, "Single", n, c, r)
 #' getPlan(jaspContainer, options, "Mult", n, c, r)
 ##---------------------------------------------------------------
-getPlan <- function(jaspContainer, options, type, n, c, r) {
+getPlan <- function(jaspContainer, options, type, n, c=NULL, r=NULL, k=NULL, sd=NULL) {
   pd_lower <- options[[paste0("pd_lower", type)]]
   pd_upper <- options[[paste0("pd_upper", type)]]
   pd_step <- options[[paste0("pd_step", type)]]
@@ -270,15 +270,20 @@ getPlan <- function(jaspContainer, options, type, n, c, r) {
     pd <- sort(pd)
     pd <- pd[!duplicated(pd)]
   }
-
-  dist <- options[[paste0("distribution", type)]]
+  if (!is.null(sd)) {
+    dist <- "normal"
+  } else {
+    dist <- options[[paste0("distribution", type)]]
+  }
 
   oc_plan <- NULL
   if (dist == "hypergeom") {
     N <- options[[paste0("lotSize", type)]]
     oc_plan <- AcceptanceSampling::OC2c(N = N, n = n, c = c, r = r, type = dist, pd = pd)
-  } else {
+  } else if (dist == "binom" || dist == "poisson") {
     oc_plan <- AcceptanceSampling::OC2c(n = n, c = c, r = r, type = dist, pd = pd)
+  } else if (dist == "normal") {
+    oc_plan <- AcceptanceSampling::OCvar(n = n, k = k, type = dist, s.type = sd, pd = pd)
   }
   df_plan <- data.frame(PD = oc_plan@pd, PA = oc_plan@paccept)
   df_plan <- na.omit(df_plan)
@@ -301,15 +306,12 @@ getPlan <- function(jaspContainer, options, type, n, c, r) {
 #' @param oc_plan <>
 #' @param options <>
 #' @param type <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' assessPlan(jaspContainer, pos, depend_vars, oc_plan, options, type, n, c, r)
+#' assessPlan(jaspContainer, pos, depend_vars, oc_plan, options, type)
 ##---------------------------------------------------------------------------------------
-assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, n, c, r) {
+assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type) {
   pd_prp <- round(options[[paste0("pd_prp", type)]], 3)
   pa_prp <- round(1 - options[[paste0("pa_prp", type)]], 3)
   pd_crp <- round(options[[paste0("pd_crp", type)]], 3)
@@ -348,12 +350,12 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type, 
   jaspContainer[["riskTable"]] <- table
 
   if (!assess$OK) {
-    if (pa_crp_actual < pa_crp) {
+    if (pa_prp_actual < pa_prp) {
       text <- gettextf("Probability of acceptance (%.3f) at AQL (%.3f) is <b>lower</b> than the required probability of acceptance (%.3f) at AQL.", pa_prp_actual, pd_prp, pa_prp)
     } else if (pa_crp_actual > pa_crp) {
       text <- gettextf("Probability of acceptance (%.3f) at RQL (%.3f) is <b>higher</b> than the required probability of acceptance (%.3f) at RQL.", pa_crp_actual, pd_crp, pa_crp)
     }
-    explanation <- createJaspHtml(text = text, position=pos+1)
+    explanation <- createJaspHtml(text = text, position=pos+1, dependencies=depend_vars)
     if (is.null(jaspContainer[["explanation"]])) {
       jaspContainer[["explanation"]] <- explanation
     }

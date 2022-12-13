@@ -45,9 +45,17 @@ Description
 
 	Analysis
 	{
-		title:	qsTr("Create and Analyze Plan")
+		title:	qsTr("Create Variable Plan")
 		qml:	"CreateVariablePlan.qml"
 		func:	"CreateVariablePlan"
+		requiresData: false
+	}
+
+	Analysis
+	{
+		title:	qsTr("Analyze Variable Plan")
+		qml:	"AnalyzeVariablePlan.qml"
+		func:	"AnalyzeVariablePlan"
 		requiresData: false
 	}
 

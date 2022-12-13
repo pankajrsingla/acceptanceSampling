@@ -32,7 +32,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   risk_vars <- c("pd_prp", "pd_crp")
 
   # Check if container already exists.
-  if (is.null(jaspResults[["lotContainer"]])) {
+  if (is.null(jaspResults[["lotContainer"]]) || jaspResults[["lotContainer"]]$getError()) {
     lotContainer <- createJaspContainer(title = "")
     lotContainer$dependOn(c(depend_vars, risk_vars)) # Common dependencies
     jaspResults[["lotContainer"]] <- lotContainer

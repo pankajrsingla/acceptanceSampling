@@ -18,13 +18,30 @@
 import QtQuick 2.8
 import QtQuick.Layouts 1.3
 import JASP.Controls 1.0
+import "./common" as Common
+import JASP
 
-RadioButtonGroup
+Form
 {
-    title: qsTr("Distribution")
-    property string suffix: ""
-    name: "distribution" + suffix
-    RadioButton { value: "binom"; label: qsTr("Binomial"); checked: true }
-    RadioButton { value: "hypergeom"; label: qsTr("Hypergeometric") }
-    RadioButton { value: "poisson"; label: qsTr("Poisson") }
+	columns: 1
+	Group
+	{
+		IntegerField { name: "lotSize"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1}
+		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n)"); defaultValue: 24; min: 1 }
+		DoubleField { name: "kValue"; label: qsTr("k"); defaultValue: 1.309; min: 0; negativeValues: false; inclusive: JASP.None }
+		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known"); id: sd; checked: true }
+	}
+
+	Group
+	{
+		CheckBox { name: "assessPlan"; label: qsTr("Assess variable plan"); id: assessVariable }
+		Common.RiskPoints
+		{
+			enabled: assessVariable.checked
+		}
+	}
+
+	Common.ProbDefect {}
+	
+	Common.OutputOptions {}
 }

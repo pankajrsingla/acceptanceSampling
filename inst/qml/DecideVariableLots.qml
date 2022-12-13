@@ -39,10 +39,8 @@ Form
 		DoubleField { name: "sampleSD"; label: qsTr("Sample standard deviation"); defaultValue: 1; min: 0; inclusive: JASP.None }
 	}
 
-	Group
-	{
-		DoubleField { name: "kValue"; label: qsTr("k value"); defaultValue: 1.309; min: 0; negativeValues: false; inclusive: JASP.None }
-	}
+	// Todo: Label for k is a hacky solution to align it with the sample values. Adjust the width in code.
+	DoubleField { name: "kValue"; label: qsTr("k                        "); defaultValue: 1.309; min: 0; negativeValues: false; inclusive: JASP.None }
 	
 	// Todo: Decide if more than 3 decimals are to be allowed for LSL and USL specification. Right now, you can't.
 	Group

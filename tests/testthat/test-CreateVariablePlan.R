@@ -16,16 +16,16 @@ test_that("Create variable plan - plan table match", {
   options$showAOQCurve <- FALSE
   options$showATICurve <- FALSE
   
-  # 1) SD known
+  # 1.1 SD known
   options$sd <- TRUE
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  varTableKnown <- results[["results"]][["varContainer"]][["collection"]][["varContainer_plan_table"]][["data"]]
+  varTableKnown <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_plan_table"]][["data"]]
   jaspTools::expect_equal_tables(varTableKnown, list(24, 1.309))
 
-  # 2) SD unknown
+  # 1.2 SD unknown
   options$sd <- FALSE
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  varTableUnknown <- results[["results"]][["varContainer"]][["collection"]][["varContainer_plan_table"]][["data"]]
+  varTableUnknown <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_plan_table"]][["data"]]
   jaspTools::expect_equal_tables(varTableUnknown, list(44, 1.311))  
 })
 
@@ -45,22 +45,23 @@ test_that("Create plan - summary table match", {
   options$showAOQCurve <- FALSE
   options$showATICurve <- FALSE
   
-  # 1. SD known
+  # 2.1 SD known
   options$sd <- TRUE
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  summaryTableKnown <- results[["results"]][["varContainer"]][["collection"]][["varContainer_summaryTable"]][["data"]]
+  summaryTableKnown <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_summaryTable"]][["data"]]
   jaspTools::expect_equal_tables(summaryTableKnown,
-          list(0.05, 0.85, 0.2, 0.361, 0.25, 0.26, 0.3, 0.183, 0.35, 0.126, 0.4,
+          list(0.05, 0.85, 0.2, 0.362, 0.25, 0.26, 0.3, 0.183, 0.35, 0.126, 0.4,
               0.085, 0.45, 0.055, 0.5, 0.035, 0.55, 0.021, 0.6, 0.012, 0.65,
               0.007, 0.7, 0.003, 0.75, 0.001, 0.8, 0.001))
   
-  # 2. SD unknown
+  # 2.2 SD unknown
+  options$sd <- FALSE
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  summaryTableUnknown <- results[["results"]][["varContainer"]][["collection"]][["varContainer_summaryTable"]][["data"]]
+  summaryTableUnknown <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_summaryTable"]][["data"]]
   jaspTools::expect_equal_tables(summaryTableUnknown,
-          list(0.05, 0.85, 0.2, 0.361, 0.25, 0.26, 0.3, 0.183, 0.35, 0.126, 0.4,
-              0.085, 0.45, 0.055, 0.5, 0.035, 0.55, 0.021, 0.6, 0.012, 0.65,
-              0.007, 0.7, 0.003, 0.75, 0.001, 0.8, 0.001))  
+          list(0.05, 0.85, 0.2, 0.428, 0.25, 0.328, 0.3, 0.248, 0.35, 0.183,
+              0.4, 0.132, 0.45, 0.092, 0.5, 0.063, 0.55, 0.041, 0.6, 0.025,
+              0.65, 0.015, 0.7, 0.008, 0.75, 0.004, 0.8, 0.002))  
 })
 
 # 3. Test for OC Curve
@@ -78,19 +79,19 @@ test_that("Create plan - OC Curve match", {
   options$showAOQCurve <- FALSE
   options$showATICurve <- FALSE
   
-  # 1. SD known
+  # 3.1 SD known
   options$sd <- TRUE
   options$pd_step <- 0.04  
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  plotName <- results[["results"]][["varContainer"]][["collection"]][["varContainer_ocCurve"]][["data"]]
+  plotName <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_ocCurve"]][["data"]]
   testPlotKnown <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(testPlotKnown, "oc-operating-characteristics-curve-known")
   
-  # 2. SD unknown
+  # 3.2 SD unknown
   options$sd <- FALSE
   options$pd_step <- 0.2
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  plotName <- results[["results"]][["varContainer"]][["collection"]][["varContainer_ocCurve"]][["data"]]
+  plotName <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_ocCurve"]][["data"]]
   testPlotUnknown <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(testPlotUnknown, "oc-operating-characteristics-curve-unknown")
 })
@@ -110,19 +111,19 @@ test_that("Create plan - AOQ Curve match", {
   options$showOCCurve <- FALSE
   options$showATICurve <- FALSE
   
-  # 1. SD known
+  # 4.1 SD known
   options$sd <- TRUE
   options$pd_step <- 0.01
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  plotName <- results[["results"]][["varContainer"]][["collection"]][["varContainer_aoqCurve"]][["data"]]
+  plotName <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_aoqCurve"]][["data"]]
   testPlotKnown <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(testPlotKnown, "aoq-curve-known")
   
-  # 2. SD unknown
+  # 4.2 SD unknown
   options$sd <- FALSE
   options$pd_step <- 0.2
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  plotName <- results[["results"]][["varContainer"]][["collection"]][["varContainer_aoqCurve"]][["data"]]
+  plotName <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_aoqCurve"]][["data"]]
   testPlotUnknown <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(testPlotUnknown, "aoq-curve-unknown")
 })
@@ -142,19 +143,19 @@ test_that("Create plan - ATI Curve match", {
   options$showOCCurve <- FALSE
   options$showAOQCurve <- FALSE
   
-  # 1. SD known
+  # 5.1 SD known
   options$sd <- TRUE
   options$pd_step <- 0.05
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  plotName <- results[["results"]][["varContainer"]][["collection"]][["varContainer_atiCurve"]][["data"]]
+  plotName <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_atiCurve"]][["data"]]
   testPlotKnown <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(testPlotKnown, "ati-curve-known")
   
-  # 2. SD unknown
+  # 5.2 SD unknown
   options$sd <- FALSE
   options$pd_step <- 0.2
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
-  plotName <- results[["results"]][["varContainer"]][["collection"]][["varContainer_atiCurve"]][["data"]]
+  plotName <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_atiCurve"]][["data"]]
   testPlotUnknown <- results[["state"]][["figures"]][[plotName]][["obj"]]
   jaspTools::expect_equal_plots(testPlotUnknown, "ati-curve-unknown")
 })

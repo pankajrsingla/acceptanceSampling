@@ -14,7 +14,9 @@ Analyze Attribute Plan
  - *Binomial*: (default) Should be used when the lots come from a continuously ongoing production process, and the lot size (N) is much larger (>= 10 times) than the sample size (n). The probability of drawing non-conforming items from the lot is assumed to be constant for each sample.
  - *Hypergeometric*: Should be used when isolated lots of finite size are inspected. The exact lot size (N) needs to be specified.
  - *Poisson*: Should be used when the lots come from a continuous production process, and the rate of defects is measured for each sampled item. Recommended for cases where sample size (n) is large, and the proportion of non-conforming items (PD) is small.
-- **Assess sampling plan**: check if the plan satisfies the user-specified constraints associated with AQL and RQL.
+- **Assess attribute plan**: check if the plan satisfies the (user-specified) constraints associated with AQL and RQL.
+    
+    <u>Quality constraints</u>: user-specified constraints associated with AQL and RQL. All values have to lie between 0 and 1, both exclusive.
  - *Acceptable Quality Level (AQL)*: the smallest proportion of non-conforming items that makes the lot definitely acceptable.
  - *Rejectable Quality Level (RQL / LTPD)*: the proportion of non-conforming items in the lot that is unacceptable to the user.
  - *Producer's Risk (α)*: Risk associated with the rejection of a lot that has acceptable quality. Equals the probability of rejecting a lot at AQL.

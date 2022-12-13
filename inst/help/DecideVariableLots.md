@@ -12,7 +12,7 @@ Accept/Reject Lots
  - *Sample size (n)*: number of items in the sample.
  - *Sample mean*: mean of the sample values.
  - *Sample standard deviation*: Standard deviation of the sample values.
-- **k value**: the value used to compare the sample mean with the specification limits.
+- **k**: the value used to compare the sample mean with the specification limits.
 - **Specification limits**: the lower and the upper specification limits.
  - *Lower Specification Limit (LSL)*: the lower specification limit.
  - *Upper Specification Limit (USL)*: the upper specification limit.

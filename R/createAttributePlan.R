@@ -35,7 +35,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   depend_vars <- c(pd_vars, risk_vars, "lotSize", "distribution")
 
   # Check if the container already exists
-  if (is.null(jaspResults[["createContainer"]])) {
+  if (is.null(jaspResults[["createContainer"]]) || jaspResults[["createContainer"]]$getError()) {
     createContainer <- createJaspContainer(title = "")
     createContainer$dependOn(depend_vars)
     jaspResults[["createContainer"]] <- createContainer
