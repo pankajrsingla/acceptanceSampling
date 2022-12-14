@@ -37,7 +37,8 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     plan_vars_single <- c(plan_vars, "sampleSize", "acceptNumber", "rejectNumber")
     plan_vars_single <- paste0(plan_vars_single, "Single")
     pd_vars_single <- paste0(pd_vars, "Single")
-    # Check if the container already exists
+
+    # Check if the container already exists. Create it if it doesn't.
     if (is.null(jaspResults[["singleContainer"]]) || jaspResults[["singleContainer"]]$getError()) {
       singleContainer <- createJaspContainer(title = "Single Sampling Plan")
       # Common dependencies for all single plans
@@ -54,7 +55,7 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     plan_vars_mult <- paste0(plan_vars, "Mult")
     plan_vars_mult <- c(plan_vars_mult, "stages", "numberOfStages")
     pd_vars_mult <- paste0(pd_vars, "Mult")
-    # Check if the container already exists
+    # Check if the container already exists. Create it if it doesn't.
     if (is.null(jaspResults[["multContainer"]]) || jaspResults[["multContainer"]]$getError()) {
       multContainer <- createJaspContainer(title = "Multiple Sampling Plan")
       # Common dependencies for all multiple plans
@@ -128,8 +129,9 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     plan_table$setData(list(table_1_col_1 = 1:length(stages), table_1_col_2 = n, table_1_col_3 = cumsum(n),
                             table_1_col_4 = c, table_1_col_5 = r))
   }
-
+  # Assess plan options
   risk_vars <- paste0(c("aql", "prod_risk", "rql", "cons_risk"), type)
+  # Output options
   output_vars <- paste0(c("assessPlan", "showSummary", "showOCCurve", "showAOQCurve", "showATICurve", "showASNCurve"), type)
   
   # Plan data

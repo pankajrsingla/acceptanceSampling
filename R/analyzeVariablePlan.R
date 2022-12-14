@@ -32,6 +32,7 @@ AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Dependency variables
   plan_vars <- c("sampleSize", "kValue")
   
+  # Check if the container already exists. Create it if it doesn't.
   if (is.null(jaspResults[["analyzeVarContainer"]]) || jaspResults[["analyzeVarContainer"]]$getError()) {
     analyzeVarContainer <- createJaspContainer(title = "Analyze Variable Plan")
     analyzeVarContainer$dependOn(plan_vars) # Common dependencies
@@ -47,7 +48,8 @@ AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   if (options$sd) {
     sd <- "known"
   }
-
+  
+  # Initialize the plan table
   plan_table <- createJaspTable(title = gettextf("Variable Sampling Plan (Standard deviation assumed to be <b>%s</b>)", sd))
   plan_table$transpose <- TRUE
   plan_table$transposeWithOvertitle <- FALSE
@@ -76,6 +78,8 @@ AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   if (analyzeVarContainer$getError()) {
     return ()
   }
+
+  # Plan dataframe
   df_plan <- plan$df_plan
   oc_plan <- plan$oc_plan
     

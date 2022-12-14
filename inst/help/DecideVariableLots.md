@@ -1,6 +1,6 @@
 Accept/Reject Lots 
 ==========================
-*Accept/Reject Lots* allows the user to decide whether to accept or to reject a given lot, using pre-specified constraints and data collected from sample measurements.
+*Accept/Reject Lots* allows you to decide whether to accept or to reject a given lot, using pre-specified constraints and data collected from sample measurements.
 
 ## Input
 -------
@@ -19,7 +19,7 @@ Accept/Reject Lots
 - **Standard Deviation (Historical) known**: whether or not the historical standard deviation is known.
 - **Quality constraints**: user-specified constraints associated with AQL and RQL.
  - *Acceptable Quality Level (AQL)*: the smallest proportion of non-conforming items that makes the lot definitely acceptable.
- - *Rejectable Quality Level (RQL / LTPD)*: the proportion of non-conforming items in the lot that is unacceptable to the user.
+ - *Rejectable Quality Level (RQL / LTPD)*: the proportion of non-conforming items in the lot that is unacceptable to the consumer.
 
 ## Output 
 -------

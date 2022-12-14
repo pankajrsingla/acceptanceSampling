@@ -30,16 +30,18 @@
 #' CreateAttributePlan(jaspResults, dataset, options)
 ##---------------------------------------------------------------
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
+  # Constraints to create a plan
   risk_vars <- c("aql", "prod_risk", "rql", "cons_risk")
+  # Quality levels
   pd_vars <- c("pd_lower", "pd_upper", "pd_step")
   depend_vars <- c(pd_vars, risk_vars, "lotSize", "distribution")
 
-  # Check if the container already exists
+  # Check if the container already exists. Create it if it doesn't.
   if (is.null(jaspResults[["createContainer"]]) || jaspResults[["createContainer"]]$getError()) {
     createContainer <- createJaspContainer(title = "")
     createContainer$dependOn(depend_vars)
     jaspResults[["createContainer"]] <- createContainer
-  } else {
+  } else {    
     createContainer <- jaspResults[["createContainer"]]
   }
 
@@ -82,6 +84,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     createContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
     return ()
   }
+  # Sanity checks done. Let's find a plan that satisfies the constraints.
   .findPlan(createContainer, options, depend_vars, aql, rql, pa_prod, pa_cons)
 }
 
@@ -108,6 +111,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   pd_upper <- options$pd_upper
   pd_step <- options$pd_step
   pd <- seq(pd_lower, pd_upper, pd_step)
+  # Add AQL and RQL to quality range.
   pd <- c(pd, aql, rql)
   pd <- round(pd, 3)
   pd <- pd[!duplicated(pd)]
@@ -136,9 +140,10 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
     return ()
   }
+  # Fill the output tables for the created plan.
   .attributePlanTable(jaspContainer, depend_vars, aql, df_plan$PA[df_plan$PD == aql], rql, df_plan$PA[df_plan$PD == rql], n, c, r)
 
-  # Summary
+  # Plan summary
   if (options$showSummary) {
     getSummary(jaspContainer, pos=4, c(depend_vars, "showSummary"), df_plan)
   }
@@ -186,11 +191,11 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #' .attributePlanTable(jaspContainer, depend_vars, plan_values, df_plan)
 ##----------------------------------------------------------------
 .attributePlanTable <- function(jaspContainer, depend_vars, aql, pa_prod, rql, pa_cons, n, c, r) {
-  # Simple table with sample size and acc. number
+  # Fill the table with sample size and acceptance number
   plan_table <- jaspContainer[["findPlanTable"]]
   plan_table[["col_2"]] <- c(n, c)
 
-  # Table with acceptance and rejection probabilities for AQL, RQL
+  # Fill the table with acceptance and rejection probabilities for AQL and RQL
   prob_table <- jaspContainer[["findProbTable"]]
   prob_table[["col_2"]] <- c(aql, rql)
   prob_table[["col_3"]] <- c(pa_prod, pa_cons)

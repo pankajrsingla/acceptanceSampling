@@ -73,8 +73,10 @@ checkHypergeom <- function(jaspContainer, pd_vars, options, type, aql=NULL, rql=
   if (jaspContainer$getError()) {
     return ()
   }
+  # This check is only required for hypergeometric distribution.
   if (options[[paste0("distribution", type)]] == "hypergeom") {
     pd <- seq(pd_lower, pd_upper, pd_step)
+    # Add AQL and RQL to the quality range.
     if (!is.null(aql) && !is.null(rql)) {
       pd <- c(pd, aql, rql)
     }
@@ -143,8 +145,8 @@ checkErrorsSinglePlan <- function(jaspContainer, N, n, c, r) {
 #' checkErrorsMultiplePlan(jaspContainer, N, n, c, r)
 ##-----------------------------------------------------------------
 checkErrorsMultiplePlan <- function(jaspContainer, N, n, c, r) {
-  cum_n <- sum(n)
-  cumsum_n <- cumsum(n)
+  cum_n <- sum(n) # Total sample size for all stages combined
+  cumsum_n <- cumsum(n) # Cumulative sample size at each stage
   num_stages <- length(n)
   if (cum_n > N) {
     jaspContainer$setError(sprintf("Error: Invalid input. Cumulative sample size (n1+n2+...) cannot be larger than the lot size (N)."))
@@ -250,13 +252,14 @@ getPlan <- function(jaspContainer, options, type, n, c=NULL, r=NULL, k=NULL, sd=
   pd_lower <- options[[paste0("pd_lower", type)]]
   pd_upper <- options[[paste0("pd_upper", type)]]
   pd_step <- options[[paste0("pd_step", type)]]
+  # Check for errors in the quality range
   checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
   if (jaspContainer$getError()) {
     return ()
   }
   pd <- seq(pd_lower, pd_upper, pd_step)
   
-  # If assess plan option is specified, add the AQL and RQL values to pd.
+  # If assess plan option is specified, add the AQL and RQL values to quality range.
   if (options[[paste0("assessPlan", type)]]) {
     pd <- c(pd, options[[paste0("aql", type)]], options[[paste0("rql", type)]])
     pd <- sort(pd)
@@ -270,12 +273,13 @@ getPlan <- function(jaspContainer, options, type, n, c=NULL, r=NULL, k=NULL, sd=
     pd <- sort(pd)
     pd <- pd[!duplicated(pd)]
   }
+  # For variable plans, sd (whether historical stdev is known) will have a non-null value. Use normal distribution then.
   if (!is.null(sd)) {
     dist <- "normal"
   } else {
     dist <- options[[paste0("distribution", type)]]
   }
-
+  # Create an OC2c or OCvar object for the plan using the AcceptanceSampling package
   oc_plan <- NULL
   if (dist == "hypergeom") {
     N <- options[[paste0("lotSize", type)]]
@@ -349,6 +353,7 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type) 
   table$position <- pos
   jaspContainer[["riskTable"]] <- table
 
+  # If the current plan CANNOT satisfy the constraints, provide explanation.
   if (!assess$OK) {
     if (pa_prod_actual < pa_prod) {
       text <- gettextf("Probability of acceptance (%.3f) at AQL (%.3f) is <b>lower</b> than the required probability of acceptance (%.3f) at AQL.", pa_prod_actual, aql, pa_prod)
@@ -454,12 +459,14 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   N <-  options[[paste0("lotSize", type)]]
   pd <- df_plan$PD
   AOQ <- numeric(length(pd))
+
+  # Straightforward calculation for single stage plan.
   if (type == "Single" || type == "") {
     AOQ <- df_plan$PA * pd * (N-n) / N
   } else {
+    # Multiple plan - need to compute stagewise probabilities.
     dist <- options[[paste0("distribution", type)]]
-    stages <- length(n)
-    probs_prod <- 1
+    stages <- length(n) # Number of sampling stages
     cum_n <- cumsum(n)
     stage_probs <- getStageProbability(pd, n, c, r, dist, N)
     if (is.null(stage_probs)) {
@@ -469,8 +476,9 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
     stage_probs <- stage_probs[[1]] # We only need acceptance probability.
     for (i in 1:stages) {
       pAcc_i <- stage_probs[i,] # Acceptance probability for ith stage
-      AOQ <- AOQ + (pAcc_i * (N - cum_n[i]))
+      AOQ <- AOQ + (pAcc_i * (N - cum_n[i])) # Incremental AOQ till ith stage
     }
+    # This part is common for every stage, so do it at the end.
     AOQ <- AOQ * pd / N
   }
   AOQ <- round(AOQ, 3)
@@ -480,19 +488,20 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
     jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
     return ()
   }
-  aoq_max <- max(df_plan$AOQ)
-  # pd_aoq_max <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
+  # AOQL (Average Outgoing Quality Limit)
+  aoql <- max(df_plan$AOQ)
+  # pd_aoql <- df_plan$PD[df_plan$AOQ == max(df_plan$AOQ)]
   xBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$PD), max(df_plan$PD)))
-  yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$AOQ), 1.2*aoq_max))
+  yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(min(df_plan$AOQ), 1.2*aoql))
   plt <- ggplot2::ggplot(data = df_plan, ggplot2::aes(x = PD, y = AOQ)) + 
          ggplot2::geom_point(colour = "black", shape = 19) + ggplot2::labs(x = "(Incoming) Proportion non-conforming", y = "Average Outgoing Quality") +
          ggplot2::geom_line(colour = "black", linetype = "dashed") +
-         ggplot2::geom_hline(yintercept = aoq_max, linetype = "dotted") +
-         ggplot2::annotate("text", label = sprintf("AOQL: %.3f", aoq_max), 
-                           x = (min(df_plan$PD) + max(df_plan$PD)) / 2, y = aoq_max*1.1, color = "black", size = 6) +
+         ggplot2::geom_hline(yintercept = aoql, linetype = "dotted") +
+         ggplot2::annotate("text", label = sprintf("AOQL: %.3f", aoql), 
+                           x = (min(df_plan$PD) + max(df_plan$PD)) / 2, y = aoql*1.1, color = "black", size = 6) +
          ggplot2::scale_x_continuous(breaks = xBreaks, limits = range(xBreaks)) +
          ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
-        # ggplot2::ylim(0.0,round(aoq_max*1.2, 2))
+        # ggplot2::ylim(0.0,round(aoql*1.2, 2))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- pos
   aoqCurve$plotObject <- plt  
@@ -529,13 +538,13 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   pd <- df_plan$PD
   ATI <- numeric(length(pd))
 
+  # Straightforward calculation for single stage plan.
   if (type == "Single" || type == "") {
-    # Single plan
     ATI <- df_plan$PA * n + (1 - df_plan$PA) * N
   } else {
-    # Multiple plan
+    # Multiple plan - need to compute stagewise probabilities.
     dist <- options[[paste0("distribution", type)]]
-    stages <- length(n)
+    stages <- length(n) # Number of sampling stages
     cum_n <- cumsum(n)
     stage_probs <- getStageProbability(pd, n, c, r, dist, N)
     if (is.null(stage_probs)) {
@@ -545,10 +554,12 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
     acc_probs <- stage_probs[[1]] # Acceptance probabilities
     rej_probs <- stage_probs[[2]] # Rejection probabilities
     for (i in 1:stages) {
-      pAcc_i <- acc_probs[i,]
-      ATI <- ATI + (pAcc_i * cum_n[i])
+      pAcc_i <- acc_probs[i,] # Acceptance probability for ith stage
+      ATI <- ATI + (pAcc_i * cum_n[i]) # Incremental ATI till ith stage
     }
-    ATI <- ATI + N * colSums(rej_probs) # For any stage, if lot gets rejected, all N items are inspected under rectification plan.
+    # This part is common for every stage, so do it at the end.
+    # For any stage, if lot gets rejected, all N items are inspected under rectification plan.
+    ATI <- ATI + N * colSums(rej_probs)    
   }
   ATI <- round(ATI, 3)
   df_plan$ATI <- ATI
@@ -611,7 +622,6 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c,
     return ()
   }
   stage_probs <- stage_probs[[1]] + stage_probs[[2]] # Decision prob = p_acc + p_rej
-  # for (i in 1:(stages-1)) {
   for (i in 1:stages) {
     pDecide_i <- stage_probs[i,]
     ASN <- ASN + pDecide_i * cum_n[i]
@@ -656,12 +666,14 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c,
 #' getStageProbabilityHelper(pd, n, c, r, dist, N)
 ##-------------------------------------------------------------------------------------------
 getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
-  D <- pd*N
+  # Modified version of the code from R package AcceptanceSampling
+  D <- pd*N # Number of defects = quality level * lot size
   num_stages <- length(n)
   acc_probs <- matrix(nrow = num_stages, ncol = length(pd))
   rej_probs <- matrix(nrow = num_stages, ncol = length(pd))
   k.s <- num_stages ## number of stages in this sampling
 
+  # Function to calculate acceptance probability
   prob.acc <- function(x, n, p, dist, N=1000) {
     k <- length(x)
     k1 <- k-2
@@ -681,7 +693,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
     }
     return (prob)
   }
-
+  # Function to calculate rejection probability
   prob.rej <- function(x, n, p, dist, N=1000) {
     k <- length(x)
     k1 <- k-2
@@ -701,9 +713,8 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
   }
   
   for (k in 1:k.s) {
-    ## For each stage, find out all the possibilities which could
-    ## lead to still not having made a decision and then calculate
-    ## the appropriate probabilities.
+    # For each stage, find out all the possibilities which could lead to still not having made a decision,
+    # and then calculate the appropriate probabilities.
 
     if(k == 1) {
       ## Only a single sampling stage
@@ -736,8 +747,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
       ## more stages due to matrix dimensions
       c.s <- c+1 ## Use to calculate limits
       r.s <- r-1 ## Use to calculate limits
-      ## The possibilities which lead to a decision to be made at
-      ## the second stage
+      ## The possibilities which lead to a decision to be made at the second stage
       x <- data.frame(X1 = seq(c.s[1], r.s[1], by=1),
                       X.acc = c[2]-seq(c.s[1], r.s[1], by=1),
                       X.rej = r[2]-1-seq(c.s[1], r.s[1], by=1))

@@ -42,6 +42,5 @@ Form
 	}
 
 	Common.ProbDefect {}
-	
 	Common.OutputOptions {}
 }

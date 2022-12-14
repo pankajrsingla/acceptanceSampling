@@ -1,6 +1,6 @@
 Create Attribute Plan 
 ==========================
-*Create Attribute Plan* allows the user to generate a 2-class single stage attribute sampling plan that satisfies the user-specified constraints. This type of sampling involves classifying each inspected item as either acceptable or not acceptable.
+*Create Attribute Plan* allows you to generate a 2-class single stage attribute sampling plan that satisfies specific quality constraints. This type of sampling involves classifying each inspected item as either acceptable or not acceptable.
 
 ## Input
 -------
@@ -8,9 +8,9 @@ Create Attribute Plan
 - **Lot size (N)**: total number of items in the lot. Note that if hypergeometric distribution is specified, the proportion of non-conforming items * N gives the number of non-conforming items, which must all be non-negative integers.
 - **Quality constraints**: user-specified constraints associated with AQL and RQL.
  - *Acceptable Quality Level (AQL)*: the smallest proportion of non-conforming items that makes the lot definitely acceptable.
- - *Rejectable Quality Level (RQL / LTPD)*: the proportion of non-conforming items in the lot that is unacceptable to the user.
+ - *Rejectable Quality Level (RQL / LTPD)*: the proportion of non-conforming items in the lot that is unacceptable to the consumer.
  - *Producer's Risk (α)*: Risk associated with the rejection of a lot that has acceptable quality. Equals the probability of rejecting a lot at AQL.
- - *Consumer's Risk (β)*: Risk associated with the acceptance of an RQL quality lot.
+ - *Consumer's Risk (β)*: The probability of accepting an RQL quality lot.
 - **Proportion non-conforming items**: the range of quality levels at which the plan will be analyzed.
  - *From*: lower bound of the quality level range.
  - *To*: upper bound of the quality level range.

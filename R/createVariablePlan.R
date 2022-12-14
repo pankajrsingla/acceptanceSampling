@@ -33,15 +33,17 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   risk_vars <- c("aql", "prod_risk", "rql", "cons_risk")
   pd_vars <- c("pd_lower", "pd_upper", "pd_step")
   
+  # Check if the container already exists. Create it if it doesn't.    
   if (is.null(jaspResults[["createVarContainer"]]) || jaspResults[["createVarContainer"]]$getError()) {
     createVarContainer <- createJaspContainer(title = "Create Variable Plan")
-    createVarContainer$dependOn(risk_vars) # Common dependencies
+    # Common dependencies
+    createVarContainer$dependOn(risk_vars)
     jaspResults[["createVarContainer"]] <- createVarContainer
   } else {
     createVarContainer <- jaspResults[["createVarContainer"]]
   }
   
-  # Information
+  # Description of the plan
   plan_op <- createJaspHtml(text = sprintf("%s\n\n%s", "Z.LSL = (mean - LSL) / historical standard deviation", "Accept lot if Z.LSL >= k, otherwise reject."),
                            dependencies=risk_vars, position=1)
   createVarContainer[["decision_info"]] <- plan_op
@@ -51,6 +53,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
     sd <- "known"
   }
 
+  # Initialize the plan table
   plan_table <- createJaspTable(title = gettextf("Variable Sampling Plan (Standard deviation assumed to be <b>%s</b>)", sd))
   plan_table$transpose <- TRUE
   plan_table$transposeWithOvertitle <- FALSE
@@ -62,6 +65,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   plan_table$position <- 2
   createVarContainer[["plan_table"]] <- plan_table
   
+  # Plan constraints
   aql <- round(options$aql, 3)
   rql <- round(options$rql, 3)
   pa_prod <- round(1 - options$prod_risk, 3)
@@ -77,7 +81,9 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
     createVarContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
     return ()
   }
+
   N <- options$lotSize
+  # Quality levels
   pd_lower <- options$pd_lower
   pd_upper <- options$pd_upper
   pd_step <- options$pd_step
@@ -86,10 +92,13 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
     return ()
   }
   pd <- seq(pd_lower, pd_upper, pd_step)
+  # Add AQL and RQL to quality range
   pd <- c(pd, aql, rql)
   pd <- sort(pd)
   pd <- round(pd, 3)
   pd <- pd[!duplicated(pd)]
+  
+  # Sanity checks done. Let's find a plan that satisfies the constraints.
   var_plan <- tryCatch(AcceptanceSampling::find.plan(PRP = c(aql, pa_prod), CRP = c(rql, pa_cons), type = "normal", s.type = sd), error = function(x) "error")
   # find.plan can result in invalid sampling plans for certain quality constraints.
   # We want to check for such outputs.
@@ -99,12 +108,12 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
   n <- round(var_plan$n, 3)
   k <- round(var_plan$k, 3)
-  # Error check for n
+  # Error checks for n
   if (is.null(n) || is.na(n) || is.infinite(n) || is.nan(n) || (n <= 0) || (!options$sd && (n <= 1))) {
     createVarContainer$setError(sprintf("Error: Variable plan generated for the current quality constraints has an invalid sample size (n). Modify the quality constraints."))  
     return ()
   }
-  # Error check for k
+  # Error checks for k
   if (is.na(k) || is.null(k) || is.infinite(k) || is.nan(k) || k <= 0) {
     createVarContainer$setError(sprintf("Error: Variable plan generated for the current quality constraints has an invalid k value. Modify the quality constraints."))
     return ()
@@ -117,7 +126,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
     return ()
   }
   
-  # Plan Dataframe
+  # Plan dataframe
   df_plan <- data.frame(PD = pd, PA = round(oc_var@paccept, 3))
   df_plan <- na.omit(df_plan)
   if (nrow(df_plan) == 0) {
@@ -125,10 +134,10 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
     return ()
   }
   
-  # Output
+  # Output options
   output_vars <- c("showSummary", "showOCCurve", "showAOQCurve", "showATICurve")
 
-  # 0. Variable plan table
+  # 0. Fill the variable plan table
   plan_table$addRows(list("col_1" = n, "col_2" = k))
   
   # 1. Plan summary
