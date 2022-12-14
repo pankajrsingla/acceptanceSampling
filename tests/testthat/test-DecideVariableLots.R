@@ -1,6 +1,8 @@
 # Tests for Decide variable lots
 
-# 1. No dataset, LSL
+##----------------------------------------------------------------
+##                      1. No dataset, LSL                      --
+##----------------------------------------------------------------
 test_that("Decide lots - no dataset, lsl", {
   options <- jaspTools::analysisOptions("DecideVariableLots")
   options$sampleStats <- TRUE
@@ -31,7 +33,9 @@ test_that("Decide lots - no dataset, lsl", {
   expect_that(lotDecisionKnownReject, equals("<u>Decision:</u> <b>Reject</b> lot."))
 })
 
-# 2. No dataset, USL
+##----------------------------------------------------------------
+##                      2. No dataset, USL                      --
+##----------------------------------------------------------------
 test_that("Decide lots - no dataset, usl", {
   options <- jaspTools::analysisOptions("DecideVariableLots")
   options$sampleStats <- TRUE
@@ -44,6 +48,7 @@ test_that("Decide lots - no dataset, usl", {
   
   # 2.1 Historical SD unknown
   options$sd <- FALSE
+
   # 2.1.1 Reject
   options$upper_spec <- 230
   results <- jaspTools::runAnalysis("DecideVariableLots", "test.csv", options)
@@ -63,6 +68,7 @@ test_that("Decide lots - no dataset, usl", {
   # 2.2 Historical SD known
   options$sd <- TRUE
   options$stdev <- 19.5
+
   # 2.2.1 Reject
   options$upper_spec <- 221
   results <- jaspTools::runAnalysis("DecideVariableLots", "test.csv", options)
@@ -80,7 +86,9 @@ test_that("Decide lots - no dataset, usl", {
   expect_that(lotDecisionKnownAccept, equals("<u>Decision:</u> <b>Accept</b> lot."))
 })
 
-# 3. No dataset, both LSL and USL
+##---------------------------------------------------------------
+##               3. No dataset, both LSL and USL               --
+##---------------------------------------------------------------
 test_that("Decide lots - no dataset, lsl & usl", {
   options <- jaspTools::analysisOptions("DecideVariableLots")
   options$sampleStats <- TRUE
@@ -110,7 +118,6 @@ test_that("Decide lots - no dataset, lsl & usl", {
   jaspTools::expect_equal_tables(lotTableUnknown, list(785, 35.2, 8.92, 17, 60, 2.04, 2.78, 2))
   lotDecisionUnknownAccept <- results[["results"]][["lotContainer"]][["collection"]][["lotContainer_decision_output"]][["rawtext"]]
   expect_that(lotDecisionUnknownAccept, equals("<u>Decision:</u> <b>Accept</b> lot."))
-  
 
   # 3.2 Historical SD known
   options$sd <- TRUE
@@ -136,7 +143,9 @@ test_that("Decide lots - no dataset, lsl & usl", {
   expect_that(lotDecisionKnownAccept, equals("<u>Decision:</u> <b>Accept</b> lot."))
 })
 
-# 4. Dataset, LSL
+##---------------------------------------------------------------
+##                       4. Dataset, LSL                       --
+##---------------------------------------------------------------
 test_that("Decide lots - dataset, lsl", {
   options <- jaspTools::analysisOptions("DecideVariableLots")
   options$variables <- "contNormal"
@@ -165,7 +174,9 @@ test_that("Decide lots - dataset, lsl", {
   expect_that(lotDecisionKnownAccept, equals("<u>Decision:</u> <b>Accept</b> lot."))
 })
 
-# 5. Dataset, USL
+##---------------------------------------------------------------
+##                       5. Dataset, USL                       --
+##---------------------------------------------------------------
 test_that("Decide lots - no dataset, usl", {
   options <- jaspTools::analysisOptions("DecideVariableLots")
   options$variables <- "contOutlier"
@@ -176,6 +187,7 @@ test_that("Decide lots - no dataset, usl", {
   
   # 5.1 Historical SD unknown
   options$sd <- FALSE
+
   # 5.1.1 Reject
   options$upper_spec <- 7
   results <- jaspTools::runAnalysis("DecideVariableLots", "test.csv", options)
@@ -197,6 +209,7 @@ test_that("Decide lots - no dataset, usl", {
   options$stdev <- 2.5
   options$aql <- 0.05
   options$rql <- 0.15
+
   # 5.2.1 Reject
   options$upper_spec <- 6
   results <- jaspTools::runAnalysis("DecideVariableLots", "test.csv", options)
@@ -214,7 +227,9 @@ test_that("Decide lots - no dataset, usl", {
   expect_that(lotDecisionKnownAccept, equals("<u>Decision:</u> <b>Accept</b> lot."))
 })
 
-# 6. Dataset, both LSL and USL
+##----------------------------------------------------------------
+##                 6. Dataset, both LSL and USL                 --
+##----------------------------------------------------------------
 test_that("Decide lots - dataset, lsl & usl", {
   options <- jaspTools::analysisOptions("DecideVariableLots")
   options$variables <- "contGamma"

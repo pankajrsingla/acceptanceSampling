@@ -15,8 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# txt = "Analyze single stage and multiple stage attribute plans"
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------
 ##   Analyze single stage and multiple stage attribute plans   --
 ##---------------------------------------------------------------
@@ -68,8 +66,6 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
 }
 
-# txt = "Analyze attribute plans"
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------
 ##                   Analyze attribute plans                   --
 ##---------------------------------------------------------------

@@ -15,8 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# txt = "Analyze variable plan."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##----------------------------------------------------------------
 ##                    Analyze variable plan.                    --
 ##----------------------------------------------------------------

@@ -1,6 +1,7 @@
 # The Acceptance Sampling Module
 
 Create and analyze sampling plans to decide whether to accept or to reject lots.
+
 Currently, the module supports:
 - Creation of single stage attribute sampling plans that satisfy risk constraints
 - Analysis of single stage as well as multiple stage attribute sampling plans

@@ -15,8 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# txt = "Check if values specified for PD are valid."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------
 ##         Check if values specified for PD are valid.         --
 ##---------------------------------------------------------------
@@ -28,7 +26,7 @@
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' checkPdErrors(jaspContainer, pos, pd_vars, options, type)
+#' checkPdErrors(jaspContainer, pd_lower, pd_upper, pd_step)
 ##---------------------------------------------------------------
 checkPdErrors <- function(jaspContainer, pd_lower, pd_upper, pd_step) {
   if (pd_lower > pd_upper) {
@@ -48,8 +46,6 @@ checkPdErrors <- function(jaspContainer, pd_lower, pd_upper, pd_step) {
   }
 }
 
-# txt = "Check if D*pd values for the hypergeomtric distribution are whole numbers."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##--------------------------------------------------------------------------------
 ##  Check if D*pd values for the hypergeomtric distribution are whole numbers.  --
 ##--------------------------------------------------------------------------------
@@ -63,7 +59,7 @@ checkPdErrors <- function(jaspContainer, pd_lower, pd_upper, pd_step) {
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' checkHypergeom(jaspContainer, pos, pd_vars, options, type)
+#' checkHypergeom(jaspContainer, pd_vars, options, type)
 ##--------------------------------------------------------------------------------
 checkHypergeom <- function(jaspContainer, pd_vars, options, type, aql=NULL, rql=NULL) {
   pd_lower <- options[[pd_vars[1]]]
@@ -94,8 +90,6 @@ checkHypergeom <- function(jaspContainer, pd_vars, options, type, aql=NULL, rql=
   }
 }
 
-# txt = "Check for errors in single stage attribute sampling plan."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------
 ##  Check for errors in single stage attribute sampling plan.  --
 ##---------------------------------------------------------------
@@ -128,8 +122,6 @@ checkErrorsSinglePlan <- function(jaspContainer, N, n, c, r) {
   }
 }
 
-# txt = "Check for errors in multiple stage attribute sampling plan."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##-----------------------------------------------------------------
 ##  Check for errors in multiple stage attribute sampling plan.  --
 ##-----------------------------------------------------------------
@@ -185,8 +177,6 @@ checkErrorsMultiplePlan <- function(jaspContainer, N, n, c, r) {
   }
 }
 
-# txt = "Return the plan variables - n, c, and r."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##----------------------------------------------------------------
 ##           Return the plan variables - n, c, and r.           --
 ##----------------------------------------------------------------
@@ -197,7 +187,7 @@ checkErrorsMultiplePlan <- function(jaspContainer, N, n, c, r) {
 #' @seealso
 #'   [getOCCurve()] for operating characteristics of the plan.
 #' @examples
-#' getPlanValues(options, type)
+#' getPlanValues(jaspContainer, options, type)
 ##----------------------------------------------------------------
 getPlanValues <- function(jaspContainer, options, type) {
   n <- c <- r <- NULL
@@ -229,8 +219,6 @@ getPlanValues <- function(jaspContainer, options, type) {
   return (list(n=n,c=c,r=r))
 }
 
-# txt = "Create and return a plan and its data"
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------
 ##            Create and return a plan and its data            --
 ##---------------------------------------------------------------
@@ -246,7 +234,7 @@ getPlanValues <- function(jaspContainer, options, type) {
 #'   [()] for <>
 #' @examples
 #' getPlan(jaspContainer, options, "Single", n, c, r)
-#' getPlan(jaspContainer, options, "Mult", n, c, r)
+#' getPlan(jaspContainer, options, "Mult", n, k, sd)
 ##---------------------------------------------------------------
 getPlan <- function(jaspContainer, options, type, n, c=NULL, r=NULL, k=NULL, sd=NULL) {
   pd_lower <- options[[paste0("pd_lower", type)]]
@@ -299,8 +287,6 @@ getPlan <- function(jaspContainer, options, type, n, c=NULL, r=NULL, k=NULL, sd=
   return (list(oc_plan=oc_plan, df_plan=df_plan))
 }
 
-# txt = "Check if the plan can satisfy the AQL and RQL constraints. Create tabular output."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------------------------------
 ##  Check if the plan can satisfy the AQL and RQL constraints. Create tabular output.  --
 ##---------------------------------------------------------------------------------------
@@ -367,8 +353,6 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type) 
   }
 }
 
-# txt = "Generate a summary table for the plan"
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------
 ##            Generate a summary table for the plan            --
 ##---------------------------------------------------------------
@@ -395,8 +379,6 @@ getSummary <- function(jaspContainer, pos, depend_vars, df_plan) {
   jaspContainer[["summaryTable"]] <- summaryTable
 }
 
-# txt = "Generate the operating characteristics curve for the plan."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##----------------------------------------------------------------
 ##  Generate the operating characteristics curve for the plan.  --
 ##----------------------------------------------------------------
@@ -429,8 +411,6 @@ getOCCurve <- function(jaspContainer, pos, depend_vars, df_plan) {
   jaspContainer[["ocCurve"]] <- ocCurve
 }
 
-# txt = "Generate the average outgoing quality curve for plan with rectification."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##------------------------------------------------------------------------------
 ##  Generate the average outgoing quality curve for plan with rectification.  --
 ##------------------------------------------------------------------------------
@@ -507,8 +487,6 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   aoqCurve$plotObject <- plt  
 }
 
-# txt = "Generate the average total inspection curve for the plan."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------
 ##  Generate the average total inspection curve for the plan.  --
 ##---------------------------------------------------------------
@@ -582,8 +560,6 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
   atiCurve$plotObject <- plt
 }
 
-# txt = "Generate the average sample number curve for the plan. Only applicable for multiple sampling plans."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------------------------------------------------
 ##  Generate the average sample number curve for the plan. Only applicable for multiple sampling plans.  --
 ##---------------------------------------------------------------------------------------------------------
@@ -601,12 +577,12 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 #' getASNCurve(jaspContainer, pos, depend_vars, df_plan, options, n, c, r) 
 ##---------------------------------------------------------------------------------------------------------
 getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c, r) {
-  if (!is.null(jaspContainer[["asnPlot"]])) {
+  if (!is.null(jaspContainer[["asnCurve"]])) {
     return ()
   }
-  asnPlot <- createJaspPlot(title = "ASN (Average Sample Number) Curve",  width = 480, height = 320)
-  asnPlot$dependOn(depend_vars)
-  jaspContainer[["asnPlot"]] <- asnPlot
+  asnCurve <- createJaspPlot(title = "ASN (Average Sample Number) Curve",  width = 480, height = 320)
+  asnCurve$dependOn(depend_vars)
+  jaspContainer[["asnCurve"]] <- asnCurve
 
   # Parse option values
   dist <- options$distributionMult
@@ -646,11 +622,9 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c,
          ggplot2::scale_y_continuous(breaks = yBreaks, limits = range(yBreaks))
   plt <- plt + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw()
   plt$position <- pos
-  asnPlot$plotObject <- plt
+  asnCurve$plotObject <- plt
 }
 
-# txt = "Helper function to get stagewise acceptance and rejection probabilities for the plan."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##-------------------------------------------------------------------------------------------
 ##  Helper function to get stagewise acceptance and rejection probabilities for the plan.  --
 ##-------------------------------------------------------------------------------------------
@@ -666,19 +640,25 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c,
 #' getStageProbabilityHelper(pd, n, c, r, dist, N)
 ##-------------------------------------------------------------------------------------------
 getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
-  # Modified version of the code from R package AcceptanceSampling
-  D <- pd*N # Number of defects = quality level * lot size
+  # The code in this function has been adapted from the R package AcceptanceSampling written by Andreas Kiermeier.
+  # Specifically, from the below functions:
+  # 1) calc.OCbinomial.pdi 2) calc.OChypergeom.pdi 3) calc.OCpoisson.pdi
+  # https://github.com/cran/AcceptanceSampling/blob/master/R/code_twoclass.R
+
+  D <- pd * N # Number of defects = quality level * lot size
   num_stages <- length(n)
   acc_probs <- matrix(nrow = num_stages, ncol = length(pd))
   rej_probs <- matrix(nrow = num_stages, ncol = length(pd))
-  k.s <- num_stages ## number of stages in this sampling
+  k.s <- num_stages # number of stages in this sampling
 
   # Function to calculate acceptance probability
   prob.acc <- function(x, n, p, dist, N=1000) {
     k <- length(x)
     k1 <- k-2
     if (dist == "binom") {
-      # k = number of this stage + 2. x[1:k1] will give all values until the last stage before this one. n[1:k1] does the same for n.
+      # k = number of this stage + 2. 
+      # x[1:k1] will give all values until the last stage before this one. 
+      # n[1:k1] does the same for n.
       prob <- prod(dbinom(x[1:k1], n[1:k1], p)) * pbinom(x[k-1], n[k-1], p)
     } else if (dist == "poisson") {
       prob <- prod(dpois(x[1:k1], n[1:k1]*p)) * ppois(x[k-1], n[k-1]*p)
@@ -717,7 +697,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
     # and then calculate the appropriate probabilities.
 
     if(k == 1) {
-      ## Only a single sampling stage
+      # Only a single sampling stage
       p.acc <- sapply(pd, FUN = function(el) {
         if (dist == "binom") {
           return (pbinom(q=c[1], size=n[1], prob=el))
@@ -740,14 +720,14 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
         }
       })
       rej_probs[k,] <- p.rej
-      ## p.acc and p.rej now exist and can be used in the following stages.
+      # p.acc and p.rej now exist and can be used in the following stages.
     }
     else if (k == 2) {
-      ## Two sampling stages. Needs to be handled separately from
-      ## more stages due to matrix dimensions
-      c.s <- c+1 ## Use to calculate limits
-      r.s <- r-1 ## Use to calculate limits
-      ## The possibilities which lead to a decision to be made at the second stage
+      # Two sampling stages. Needs to be handled separately from
+      # more stages due to matrix dimensions
+      c.s <- c+1 # Use to calculate limits
+      r.s <- r-1 # Use to calculate limits
+      # The possibilities which lead to a decision to be made at the second stage
       x <- data.frame(X1 = seq(c.s[1], r.s[1], by=1),
                       X.acc = c[2]-seq(c.s[1], r.s[1], by=1),
                       X.rej = r[2]-1-seq(c.s[1], r.s[1], by=1))
@@ -759,10 +739,9 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
       rej_probs[k,] <- p.rej_2
     }
     else {
-      ## More than two sampling stages.
-      ## Things are more tricky.
-      c.s <- c+1 ## Use to calculate limits
-      r.s <- r-1 ## Use to calculate limits
+      # More than two sampling stages.
+      c.s <- c+1 # Use to calculate limits
+      r.s <- r-1 # Use to calculate limits
       expand.call <- "expand.grid(c.s[k-1]:r.s[k-1]"
       for(i in 2:(k-1)) {
         expand.call <- paste(expand.call, paste("c.s[k-",i,"]:r.s[k-",i,"]", sep=""), sep=",")
@@ -779,17 +758,15 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
       x <- cbind(x, X.rej = r[k]-1 - rowSums(x[,1:(k-1)]))
       p.acc_k <- sum(apply(x, 1, FUN=prob.acc, n=n, p=pd, dist=dist, N=N))
       p.acc <- p.acc + p.acc_k
-      acc_probs[k,] <- p.acc_k
+      acc_probs[k,] <- p.acc_k # Acceptance probability for the kth stage
       p.rej_k <- sum(apply(x, 1, FUN=prob.rej, n=n, p=pd, dist=dist, N=N))
       p.rej <- p.rej + p.rej_k
-      rej_probs[k,] <- p.rej_k
+      rej_probs[k,] <- p.rej_k # Rejection probability for the kth stage
     }
   }
   return(list(acc_probs,rej_probs))
 }
 
-# txt = "Get stagewise acceptance and rejection probabilities for the plan."
-# banner(txt, centre = TRUE, bandChar = "#")
 ##------------------------------------------------------------------------
 ##  Get stagewise acceptance and rejection probabilities for the plan.  --
 ##------------------------------------------------------------------------
@@ -805,6 +782,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
 #' getStageProbability(pd, n, c, r, dist, N)
 ##------------------------------------------------------------------------
 getStageProbability <- function(pd, n, c, r, dist, N=1000) {
+  # The calculation of stagewise probability is done independently for every value in the vector 'pd', which has a range of quality levels.
   stage_probs <- sapply(pd, FUN=getStageProbabilityHelper, n=n, c=c, r=r, dist=dist, N=N)
   acc <- matrix(unlist(stage_probs[1,]), byrow=FALSE, nrow=length(n))
   rej <- matrix(unlist(stage_probs[2,]), byrow=FALSE, nrow=length(n))

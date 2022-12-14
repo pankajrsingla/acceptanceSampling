@@ -15,8 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# txt = "Decision table for variable plan lots."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##----------------------------------------------------------------
 ##            Decision table for variable plan lots.            --
 ##----------------------------------------------------------------

@@ -15,8 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# txt = "Create attribute plan"
-# banner(txt, centre = TRUE, bandChar = "-")
 ##---------------------------------------------------------------
 ##                    Create attribute plan                    --
 ##---------------------------------------------------------------
@@ -88,8 +86,6 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   .findPlan(createContainer, options, depend_vars, aql, rql, pa_prod, pa_cons)
 }
 
-# txt = "Find the sampling plan that satisfies the specified AQL and RQL constraints."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##----------------------------------------------------------------------------------
 ##  Find the sampling plan that satisfies the specified AQL and RQL constraints.  --
 ##----------------------------------------------------------------------------------
@@ -170,8 +166,6 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   }
 }
 
-# txt = "Create and fill the output table(s)."
-# banner(txt, centre = TRUE, bandChar = "-")
 ##----------------------------------------------------------------
 ##             Create and fill the output table(s).             --
 ##----------------------------------------------------------------
