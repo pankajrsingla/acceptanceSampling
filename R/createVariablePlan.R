@@ -21,17 +21,13 @@
 #' @param jaspResults <>
 #' @param dataset <>
 #' @param options <>
-#' @returns <>
-#' @seealso
-#'   [()] for <>
-#' @examples
-#' CreateVariablePlan(jaspResults, dataset, options)
+##---------------------------------------------------------------
 CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Dependency variables
   risk_vars <- c("aql", "prod_risk", "rql", "cons_risk")
   pd_vars <- c("pd_lower", "pd_upper", "pd_step")
   
-  # Check if the container already exists. Create it if it doesn't.    
+  # Check if the container already exists. Create it if it doesn't.
   if (is.null(jaspResults[["createVarContainer"]]) || jaspResults[["createVarContainer"]]$getError()) {
     createVarContainer <- createJaspContainer(title = "Create Variable Plan")
     # Common dependencies
@@ -71,12 +67,12 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # Error handling for AQL/RQL
   if (aql >= rql) {
-    createVarContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+    createVarContainer$setError(sprintf("AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
     return ()
   }
   # Error handling for Producer's and Consumer's Risk
   if (pa_prod <= pa_cons) {
-    createVarContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
+    createVarContainer$setError(sprintf("1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
     return ()
   }
 
@@ -101,26 +97,26 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # find.plan can result in invalid sampling plans for certain quality constraints.
   # We want to check for such outputs.
   if (class(var_plan) == "character" && var_plan == "error") {
-    createVarContainer$setError(sprintf("Error: Variable plan generated for the current quality constraints is invalid. Modify the quality constraints."))  
+    createVarContainer$setError(sprintf("Variable plan generated for the current quality constraints is invalid. Modify the quality constraints."))
     return ()
   }
   n <- round(var_plan$n, 3)
   k <- round(var_plan$k, 3)
   # Error checks for n
   if (is.null(n) || is.na(n) || is.infinite(n) || is.nan(n) || (n <= 0) || (!options$sd && (n <= 1))) {
-    createVarContainer$setError(sprintf("Error: Variable plan generated for the current quality constraints has an invalid sample size (n). Modify the quality constraints."))  
+    createVarContainer$setError(sprintf("Variable plan generated for the current quality constraints has an invalid sample size (n). Modify the quality constraints."))
     return ()
   }
   # Error checks for k
   if (is.na(k) || is.null(k) || is.infinite(k) || is.nan(k) || k <= 0) {
-    createVarContainer$setError(sprintf("Error: Variable plan generated for the current quality constraints has an invalid k value. Modify the quality constraints."))
+    createVarContainer$setError(sprintf("Variable plan generated for the current quality constraints has an invalid k value. Modify the quality constraints."))
     return ()
   }
   oc_var <- AcceptanceSampling::OCvar(n = n, k = k, type = "normal", s.type = sd, pd = pd)
 
   # Error check for lot size
   if (N < n) {
-    createVarContainer$setError(sprintf("Error: Invalid input. Lot size (N = %.0f) cannot be smaller than the sample size (n = %.0f) of the generated variable plan.", N, n))
+    createVarContainer$setError(sprintf("Lot size (N = %.0f) cannot be smaller than the sample size (n = %.0f) of the generated variable plan.", N, n))
     return ()
   }
   
@@ -128,7 +124,7 @@ CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   df_plan <- data.frame(PD = pd, PA = round(oc_var@paccept, 3))
   df_plan <- na.omit(df_plan)
   if (nrow(df_plan) == 0) {
-    createVarContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
+    createVarContainer$setError(sprintf("No valid values found in the plan. Check the inputs."))
     return ()
   }
   

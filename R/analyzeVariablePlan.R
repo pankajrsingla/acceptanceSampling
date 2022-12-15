@@ -21,11 +21,7 @@
 #' @param jaspResults <>
 #' @param dataset <>
 #' @param options <>
-#' @returns <>
-#' @seealso
-#'   [()] for <>
-#' @examples
-#' CreateVariablePlan(jaspResults, dataset, options)
+##----------------------------------------------------------------
 AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Dependency variables
   plan_vars <- c("sampleSize", "kValue")
@@ -62,13 +58,13 @@ AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # Error check for n (sample size)
   if (!options$sd && (n <= 1)) {
-    analyzeVarContainer$setError(sprintf("Error: Invalid input. If historical standard deviation is unknown, sample size has to be > 1."))
+    analyzeVarContainer$setError(sprintf("If historical standard deviation is unknown, sample size has to be > 1."))
     return ()
   }
 
   # Error check for N (lot size)
   if (N < n) {
-    analyzeVarContainer$setError(sprintf("Error: Invalid input. Lot size (N = %.0f) cannot be smaller than the sample size (n = %.0f) of the generated variable plan.", N, n))
+    analyzeVarContainer$setError(sprintf("Lot size (N = %.0f) cannot be smaller than the sample size (n = %.0f) of the generated variable plan.", N, n))
     return ()
   }
 
@@ -85,7 +81,7 @@ AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   pd_vars <- c("pd_lower", "pd_upper", "pd_step")
 
   # 1. Assess plan
-  if (options$assessPlan) {    
+  if (options$assessPlan) {
     assessPlan(analyzeVarContainer, pos=2, c(risk_vars, pd_vars, "assessPlan"), oc_plan, options, "")
     if (analyzeVarContainer$getError()) {
       return ()
@@ -94,6 +90,7 @@ AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   
   # 2. Plan summary
   if (options$showSummary) {
+    # Assess plan generates 2 output elements, so position of next element is previous + 2.    
     getSummary(analyzeVarContainer, pos=4, c(pd_vars, "showSummary"), df_plan)
   }
   # 3. OC Curve

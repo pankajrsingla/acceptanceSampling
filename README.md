@@ -21,5 +21,5 @@ The analyses in the Acceptance Sampling module in JASP are structured in the fol
     -- Variable Sampling
        - Create Variable Plan
        - Analyze Variable Plan
-       - Accept/Reject Lots       
+       - Accept/Reject Lots
 ```

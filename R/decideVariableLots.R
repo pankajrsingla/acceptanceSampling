@@ -21,10 +21,7 @@
 #' @param jaspResults <>
 #' @param dataset <>
 #' @param options <>
-#' @seealso
-#'   [()] for <>
-#' @examples
-#' DecideVariableLots(jaspResults, dataset, options)
+##----------------------------------------------------------------
 DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   depend_vars <- c("vars", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
   risk_vars <- c("aql", "rql")
@@ -67,7 +64,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       }
     }
   }
-  # Todo: Need to check this - are negative values of sample mean to be allowed?
+  # Todo: Check - are negative values of sample mean to be allowed?
   mean_sample <- abs(mean_sample)
   
   # Initializing the lot decision table
@@ -100,12 +97,12 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   lotContainer[["decision_table"]] <- decision_table
   # Sanity checks for sample statistics
   if (sd_sample <= 0) {
-    lotContainer$setError(sprintf("Error: Sample standard deviation has to be greater than 0."))
+    lotContainer$setError(sprintf("Sample standard deviation has to be greater than 0."))
     return ()
   }
   
   if (is.null(mean_sample)) {
-    lotContainer$setError(sprintf("Error: Sample mean is invalid."))
+    lotContainer$setError(sprintf("Sample mean is invalid."))
     return ()
   }
   # We always have a sample standard deviation.
@@ -116,7 +113,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   if (options$sd) {
     # Historical standard deviation is known. We'll use it for comparison.
     sd <- "known"
-    sd_historical <- options$stdev    
+    sd_historical <- options$stdev
     sd_compare <- sd_historical
   }
 
@@ -150,7 +147,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   # 3. Both LSL and USL are available.
   if (options$lsl && options$usl) {
     if (options$upper_spec < options$lower_spec) {
-      lotContainer$setError(sprintf("Error: USL can not be lower than LSL."))
+      lotContainer$setError(sprintf("USL can not be lower than LSL."))
       return ()
     }
     # When both LSL and USL are specified, we need to decide based on standard deviation.
@@ -160,7 +157,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       aql <- round(options$aql, 3)
       rql <- round(options$rql, 3)
       if (aql >= rql) {
-        lotContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+        lotContainer$setError(sprintf("AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
         return ()
       }
       z.p <- (options$lower_spec - options$upper_spec) / (2 * sd_historical)
@@ -172,7 +169,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
         decision <- (z.lsl >= k) && (z.usl >= k)
       } else {
         if (n <= 1) {
-          lotContainer$setError(sprintf("Error: can not accept or reject lot: sample size has to be greater than 1."))
+          lotContainer$setError(sprintf("Can not accept or reject lot: sample size has to be greater than 1."))
           return ()
         } else {
           q.l <- z.lsl * sqrt(n/(n-1))
@@ -190,7 +187,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
     } else {
       # Historical standard deviation unknown
       if (n <= 1) {
-        lotContainer$setError(gettextf("Error: Sample size has to be <b>> 1</b> if <b>both</b> LSL and USL are provided, and historical standard deviation is <b>unknown</b>."))
+        lotContainer$setError(gettextf("Sample size has to be <b>> 1</b> if <b>both</b> LSL and USL are provided, and historical standard deviation is <b>unknown</b>."))
         return ()
       } else {
         a <- (n - 2) / 2

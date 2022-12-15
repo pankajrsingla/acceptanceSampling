@@ -28,7 +28,7 @@ test_that("Create variable plan - plan table match", {
   options$sd <- FALSE
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
   varTableUnknown <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_plan_table"]][["data"]]
-  jaspTools::expect_equal_tables(varTableUnknown, list(44, 1.311))  
+  jaspTools::expect_equal_tables(varTableUnknown, list(44, 1.311))
 })
 
 ##---------------------------------------------------------------
@@ -65,7 +65,7 @@ test_that("Create plan - summary table match", {
   jaspTools::expect_equal_tables(summaryTableUnknown,
           list(0.05, 0.85, 0.2, 0.428, 0.25, 0.328, 0.3, 0.248, 0.35, 0.183,
               0.4, 0.132, 0.45, 0.092, 0.5, 0.063, 0.55, 0.041, 0.6, 0.025,
-              0.65, 0.015, 0.7, 0.008, 0.75, 0.004, 0.8, 0.002))  
+              0.65, 0.015, 0.7, 0.008, 0.75, 0.004, 0.8, 0.002))
 })
 
 ##----------------------------------------------------------------
@@ -87,7 +87,7 @@ test_that("Create plan - OC Curve match", {
   
   # 3.1 SD known
   options$sd <- TRUE
-  options$pd_step <- 0.04  
+  options$pd_step <- 0.04
   results <- jaspTools::runAnalysis("CreateVariablePlan", "test.csv", options)
   plotName <- results[["results"]][["createVarContainer"]][["collection"]][["createVarContainer_ocCurve"]][["data"]]
   testPlotKnown <- results[["state"]][["figures"]][[plotName]][["obj"]]

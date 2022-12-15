@@ -33,7 +33,7 @@ test_that("Analyze variable plan - plan table match", {
   varTitleUnknown <- results[["results"]][["analyzeVarContainer"]][["collection"]][["analyzeVarContainer_plan_table"]][["title"]]
   expect_that(varTitleUnknown, equals("Variable Sampling Plan (Standard deviation assumed to be <b>unknown</b>)"))
   varTableUnknown <- results[["results"]][["analyzeVarContainer"]][["collection"]][["analyzeVarContainer_plan_table"]][["data"]]
-  jaspTools::expect_equal_tables(varTableUnknown, list(224, 23.45))  
+  jaspTools::expect_equal_tables(varTableUnknown, list(224, 23.45))
 })
 
 ##---------------------------------------------------------------
@@ -69,7 +69,7 @@ test_that("Analyze plan - summary table match", {
   jaspTools::expect_equal_tables(summaryTableUnknown,
           list(0.2, 0.466, 0.25, 0.379, 0.3, 0.304, 0.35, 0.24, 0.4, 0.187, 0.45,
               0.142, 0.5, 0.106, 0.55, 0.076, 0.6, 0.053, 0.65, 0.035, 0.7,
-              0.022, 0.75, 0.013, 0.8, 0.006))  
+              0.022, 0.75, 0.013, 0.8, 0.006))
 })
 
 ##---------------------------------------------------------------
@@ -137,7 +137,7 @@ test_that("Analyze plan - OC Curve match", {
   
   # 4.1 SD known
   options$sd <- TRUE
-  options$pd_step <- 0.04  
+  options$pd_step <- 0.04
   results <- jaspTools::runAnalysis("AnalyzeVariablePlan", "test.csv", options)
   plotName <- results[["results"]][["analyzeVarContainer"]][["collection"]][["analyzeVarContainer_ocCurve"]][["data"]]
   testPlotKnown <- results[["state"]][["figures"]][[plotName]][["obj"]]

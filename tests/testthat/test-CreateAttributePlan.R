@@ -15,7 +15,7 @@ test_that("Create plan - plan and probability tables match", {
   options$showSummary <- FALSE
   
   # 1.1 Binomial
-  options$distribution <- "binom"  
+  options$distribution <- "binom"
   results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
   plan_table <- results[["results"]][["createContainer"]][["collection"]][["createContainer_findPlanTable"]][["data"]]
   jaspTools::expect_equal_tables(plan_table, list("Sample size", 77, "Acceptance number", 7))
@@ -37,7 +37,7 @@ test_that("Create plan - plan and probability tables match", {
   plan_table <- results[["results"]][["createContainer"]][["collection"]][["createContainer_findPlanTable"]][["data"]]
   jaspTools::expect_equal_tables(plan_table, list("Sample size", 79, "Acceptance number", 7))
   prob_table <- results[["results"]][["createContainer"]][["collection"]][["createContainer_findProbTable"]][["data"]]
-  jaspTools::expect_equal_tables(prob_table, list("AQL", 0.05, 0.9518, 0.0482, "RQL", 0.15, 0.0963, 0.9037))  
+  jaspTools::expect_equal_tables(prob_table, list("AQL", 0.05, 0.9518, 0.0482, "RQL", 0.15, 0.0963, 0.9037))
 })
 
 ##---------------------------------------------------------------
@@ -55,7 +55,7 @@ test_that("Create plan - summary table match", {
   options$showSummary <- TRUE
   
   # 2.1 Binomial
-  options$distribution <- "binom"  
+  options$distribution <- "binom"
   results <- jaspTools::runAnalysis("CreateAttributePlan", "test.csv", options)
   summaryTable <- results[["results"]][["createContainer"]][["collection"]][["createContainer_summaryTable"]][["data"]]
   jaspTools::expect_equal_tables(summaryTable,

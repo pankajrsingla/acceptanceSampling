@@ -21,11 +21,7 @@
 #' @param jaspResults <>
 #' @param dataset <>
 #' @param options <>
-#' @returns <>
-#' @seealso
-#'   [()] for <>
-#' @examples
-#' CreateAttributePlan(jaspResults, dataset, options)
+#' @seealso .findPlan()
 ##---------------------------------------------------------------
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Constraints to create a plan
@@ -39,7 +35,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     createContainer <- createJaspContainer(title = "")
     createContainer$dependOn(depend_vars)
     jaspResults[["createContainer"]] <- createContainer
-  } else {    
+  } else {
     createContainer <- jaspResults[["createContainer"]]
   }
 
@@ -71,7 +67,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   
   # Error handling for AQL/RQL
   if (aql >= rql) {
-    createContainer$setError(sprintf("Error: AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+    createContainer$setError(sprintf("AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
     return ()
   }
 
@@ -79,7 +75,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   pa_prod <- round((1 - options$prod_risk), 3)
   pa_cons <- round(options$cons_risk, 3)
   if (pa_prod <= pa_cons) {
-    createContainer$setError(sprintf("Error: 1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
+    createContainer$setError(sprintf("1 - α (Producer's risk) has to be greater than β (consumer's risk)."))
     return ()
   }
   # Sanity checks done. Let's find a plan that satisfies the constraints.
@@ -96,11 +92,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #' @param pa_prod <>
 #' @param rql <>
 #' @param pa_cons <>
-#' @returns <>
-#' @seealso
-#'   [()] for <>
-#' @examples
-#' .findPlan(jaspContainer, options, depend_vars, aql, rql, pa_prod, pa_cons)
+#' @seealso CreateAttributePlan()
 ##----------------------------------------------------------------------------------
 .findPlan <- function(jaspContainer, options, depend_vars, aql, rql, pa_prod, pa_cons) {
   pd_lower <- options$pd_lower
@@ -133,7 +125,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   df_plan <- data.frame(PD = pd, PA = plan@paccept)
   df_plan <- na.omit(df_plan)
   if (nrow(df_plan) == 0) {
-    jaspContainer$setError(sprintf("Error: No valid values found in the plan. Check the inputs."))
+    jaspContainer$setError(sprintf("No valid values found in the plan. Check the inputs."))
     return ()
   }
   # Fill the output tables for the created plan.
@@ -178,11 +170,6 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 #' @param n <>
 #' @param c <>
 #' @param r <>
-#' @returns <>
-#' @seealso
-#'   [()] for <>
-#' @examples
-#' .attributePlanTable(jaspContainer, depend_vars, plan_values, df_plan)
 ##----------------------------------------------------------------
 .attributePlanTable <- function(jaspContainer, depend_vars, aql, pa_prod, rql, pa_cons, n, c, r) {
   # Fill the table with sample size and acceptance number
@@ -198,6 +185,6 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Description of the sampling plan:
   if (is.null(jaspContainer[["description"]])) {
     description <- createJaspHtml(text = sprintf("If the number of defective items out of %d sampled is <= %d, accept the lot. Reject otherwise.", n, c), position = 3)
-    jaspContainer[["description"]] <- description                        
+    jaspContainer[["description"]] <- description
   }
 }
