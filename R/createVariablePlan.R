@@ -18,9 +18,9 @@
 ##---------------------------------------------------------------
 ##                    Create variable plan.                    --
 ##---------------------------------------------------------------
-#' @param jaspResults <>
-#' @param dataset <>
-#' @param options <>
+#' @param jaspResults {object} Object that will contain all results from the analysis and connect it to the output.
+#' @param dataset {object} (optional) tabular data, if available for the analysis.
+#' @param options {list} A named list of interface options selected by the user.
 ##---------------------------------------------------------------
 CreateVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   # Dependency variables

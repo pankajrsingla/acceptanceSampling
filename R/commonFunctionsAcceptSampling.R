@@ -18,10 +18,10 @@
 ##---------------------------------------------------------------
 ##         Check if values specified for PD are valid.         --
 ##---------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param pd_lower <>
-#' @param pd_upper <>
-#' @param pd_step <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param pd_lower {numeric} lower limit for the proportion of non-conforming items.
+#' @param pd_upper {numeric} upper limit for the proportion of non-conforming items.
+#' @param pd_step {numeric} step size for the sequence from pd_lower to pd_upper.
 #' @seealso checkHypergeom()
 #' @examples
 #' checkPdErrors(jaspContainer, 0.1, 0.5, 0.01)
@@ -47,12 +47,12 @@ checkPdErrors <- function(jaspContainer, pd_lower, pd_upper, pd_step) {
 ##--------------------------------------------------------------------------------
 ##  Check if D*pd values for the hypergeomtric distribution are whole numbers.  --
 ##--------------------------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param pd_vars <>
-#' @param options <>
-#' @param type <>
-#' @param aql <>
-#' @param rql <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param pd_vars {vector} Variables to generate a sequence of quality levels. Includes pd_lower, pd_upper, and pd_step.
+#' @param options {list} A named list of interface options selected by the user.
+#' @param type {string} Sampling plan type. Possible values are "Single", "", and "Mult".
+#' @param aql {numeric} (optional) Acceptable Quality Level (AQL), specified as the proportion (0 to 1) of non-conforming items.
+#' @param rql {numeric} (optional) Rejectable Quality Level (RQL), specified as the proportion (0 to 1) of non-conforming items.
 #' @seealso checkPdErrors()
 #' @examples
 #' checkHypergeom(jaspContainer, pd_vars, options, "Single", 0.05, 0.15)
@@ -89,11 +89,11 @@ checkHypergeom <- function(jaspContainer, pd_vars, options, type, aql=NULL, rql=
 ##---------------------------------------------------------------
 ##  Check for errors in single stage attribute sampling plan.  --
 ##---------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param N <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param N {numeric} Total size of the lot.
+#' @param n {numeric} Sample size for the plan.
+#' @param c {numeric} Acceptance number for the plan.
+#' @param r {numeric} Rejection number for the plan.
 #' @seealso checkErrorsMultiplePlan()
 #' @examples
 #' checkErrorsSinglePlan(jaspContainer, 1000, 100, 4, 5)
@@ -119,11 +119,11 @@ checkErrorsSinglePlan <- function(jaspContainer, N, n, c, r) {
 ##-----------------------------------------------------------------
 ##  Check for errors in multiple stage attribute sampling plan.  --
 ##-----------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param N <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param N {numeric} Total size of the lot.
+#' @param n {vector} Sample sizes for the plan.
+#' @param c {vector} Acceptance numbers for the plan.
+#' @param r {vector} Rejection numbers for the plan.
 #' @seealso checkErrorsSinglePlan()
 #' @examples
 #' checkErrorsMultiplePlan(jaspContainer, 1000, c(10,20), c(0,4), c(2,5))
@@ -170,11 +170,11 @@ checkErrorsMultiplePlan <- function(jaspContainer, N, n, c, r) {
 }
 
 ##----------------------------------------------------------------
-##           Return the plan variables - n, c, and r.           --
+##            Get the plan variables - n, c, and r.             --
 ##----------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param options <>
-#' @param type <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param options {list} A named list of interface options selected by the user.
+#' @param type {string} Sampling plan type. Possible values are "Single", "", and "Mult".
 #' @returns list
 #' @seealso getPlan()
 #' @examples
@@ -213,12 +213,14 @@ getPlanValues <- function(jaspContainer, options, type) {
 ##---------------------------------------------------------------
 ##            Create and return a plan and its data            --
 ##---------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param options <>
-#' @param type <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param options {list} A named list of interface options selected by the user.
+#' @param type {string} Sampling plan type. Possible values are "Single", "", and "Mult".
+#' @param n {vector} Sample size(s) for the plan.
+#' @param c {vector} (optional) Acceptance number(s) for the plan.
+#' @param r {vector} (optional) Rejection number(s) for the plan.
+#' @param k {numeric} (optional) The required distance in terms of standard deviation, between acceptance limits and the sample mean for a variable sampling plan.
+#' @param sd {string} (optional) Status of the historical standard deviation. Possible values are "known" and "unknown".
 #' @returns list
 #' @seealso getPlanValues()
 #' @examples
@@ -279,12 +281,12 @@ getPlan <- function(jaspContainer, options, type, n, c=NULL, r=NULL, k=NULL, sd=
 ##---------------------------------------------------------------------------------------
 ##  Check if the plan can satisfy the AQL and RQL constraints. Create tabular output.  --
 ##---------------------------------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param pos <>
-#' @param depend_vars <>
-#' @param oc_plan <>
-#' @param options <>
-#' @param type <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param pos {numeric} Position of the output element in the output display.
+#' @param depend_vars {vector} Names of variables on which the output element depends.
+#' @param oc_plan {object} An object from the AcceptanceSampling::OC2c class family (OCbinomial / OChypergeom / OCpoisson).
+#' @param options {list} A named list of interface options selected by the user.
+#' @param type {string} Sampling plan type. Possible values are "Single", "", and "Mult".
 ##---------------------------------------------------------------------------------------
 assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type) {
   aql <- round(options[[paste0("aql", type)]], 3)
@@ -341,10 +343,10 @@ assessPlan <- function(jaspContainer, pos, depend_vars, oc_plan, options, type) 
 ##---------------------------------------------------------------
 ##            Generate a summary table for the plan            --
 ##---------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param pos <>
-#' @param depend_vars <>
-#' @param df_plan <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param pos {numeric} Position of the output element in the output display.
+#' @param depend_vars {vector} Names of variables on which the output element depends.
+#' @param df_plan {data.frame} Dataframe for a plan with quality levels (PD) and the corresponding probabilities of acceptance (PA).
 ##---------------------------------------------------------------
 getSummary <- function(jaspContainer, pos, depend_vars, df_plan) {
   if (!is.null(jaspContainer[["summaryTable"]])) {
@@ -363,10 +365,10 @@ getSummary <- function(jaspContainer, pos, depend_vars, df_plan) {
 ##----------------------------------------------------------------
 ##  Generate the operating characteristics curve for the plan.  --
 ##----------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param pos <>
-#' @param depend_vars <>
-#' @param df_plan <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param pos {numeric} Position of the output element in the output display.
+#' @param depend_vars {vector} Names of variables on which the output element depends.
+#' @param df_plan {data.frame} Dataframe for a plan with quality levels (PD) and the corresponding probabilities of acceptance (PA).
 ##----------------------------------------------------------------
 getOCCurve <- function(jaspContainer, pos, depend_vars, df_plan) {
   if (!is.null(jaspContainer[["ocCurve"]])) {
@@ -391,15 +393,15 @@ getOCCurve <- function(jaspContainer, pos, depend_vars, df_plan) {
 ##------------------------------------------------------------------------------
 ##  Generate the average outgoing quality curve for plan with rectification.  --
 ##------------------------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param pos <>
-#' @param depend_vars <>
-#' @param df_plan <>
-#' @param options <>
-#' @param type <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param pos {numeric} Position of the output element in the output display.
+#' @param depend_vars {vector} Names of variables on which the output element depends.
+#' @param df_plan {data.frame} Dataframe for a plan with quality levels (PD) and the corresponding probabilities of acceptance (PA).
+#' @param options {list} A named list of interface options selected by the user.
+#' @param type {string} Sampling plan type. Possible values are "Single", "", and "Mult".
+#' @param n {vector} Sample size(s) for the plan.
+#' @param c {vector} (optional) Acceptance number(s) for the plan.
+#' @param r {vector} (optional) Rejection number(s) for the plan.
 #' @seealso getATICurve()
 ##------------------------------------------------------------------------------
 getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c=NULL, r=NULL) {
@@ -464,15 +466,15 @@ getAOQCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 ##---------------------------------------------------------------
 ##  Generate the average total inspection curve for the plan.  --
 ##---------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param pos <>
-#' @param depend_vars <>
-#' @param df_plan <>
-#' @param options <>
-#' @param type <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param pos {numeric} Position of the output element in the output display.
+#' @param depend_vars {vector} Names of variables on which the output element depends.
+#' @param df_plan {data.frame} Dataframe for a plan with quality levels (PD) and the corresponding probabilities of acceptance (PA).
+#' @param options {list} A named list of interface options selected by the user.
+#' @param type {string} Sampling plan type. Possible values are "Single", "", and "Mult".
+#' @param n {vector} Sample size(s) for the plan.
+#' @param c {vector} (optional) Acceptance number(s) for the plan.
+#' @param r {vector} (optional) Rejection number(s) for the plan.
 #' @seealso getAOQCurve()
 ##---------------------------------------------------------------
 getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type, n, c=NULL, r=NULL) {
@@ -534,14 +536,14 @@ getATICurve <- function(jaspContainer, pos, depend_vars, df_plan, options, type,
 ##---------------------------------------------------------------------------------------------------------
 ##  Generate the average sample number curve for the plan. Only applicable for multiple sampling plans.  --
 ##---------------------------------------------------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param pos <>
-#' @param depend_vars <>
-#' @param df_plan <>
-#' @param options <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param pos {numeric} Position of the output element in the output display.
+#' @param depend_vars {vector} Names of variables on which the output element depends.
+#' @param df_plan {data.frame} Dataframe for a plan with quality levels (PD) and the corresponding probabilities of acceptance (PA).
+#' @param options {list} A named list of interface options selected by the user.
+#' @param n {vector} Sample sizes for the plan.
+#' @param c {vector} Acceptance numbers for the plan.
+#' @param r {vector} Rejection numbers for the plan.
 ##---------------------------------------------------------------------------------------------------------
 getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c, r) {
   if (!is.null(jaspContainer[["asnCurve"]])) {
@@ -569,8 +571,6 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c,
     pDecide_i <- stage_probs[i,]
     ASN <- ASN + pDecide_i * cum_n[i]
   }
-  # Todo: Cross-check the calculation of ASN.
-  # ASN <- ASN + stage_probs[stages,] * cum_n[stages]
   ASN <- round(ASN, 3)
   df_plan$ASN <- ASN
   df_plan <- na.omit(df_plan)
@@ -595,23 +595,24 @@ getASNCurve <- function(jaspContainer, pos, depend_vars, df_plan, options, n, c,
 ##-------------------------------------------------------------------------------------------
 ##  Helper function to get stagewise acceptance and rejection probabilities for the plan.  --
 ##-------------------------------------------------------------------------------------------
-#' @param pd <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
-#' @param dist <>
+#' @param pd {vector} Range of quality levels over which to evaluate the plan, each value indicating a proportion (0 to 1) of non-conforming items.
+#' @param n {vector} Sample size(s) for the plan.
+#' @param c {vector} Acceptance number(s) for the plan.
+#' @param r {vector} Rejection number(s) for the plan.
+#' @param dist {string} The type of distribution of non-conforming items in the sample. Possible values are "binom", "hypergeom", and "poisson".
+#' @param N {numeric} (optional) Total size of the lot.
 #' @returns list
-#' @param N <>
 #' @seealso getStageProbability()
 #' @examples
 #' getStageProbabilityHelper(pd, n=c(20,30), c=c(4,10), r=c(7,11), dist="hypergeom", N=500)
 #' @notes
-#' The code in this function has been adapted from the R package AcceptanceSampling written by Andreas Kiermeier.
+##-------------------------------------------------------------------------------------------
+#' Part of the code in this function has been re-used from the R package AcceptanceSampling written by Andreas Kiermeier.
 #' Specifically, from the following functions:
 #' 1) calc.OCbinomial.pdi 2) calc.OChypergeom.pdi 3) calc.OCpoisson.pdi
 #' https://github.com/cran/AcceptanceSampling/blob/master/R/code_twoclass.R
 ##-------------------------------------------------------------------------------------------
-getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
+getStageProbabilityHelper <- function(pd, n, c, r, dist, N=10000) {
   D <- pd * N # Number of defects = quality level * lot size
   num_stages <- length(n)
   acc_probs <- matrix(nrow = num_stages, ncol = length(pd))
@@ -663,7 +664,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
     # For each stage, find out all the possibilities which could lead to still not having made a decision,
     # and then calculate the appropriate probabilities.
 
-    if(k == 1) {
+    if (k == 1) {
       # Only a single sampling stage
       p.acc <- sapply(pd, FUN = function(el) {
         if (dist == "binom") {
@@ -671,7 +672,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
         } else if (dist == "poisson") {
           return (ppois(q=c[1], lambda=n[1]*el))
         } else if (dist == "hypergeom") {
-          el = el * N
+          el <- el * N
           return (phyper(q=c[1], m=el, n=N-el, k=n[1]))
         }
       })
@@ -682,7 +683,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
         } else if (dist == "poisson") {
           return (ppois(q=r[1]-1, lambda = n[1]*el, lower.tail = FALSE))
         } else if (dist == "hypergeom") {
-          el = el * N
+          el <- el * N
           return (phyper(q=r[1]-1, m=el, n=N-el, k=n[1], lower.tail = FALSE))
         }
       })
@@ -710,7 +711,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
       c.s <- c+1 # Use to calculate limits
       r.s <- r-1 # Use to calculate limits
       expand.call <- "expand.grid(c.s[k-1]:r.s[k-1]"
-      for(i in 2:(k-1)) {
+      for (i in 2:(k-1)) {
         expand.call <- paste(expand.call, paste("c.s[k-",i,"]:r.s[k-",i,"]", sep=""), sep=",")
       }
       expand.call <- paste(expand.call,")", sep="")
@@ -718,7 +719,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
       x <- x[,(k-1):1] # Reverses the order of columns in dataframe x
       names(x) <- paste("X", 1:(k-1), sep="")
       
-      for(i in ncol(x):2) {
+      for (i in ncol(x):2) {
         x[,i] <- x[,i] - x[,i-1]
       }
       x <- cbind(x, X.acc = c[k] - rowSums(x[,1:(k-1)]))
@@ -737,12 +738,12 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
 ##------------------------------------------------------------------------
 ##  Get stagewise acceptance and rejection probabilities for the plan.  --
 ##------------------------------------------------------------------------
-#' @param pd <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
-#' @param dist <>
-#' @param N <>
+#' @param pd {vector} Range of quality levels over which to evaluate the plan, each value indicating a proportion (0 to 1) of non-conforming items.
+#' @param n {vector} Sample size(s) for the plan.
+#' @param c {vector} Acceptance number(s) for the plan.
+#' @param r {vector} Rejection number(s) for the plan.
+#' @param dist {string} The type of distribution of non-conforming items in the sample. Possible values are "binom", "hypergeom", and "poisson".
+#' @param N {numeric} (optional) Total size of the lot.
 #' @returns list
 #' @seealso getStageProbabilityHelper()
 #' @examples
@@ -750,7 +751,7 @@ getStageProbabilityHelper <- function(pd, n, c, r, dist, N=1000) {
 #' @notes
 #' The calculation of stagewise probability is done independently for every value in the vector 'pd', which has a range of quality levels.
 ##------------------------------------------------------------------------
-getStageProbability <- function(pd, n, c, r, dist, N=1000) {
+getStageProbability <- function(pd, n, c, r, dist, N=10000) {
   stage_probs <- sapply(pd, FUN=getStageProbabilityHelper, n=n, c=c, r=r, dist=dist, N=N)
   acc <- matrix(unlist(stage_probs[1,]), byrow=FALSE, nrow=length(n))
   rej <- matrix(unlist(stage_probs[2,]), byrow=FALSE, nrow=length(n))

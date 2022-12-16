@@ -18,9 +18,9 @@
 ##---------------------------------------------------------------
 ##                    Create attribute plan                    --
 ##---------------------------------------------------------------
-#' @param jaspResults <>
-#' @param dataset <>
-#' @param options <>
+#' @param jaspResults {object} Object that will contain all results from the analysis and connect it to the output.
+#' @param dataset {object} (optional) tabular data, if available for the analysis.
+#' @param options {list} A named list of interface options selected by the user.
 #' @seealso .findPlan()
 ##---------------------------------------------------------------
 CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
@@ -85,13 +85,13 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##----------------------------------------------------------------------------------
 ##  Find the sampling plan that satisfies the specified AQL and RQL constraints.  --
 ##----------------------------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param options <>
-#' @param depend_vars <>
-#' @param aql <>
-#' @param pa_prod <>
-#' @param rql <>
-#' @param pa_cons <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param options {list} A named list of interface options selected by the user.
+#' @param depend_vars {vector} Names of variables on which the output element depends.
+#' @param aql {numeric} Acceptable Quality Level (AQL), specified as the proportion (0 to 1) of non-conforming items.
+#' @param rql {numeric} Rejectable Quality Level (RQL), specified as the proportion (0 to 1) of non-conforming items.
+#' @param pa_prod {numeric} Minimum probability (0 to 1) of accepting the lot at Acceptable Quality Level.
+#' @param pa_cons {numeric} Maximum probability (0 to 1) of accepting the lot at Rejectable Quality Level.
 #' @seealso CreateAttributePlan()
 ##----------------------------------------------------------------------------------
 .findPlan <- function(jaspContainer, options, depend_vars, aql, rql, pa_prod, pa_cons) {
@@ -129,7 +129,7 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
     return ()
   }
   # Fill the output tables for the created plan.
-  .attributePlanTable(jaspContainer, depend_vars, aql, df_plan$PA[df_plan$PD == aql], rql, df_plan$PA[df_plan$PD == rql], n, c, r)
+  .attributePlanTable(jaspContainer, depend_vars, aql, rql, df_plan$PA[df_plan$PD == aql], df_plan$PA[df_plan$PD == rql], n, c, r)
 
   # Plan summary
   if (options$showSummary) {
@@ -161,17 +161,17 @@ CreateAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##----------------------------------------------------------------
 ##             Create and fill the output table(s).             --
 ##----------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param depend_vars <>
-#' @param aql <>
-#' @param pa_prod <>
-#' @param rql <>
-#' @param pa_cons <>
-#' @param n <>
-#' @param c <>
-#' @param r <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param depend_vars {vector} Names of variables on which the output element depends.
+#' @param aql {numeric} Acceptable Quality Level (AQL), specified as the proportion (0 to 1) of non-conforming items.
+#' @param rql {numeric} Rejectable Quality Level (RQL), specified as the proportion (0 to 1) of non-conforming items.
+#' @param pa_prod {numeric} Minimum probability (0 to 1) of accepting the lot at Acceptable Quality Level.
+#' @param pa_cons {numeric} Maximum probability (0 to 1) of accepting the lot at Rejectable Quality Level.
+#' @param n {numeric} Sample size for the plan.
+#' @param c {numeric} Acceptance number for the plan.
+#' @param r {numeric} Rejection number for the plan.
 ##----------------------------------------------------------------
-.attributePlanTable <- function(jaspContainer, depend_vars, aql, pa_prod, rql, pa_cons, n, c, r) {
+.attributePlanTable <- function(jaspContainer, depend_vars, aql, rql, pa_prod, pa_cons, n, c, r) {
   # Fill the table with sample size and acceptance number
   plan_table <- jaspContainer[["findPlanTable"]]
   plan_table[["col_2"]] <- c(n, c)

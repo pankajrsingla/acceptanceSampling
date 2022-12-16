@@ -18,9 +18,9 @@
 ##---------------------------------------------------------------
 ##   Analyze single stage and multiple stage attribute plans   --
 ##---------------------------------------------------------------
-#' @param jaspResults <>
-#' @param dataset <>
-#' @param options <>
+#' @param jaspResults {object} Object that will contain all results from the analysis and connect it to the output.
+#' @param dataset {object} (optional) tabular data, if available for the analysis.
+#' @param options {list} A named list of interface options selected by the user.
 #' @seealso .handleAttributePlan()
 ##---------------------------------------------------------------
 AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
@@ -66,12 +66,12 @@ AnalyzeAttributePlan <- function(jaspResults, dataset = NULL, options, ...) {
 ##---------------------------------------------------------------
 ##                   Analyze attribute plans                   --
 ##---------------------------------------------------------------
-#' @param jaspContainer <>
-#' @param pos <>
-#' @param plan_vars <>
-#' @param pd_vars <>
-#' @param options <>
-#' @param type <>
+#' @param jaspContainer {list} A functional grouping of different output elements such as plots, tables, etc.
+#' @param pos {numeric} Position of the output element in the output display.
+#' @param plan_vars {vector} Names of variables that determine a sampling plan. Used to set dependencies for outputs.
+#' @param pd_vars {vector} Variables to generate a sequence of quality levels. Includes pd_lower, pd_upper, and pd_step.
+#' @param options {list} A named list of interface options selected by the user.
+#' @param type {string} Sampling plan type. Possible values are "Single", "", and "Mult".
 #' @seealso AnalyzeAttributePlan()
 ##---------------------------------------------------------------
 .handleAttributePlan <- function(jaspContainer, pos, plan_vars, pd_vars, options, type) {
