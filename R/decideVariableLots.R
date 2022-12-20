@@ -68,7 +68,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   mean_sample <- abs(mean_sample)
   
   # Initializing the lot decision table
-  decision_table <- createJaspTable(title = sprintf("Accept or Reject Lot %s", ifelse(!is.null(var_name), paste0("(Variable: <b>", var_name, "</b>)"), "")))
+  decision_table <- createJaspTable(title = gettextf("Accept or Reject Lot %s", ifelse(!is.null(var_name), paste0("(Variable: <b>", var_name, "</b>)"), "")))
   decision_table$transpose <- TRUE
   decision_table$transposeWithOvertitle <- FALSE
   decision_table$addColumnInfo(name = "col_0", title = "", type = "string") # Dummy row for title. Add title if needed.
@@ -97,12 +97,12 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   lotContainer[["decision_table"]] <- decision_table
   # Sanity checks for sample statistics
   if (sd_sample <= 0) {
-    lotContainer$setError(sprintf("Sample standard deviation has to be greater than 0."))
+    lotContainer$setError(gettext("Sample standard deviation has to be greater than 0."))
     return ()
   }
   
   if (is.null(mean_sample)) {
-    lotContainer$setError(sprintf("Sample mean is invalid."))
+    lotContainer$setError(gettext("Sample mean is invalid."))
     return ()
   }
   # We always have a sample standard deviation.
@@ -146,10 +146,6 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   }
   # 3. Both LSL and USL are available.
   if (options$lsl && options$usl) {
-    if (options$upper_spec < options$lower_spec) {
-      lotContainer$setError(sprintf("USL can not be lower than LSL."))
-      return ()
-    }
     # When both LSL and USL are specified, we need to decide based on standard deviation.
     # Historical standard deviation known
     if (options$sd) {
@@ -157,7 +153,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       aql <- round(options$aql, 3)
       rql <- round(options$rql, 3)
       if (aql >= rql) {
-        lotContainer$setError(sprintf("AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
+        lotContainer$setError(gettext("AQL (Acceptable Quality Level) value should be lower than RQL (Rejectable Quality Level) value."))
         return ()
       }
       z.p <- (options$lower_spec - options$upper_spec) / (2 * sd_historical)
@@ -169,7 +165,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
         decision <- (z.lsl >= k) && (z.usl >= k)
       } else {
         if (n <= 1) {
-          lotContainer$setError(sprintf("Can not accept or reject lot: sample size has to be greater than 1."))
+          lotContainer$setError(gettext("Can not accept or reject lot: sample size has to be greater than 1."))
           return ()
         } else {
           q.l <- z.lsl * sqrt(n/(n-1))
@@ -229,7 +225,7 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   # Show the decision for the lot.
   if (!is.null(decision)) {
     if (is.null(lotContainer[["decision_output"]])) {
-      decision_output <- createJaspHtml(text = sprintf("<u>Decision:</u> <b>%s</b> lot.", ifelse(decision == TRUE, "Accept", "Reject")), position = 2)
+      decision_output <- createJaspHtml(text = gettextf("<u>Decision:</u> <b>%s</b> lot.", ifelse(decision == TRUE, "Accept", "Reject")), position = 2)
       decision_output$position <- 2
       lotContainer[["decision_output"]] <- decision_output
     }

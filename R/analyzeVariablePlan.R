@@ -38,10 +38,7 @@ AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
   N <- options$lotSize
   n <- options$sampleSize
   k <- options$kValue
-  sd <- "unknown"
-  if (options$sd) {
-    sd <- "known"
-  }
+  sd <- if (options[["sd"]]) "known" else "unknown"
   
   # Initialize the plan table
   plan_table <- createJaspTable(title = gettextf("Variable Sampling Plan (Standard deviation assumed to be <b>%s</b>)", sd))
@@ -58,13 +55,13 @@ AnalyzeVariablePlan <- function(jaspResults, dataset = NULL, options, ...) {
 
   # Error check for n (sample size)
   if (!options$sd && (n <= 1)) {
-    analyzeVarContainer$setError(sprintf("If historical standard deviation is unknown, sample size has to be > 1."))
+    analyzeVarContainer$setError(gettext("If historical standard deviation is unknown, sample size has to be > 1."))
     return ()
   }
 
   # Error check for N (lot size)
   if (N < n) {
-    analyzeVarContainer$setError(sprintf("Lot size (N = %.0f) cannot be smaller than the sample size (n = %.0f) of the generated variable plan.", N, n))
+    analyzeVarContainer$setError(gettextf("Lot size (N = %.0f) cannot be smaller than the sample size (n = %.0f) of the generated variable plan.", N, n))
     return ()
   }
 
