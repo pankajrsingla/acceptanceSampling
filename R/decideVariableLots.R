@@ -21,6 +21,7 @@
 #' @param jaspResults {object} Object that will contain all results from the analysis and connect it to the output.
 #' @param dataset {object} (optional) tabular data, if available for the analysis.
 #' @param options {list} A named list of interface options selected by the user.
+#' @importFrom stats pnorm pbeta
 ##----------------------------------------------------------------
 DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
   depend_vars <- c("vars", "sampleStats", "sampleSize", "sampleMean", "sampleSD", "kValue", "lsl", "lower_spec", "usl", "upper_spec", "sd", "stdev")
@@ -64,8 +65,6 @@ DecideVariableLots <- function(jaspResults, dataset = NULL, options, ...) {
       }
     }
   }
-  # Todo: Check - are negative values of sample mean to be allowed?
-  mean_sample <- abs(mean_sample)
   
   # Initializing the lot decision table
   decision_table <- createJaspTable(title = gettextf("Accept or Reject Lot %s", ifelse(!is.null(var_name), paste0("(Variable: <b>", var_name, "</b>)"), "")))
