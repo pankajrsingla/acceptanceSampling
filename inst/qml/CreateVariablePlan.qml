@@ -23,18 +23,21 @@ import "./common" as Common
 Form
 {
 	columns: 1
-	IntegerField { name: "lotSize"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1}
+	id: createVar
+	property string segment: "CreateVar"	
+	IntegerField { name: "lotSize" + createVar.segment; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1}
 	Common.RiskPoints
 	{
+		suffix: createVar.segment
 		include_limits: false
 	}
 	
 	Group
 	{
 		columns: 2
-		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical) known"); id: sd; checked: true }
-	}	
+		CheckBox { name: "sd" + createVar.segment; label: qsTr("Standard deviation (historical) known"); id: sd; checked: true }
+	}
 
-	Common.ProbDefect {}
-	Common.OutputOptions {}
+	Common.ProbDefect { suffix: createVar.segment }
+	Common.OutputOptions {suffix: createVar.segment }
 }

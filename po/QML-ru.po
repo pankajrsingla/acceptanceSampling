@@ -1,401 +1,334 @@
 msgid ""
 msgstr ""
+"PO-Revision-Date: 2023-01-31 19:52+0000\n"
+"Last-Translator: fedder <fedor.derish@gmail.com>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/jasp/"
+"jaspacceptancesampling-qml/ru/>\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.16-dev\n"
 "X-Qt-Contexts: true\n"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:7
+#, fuzzy
 msgctxt "Description|"
 msgid "Acceptance Sampling"
-msgstr ""
+msgstr "Контрольная выборка"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:8
+#, fuzzy
 msgctxt "Description|"
 msgid "Sampling for acceptance"
-msgstr ""
+msgstr "Выборка для контроля качества"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:18
+#, fuzzy
 msgctxt "Description|"
 msgid "Attribute Sampling"
-msgstr ""
+msgstr "Атрибут отбора"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:24
+#, fuzzy
 msgctxt "Description|"
 msgid "Create Attribute Plan"
-msgstr ""
+msgstr "Создать атрибутивный план"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:32
+#, fuzzy
 msgctxt "Description|"
 msgid "Analyze Attribute Plan"
-msgstr ""
+msgstr "Анализ атрибутивного плана"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:42
+#, fuzzy
 msgctxt "Description|"
 msgid "Variable Sampling"
-msgstr ""
+msgstr "Отбор переменных"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:48
+#, fuzzy
 msgctxt "Description|"
 msgid "Create Variable Plan"
-msgstr ""
+msgstr "Создать план переменных"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:56
+#, fuzzy
 msgctxt "Description|"
 msgid "Analyze Variable Plan"
-msgstr ""
+msgstr "Анализ плана переменных"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:64
+#, fuzzy
 msgctxt "Description|"
 msgid "Accept/Reject Lots"
-msgstr ""
+msgstr "Принять/отклонить жребий"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/Description.qml:65
+#, fuzzy
 msgctxt "Description|"
 msgid "Accept/Reject Lots (k-method)"
-msgstr ""
+msgstr "Принять/отклонить жребий (k-метод)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/AnalyzeAttributePlan.qml:27
+#, fuzzy
 msgctxt "AnalyzeAttributePlan|"
 msgid "Single Sampling Plan"
-msgstr ""
+msgstr "Одновыборочный план"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/AnalyzeAttributePlan.qml:39
+#, fuzzy
 msgctxt "AnalyzeAttributePlan|"
 msgid "Assess attribute plan"
-msgstr ""
+msgstr "Оценка плана атрибутов"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/AnalyzeAttributePlan.qml:60
+#, fuzzy
 msgctxt "AnalyzeAttributePlan|"
 msgid "Multiple Sampling Plan"
-msgstr ""
+msgstr "Многовыборочный план"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/AnalyzeAttributePlan.qml:72
+#, fuzzy
 msgctxt "AnalyzeAttributePlan|"
 msgid "Assess sampling plan"
-msgstr ""
+msgstr "Оценка плана отбора"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/AnalyzeVariablePlan.qml:29
+#, fuzzy
 msgctxt "AnalyzeVariablePlan|"
 msgid "Lot size (N)"
-msgstr ""
+msgstr "Размер лота (N)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/AnalyzeVariablePlan.qml:30
 msgctxt "AnalyzeVariablePlan|"
 msgid "Sample size (n)"
-msgstr ""
+msgstr "Размер выборки (n)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/AnalyzeVariablePlan.qml:31
 msgctxt "AnalyzeVariablePlan|"
 msgid "k"
-msgstr ""
+msgstr "k"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/AnalyzeVariablePlan.qml:32
-msgctxt "AnalyzeVariablePlan|"
-msgid "Standard Deviation (Historical) known"
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/AnalyzeVariablePlan.qml:37
+#, fuzzy
 msgctxt "AnalyzeVariablePlan|"
 msgid "Assess variable plan"
-msgstr ""
+msgstr "Оценка плана переменных"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/Distribution.qml:24
 msgctxt "Distribution|"
 msgid "Distribution"
-msgstr ""
+msgstr "Распределение"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/Distribution.qml:27
+#, fuzzy
 msgctxt "Distribution|"
 msgid "Binomial"
-msgstr ""
+msgstr "Биномиальный"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/Distribution.qml:28
+#, fuzzy
 msgctxt "Distribution|"
 msgid "Hypergeometric"
-msgstr ""
+msgstr "Гипергеометрический"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/Distribution.qml:29
+#, fuzzy
 msgctxt "Distribution|"
 msgid "Poisson"
-msgstr ""
+msgstr "Пуассон"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/OutputOptions.qml:25
 msgctxt "OutputOptions|"
 msgid "Output options"
-msgstr ""
+msgstr "Параметры вывода"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/OutputOptions.qml:27
+#, fuzzy
 msgctxt "OutputOptions|"
 msgid "Summary table"
-msgstr ""
+msgstr "Итоговая таблица"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/OutputOptions.qml:28
+#, fuzzy
 msgctxt "OutputOptions|"
 msgid "OC curve"
-msgstr ""
+msgstr "OC-кривая"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/OutputOptions.qml:29
+#, fuzzy
 msgctxt "OutputOptions|"
 msgid "AOQ curve (plan with rectification)"
-msgstr ""
+msgstr "Кривая AOQ (план с ректификацией)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/OutputOptions.qml:30
+#, fuzzy
 msgctxt "OutputOptions|"
 msgid "ATI curve (plan with rectification)"
-msgstr ""
+msgstr "Кривая ATI (план с ректификацией)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/OutputOptions.qml:31
+#, fuzzy
 msgctxt "OutputOptions|"
 msgid "ASN curve"
-msgstr ""
+msgstr "Кривая ASN"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanMultiple.qml:26
+#, fuzzy
 msgctxt "PlanMultiple|"
 msgid "Lot size (N)"
-msgstr ""
+msgstr "Размер лота (N)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanMultiple.qml:31
+#, fuzzy
 msgctxt "PlanMultiple|"
 msgid "Number of stages"
-msgstr ""
+msgstr "Количество этапов"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanMultiple.qml:39
+#, fuzzy
 msgctxt "PlanMultiple|"
 msgid "Stage"
-msgstr ""
+msgstr "Этап"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanMultiple.qml:40
+#, fuzzy
 msgctxt "PlanMultiple|"
 msgid "Sample size (n)"
-msgstr ""
+msgstr "Размер выборки (n)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanMultiple.qml:41
+#, fuzzy
 msgctxt "PlanMultiple|"
 msgid "Acceptance number (c)"
-msgstr ""
+msgstr "Контрольное количество (с)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanMultiple.qml:42
+#, fuzzy
 msgctxt "PlanMultiple|"
 msgid "Rejection number (r)"
-msgstr ""
+msgstr "Число отказов (r)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanMultiple.qml:75
 msgctxt "PlanMultiple|"
 msgid "n %d"
-msgstr ""
+msgstr "n %d"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanMultiple.qml:91
 msgctxt "PlanMultiple|"
 msgid "c %d"
-msgstr ""
+msgstr "c %d"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanMultiple.qml:107
 msgctxt "PlanMultiple|"
 msgid "r %d"
-msgstr ""
+msgstr "r %d"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanSingle.qml:24
+#, fuzzy
 msgctxt "PlanSingle|"
 msgid "Lot size (N)"
-msgstr ""
+msgstr "Размер лота (N)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanSingle.qml:25
 msgctxt "PlanSingle|"
 msgid "Sample size (n)"
-msgstr ""
+msgstr "Размер выборки (n)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanSingle.qml:26
+#, fuzzy
 msgctxt "PlanSingle|"
 msgid "Acceptance number (c)"
-msgstr ""
+msgstr "Контрольное количество (с)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/PlanSingle.qml:27
+#, fuzzy
 msgctxt "PlanSingle|"
 msgid "Rejection number (r)"
-msgstr ""
+msgstr "Количество брака (r)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/ProbDefect.qml:24
+#, fuzzy
 msgctxt "ProbDefect|"
 msgid "Proportion non-conforming items"
-msgstr ""
+msgstr "Доля несоответствующих пунктов"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/ProbDefect.qml:29
+#, fuzzy
 msgctxt "ProbDefect|"
 msgid "From"
-msgstr ""
+msgstr "Из"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/ProbDefect.qml:30
-msgctxt "ProbDefect|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/ProbDefect.qml:31
+#, fuzzy
 msgctxt "ProbDefect|"
 msgid "To"
-msgstr ""
+msgstr "К"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/ProbDefect.qml:32
-msgctxt "ProbDefect|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/ProbDefect.qml:33
 msgctxt "ProbDefect|"
 msgid "Step size"
-msgstr ""
+msgstr "Размер шага"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/ProbDefect.qml:34
-msgctxt "ProbDefect|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/RiskPoints.qml:25
 msgctxt "RiskPoints|"
 msgid "Quality constraints"
-msgstr ""
+msgstr "Ограничения качества"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/RiskPoints.qml:31
 msgctxt "RiskPoints|"
 msgid "Acceptable Quality Level (AQL)"
-msgstr ""
+msgstr "Приемлемый уровень качества (AQL)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/RiskPoints.qml:32
-msgctxt "RiskPoints|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/RiskPoints.qml:33
 msgctxt "RiskPoints|"
 msgid "Rejectable Quality Level (RQL / LTPD)"
-msgstr ""
+msgstr "Отклоняемый уровень качества (RQL / LTPD)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/RiskPoints.qml:34
-msgctxt "RiskPoints|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/RiskPoints.qml:40
-msgctxt "RiskPoints|"
-msgid "Producer's Risk (α)"
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/RiskPoints.qml:41
-msgctxt "RiskPoints|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/RiskPoints.qml:42
-msgctxt "RiskPoints|"
-msgid "Consumer's Risk (β)"
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/common/RiskPoints.qml:43
-msgctxt "RiskPoints|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/CreateAttributePlan.qml:26
+#, fuzzy
 msgctxt "CreateAttributePlan|"
 msgid "Lot size (N)"
-msgstr ""
+msgstr "Размер лота (N)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/CreateVariablePlan.qml:26
+#, fuzzy
 msgctxt "CreateVariablePlan|"
 msgid "Lot size (N)"
-msgstr ""
+msgstr "Размер лота (N)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/CreateVariablePlan.qml:35
+#, fuzzy
 msgctxt "CreateVariablePlan|"
 msgid "Standard Deviation (Historical) known"
-msgstr ""
+msgstr "Стандартное отклонение (историческое) известно"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:30
+#, fuzzy
 msgctxt "DecideVariableLots|"
 msgid "Measurement"
-msgstr ""
+msgstr "Измерение"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:36
+#, fuzzy
 msgctxt "DecideVariableLots|"
 msgid "Specify sample statistics directly (used if dataset is not available)"
 msgstr ""
+"Укажите выборочную статистику напрямую (используется, если набор данных "
+"недоступен)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:37
+#, fuzzy
 msgctxt "DecideVariableLots|"
 msgid "Sample size (n)"
-msgstr ""
+msgstr "Размер выборки (n)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:38
 msgctxt "DecideVariableLots|"
 msgid "Sample mean"
-msgstr ""
+msgstr "Выборочное среднее"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:39
 msgctxt "DecideVariableLots|"
 msgid "Sample standard deviation"
-msgstr ""
+msgstr "Выборочное стандартное отклонение"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:43
 msgctxt "DecideVariableLots|"
 msgid "k                        "
-msgstr ""
+msgstr "k                        "
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:47
+#, fuzzy
 msgctxt "DecideVariableLots|"
 msgid "Specification limits"
-msgstr ""
+msgstr "Ограничения спецификации"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:49
 msgctxt "DecideVariableLots|"
 msgid "Lower Specification Limit (LSL)"
-msgstr ""
+msgstr "Нижний предел спецификации (LSL)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:50
-msgctxt "DecideVariableLots|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:51
 msgctxt "DecideVariableLots|"
 msgid "Upper Specification Limit (USL)"
-msgstr ""
+msgstr "Верхний предел спецификации (USL)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:52
-msgctxt "DecideVariableLots|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:58
-msgctxt "DecideVariableLots|"
-msgid "Standard Deviation (Historical)"
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:59
-msgctxt "DecideVariableLots|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:64
+#, fuzzy
 msgctxt "DecideVariableLots|"
 msgid "Quality constraints"
-msgstr ""
+msgstr "Ограничения качества"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:67
+#, fuzzy
 msgctxt "DecideVariableLots|"
 msgid "Acceptable Quality Level (AQL)"
-msgstr ""
+msgstr "Приемлемый уровень качества (AQL)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:68
-msgctxt "DecideVariableLots|"
-msgid ""
-msgstr ""
-
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:69
+#, fuzzy
 msgctxt "DecideVariableLots|"
 msgid "Rejectable Quality Level (RQL / LTPD)"
-msgstr ""
+msgstr "Отклоняемый уровень качества (RQL / LTPD)"
 
-#: /home/runner/work/jaspAcceptanceSampling/jaspAcceptanceSampling/inst/qml/DecideVariableLots.qml:70
+#, fuzzy
+msgctxt "AnalyzeVariablePlan|"
+msgid "Standard deviation (historical) known"
+msgstr "Стандартное отклонение (историческое) известно"
+
+#, fuzzy
+msgctxt "RiskPoints|"
+msgid "Producer's risk (α)"
+msgstr "Производственный риск (α)"
+
+#, fuzzy
+msgctxt "RiskPoints|"
+msgid "Consumer's risk (β)"
+msgstr "Потребительский риск (β)"
+
+#, fuzzy
 msgctxt "DecideVariableLots|"
-msgid ""
-msgstr ""
+msgid "Standard deviation (historical)"
+msgstr "Стандартное отклонение (историческое)"

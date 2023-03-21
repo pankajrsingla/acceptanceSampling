@@ -25,13 +25,29 @@ Description
 		qml:	"CreateAttributePlan.qml"
 		func:	"CreateAttributePlan"
 		requiresData: false
-	}
+	}	
 
 	Analysis
 	{
 		title:	qsTr("Analyze Attribute Plan")
 		qml:	"AnalyzeAttributePlan.qml"
 		func:	"AnalyzeAttributePlan"
+		requiresData: false
+	}
+
+	Analysis
+	{
+		title:	qsTr("Sequential Sampling")
+		qml:	"SequentialSampling.qml"
+		func:	"SequentialSampling"
+		requiresData: false
+	}
+
+	Analysis
+	{
+		title:	qsTr("Bayesian Sampling")
+		qml:	"BayesianSampling.qml"
+		func:	"BayesianSampling"
 		requiresData: false
 	}
 
@@ -62,7 +78,7 @@ Description
 	Analysis
 	{
 		menu:	qsTr("Accept/Reject Lots")
-		title:	qsTr("Accept/Reject Lots (k-method)")
+		title:	qsTr("Accept/Reject Lots")
 		qml:	"DecideVariableLots.qml"
 		func:	"DecideVariableLots"
 		requiresData: false

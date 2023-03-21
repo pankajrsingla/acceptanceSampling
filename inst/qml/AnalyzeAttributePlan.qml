@@ -26,65 +26,47 @@ Form
 	{
 		title: qsTr("Single Sampling Plan")
 		columns: 1
+		id: analyzeAttrSingle
+		property string segment: "AnalyzeAttrSingle"
 
-		Common.PlanSingle {}
-
-		Common.Distribution
-		{
-			suffix: "Single"
-		}
+		Common.PlanSingle { suffix: analyzeAttrSingle.segment }
+		Common.Distribution { suffix: analyzeAttrSingle.segment }
 
 		Group
 		{
-			CheckBox { name: "assessPlanSingle"; label: qsTr("Assess attribute plan"); id: assessSingle }
+			CheckBox { name: "assessPlan" + analyzeAttrSingle.segment; label: qsTr("Assess Plan"); id: assessSingle }
 			Common.RiskPoints
 			{
-				suffix: "Single"
+				suffix: analyzeAttrSingle.segment
 				enabled: assessSingle.checked
 			}
 		}
 
-		Common.ProbDefect
-		{
-			suffix: "Single"
-		}
-
-		Common.OutputOptions
-		{
-			output_suffix: "Single"
-		}
+		Common.ProbDefect { suffix: analyzeAttrSingle.segment }
+		Common.OutputOptions { suffix: analyzeAttrSingle.segment }
 	}
 
 	Section
 	{
 		title: qsTr("Multiple Sampling Plan")
 		columns: 1
+		id: analyzeAttrMult
+		property string segment: "AnalyzeAttrMult"
 
-		Common.PlanMultiple {}
-
-		Common.Distribution
-		{
-			suffix: "Mult"
-		}
+		Common.PlanMultiple { suffix: analyzeAttrMult.segment }
+		Common.Distribution { suffix: analyzeAttrMult.segment }
 
 		Group
 		{
-			CheckBox { name: "assessPlanMult"; label: qsTr("Assess sampling plan"); id: assessMult }
+			CheckBox { name: "assessPlan" + analyzeAttrMult.segment; label: qsTr("Assess Plan"); id: assessMult }
 			Common.RiskPoints
 			{
-				suffix: "Mult"
+				suffix: analyzeAttrMult.segment
 				enabled: assessMult.checked
 			}
 		}
 
-		Common.ProbDefect
-		{
-			suffix: "Mult"
-		}
-		
-		Common.OutputOptions
-		{
-			output_suffix: "Mult"
-		}
+		Common.ProbDefect { suffix: analyzeAttrMult.segment }
+		Common.OutputOptions { suffix: analyzeAttrMult.segment }		
 	}
 }

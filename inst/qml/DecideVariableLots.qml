@@ -24,39 +24,50 @@ import JASP
 Form
 {
 	columns: 1
+	id: decideVar
+	property string segment: "DecideVar"
 	VariablesForm
 	{
-		AvailableVariablesList	{ name: "allVariablesList"; id: allVariablesList }
-		AssignedVariablesList	{ name: "variables"; title: qsTr("Measurement"); id: variables; singleVariable: true; suggestedColumns: ["scale"]; allowedColumns: ["scale"] }
+		AvailableVariablesList	{ name: "allVariablesList" + decideVar.segment; id: allVariablesList }
+		AssignedVariablesList	{ name: "variables" + decideVar.segment; title: qsTr("Measurement"); id: variables; singleVariable: true; suggestedColumns: ["scale"]; allowedColumns: ["scale"] }
 	}
 
 	Group
 	{
 		enabled: variables.count != 1
-		CheckBox { name: "sampleStats"; label: qsTr("Specify sample statistics directly (used if dataset is not available)"); id: sampleStats; checked: (variables.count != 1); enabled: false }
-		IntegerField { name: "sampleSize"; label: qsTr("Sample size (n)"); defaultValue: 24; min: 1 }
-		DoubleField { name: "sampleMean"; label: qsTr("Sample mean"); defaultValue: 1.5; decimals: 6 }
-		DoubleField { name: "sampleSD"; label: qsTr("Sample standard deviation"); defaultValue: 1; min: 0; inclusive: JASP.None; decimals: 6 }
+		Text { text: qsTr("Specify sample statistics directly (used if dataset is not available)") }
+		CheckBox { name: "sampleStats" + decideVar.segment; id: sampleStats; checked: (variables.count != 1); enabled: false; visible: false }
+		IntegerField { name: "sampleSize" + decideVar.segment; label: qsTr("Sample size (n)"); defaultValue: 24; min: 1 }
+		DoubleField { name: "sampleMean" + decideVar.segment; label: qsTr("Sample mean"); defaultValue: 1.5; decimals: 6 }
+		DoubleField { name: "sampleSD" + decideVar.segment; label: qsTr("Sample standard deviation"); defaultValue: 1; min: 0; inclusive: JASP.None; decimals: 6 }
 	}
 
-	// Todo: Label for k is a hacky solution to align it with the sample values. Adjust the width in code.
-	DoubleField { name: "kValue"; label: qsTr("k                        "); defaultValue: 1.309; min: 0; negativeValues: false; inclusive: JASP.None; decimals: 6 }
+	DoubleField { name: "kValue" + decideVar.segment; label: qsTr("k                        "); defaultValue: 1.309; min: 0; negativeValues: false; inclusive: JASP.None; decimals: 6 }
+	// Todo: Label for k and M are hacky ways to align them with the sample values. Adjust the width in code.
+	RadioButtonGroup
+	{
+		title: qsTr("Method")
+        name: "method" + decideVar.segment
+		// columns: 2
+        RadioButton { id: k; value: "k"; label: qsTr("k method"); checked: true }		
+        RadioButton { id: m; value: "M"; label: qsTr("M method") }		        
+	}
 	
 	Group
 	{
-		title: qsTr("Specification limits")
+		title: qsTr("Specification Limits")
 		columns: 2
-		CheckBox { name: "lsl"; label: qsTr("Lower Specification Limit (LSL)"); id: lsl; checked: false }
-		DoubleField{ name: "lower_spec"; label: qsTr(""); id: lower_spec; defaultValue: 0; enabled: lsl.checked; negativeValues: true; max: upper_spec.value; inclusive: JASP.MaxOnly; decimals: 6 }
-		CheckBox { name: "usl"; label: qsTr("Upper Specification Limit (USL)"); id: usl; checked: false }
-		DoubleField { name: "upper_spec"; label: qsTr(""); id: upper_spec; defaultValue: 1; enabled: usl.checked; negativeValues: true; min: lower_spec.value; inclusive: JASP.MinOnly; decimals: 6 }
+		CheckBox { name: "lsl" + decideVar.segment; label: qsTr("Lower Specification Limit (LSL)"); id: lsl; checked: false }
+		DoubleField{ name: "lower_spec" + decideVar.segment; label: ""; id: lower_spec; defaultValue: 0; enabled: lsl.checked; negativeValues: true; max: upper_spec.value; inclusive: JASP.MaxOnly; decimals: 6 }
+		CheckBox { name: "usl" + decideVar.segment; label: qsTr("Upper Specification Limit (USL)"); id: usl; checked: false }
+		DoubleField { name: "upper_spec" + decideVar.segment; label: ""; id: upper_spec; defaultValue: 1; enabled: usl.checked; negativeValues: true; min: lower_spec.value; inclusive: JASP.MinOnly; decimals: 6 }
 	}
 
 	Group
 	{
 		columns: 2
-		CheckBox { name: "sd"; label: qsTr("Standard Deviation (Historical)"); id: sd; checked: false }
-		DoubleField { name: "stdev"; label: qsTr(""); enabled: sd.checked; defaultValue: 1; min: 0; negativeValues: false; inclusive: JASP.None; decimals: 6 }
+		CheckBox { name: "sd" + decideVar.segment; label: qsTr("Standard deviation (historical)"); id: sd; checked: false }
+		DoubleField { name: "stdev" + decideVar.segment; label: ""; enabled: sd.checked; defaultValue: 1; min: 0; negativeValues: false; inclusive: JASP.None; decimals: 6 }
 	}
 
 	Group
@@ -65,8 +76,8 @@ Form
 		enabled: lsl.checked && usl.checked && sd.checked
 		columns: 2
 		Text { text: qsTr("Acceptable Quality Level (AQL)") }
-		DoubleField{ name: "aql"; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1; inclusive: JASP.None; decimals: 6 }
+		DoubleField{ name: "aql" + decideVar.segment; label: ""; negativeValues: false; defaultValue: 0.05; min: 0; max: 1; inclusive: JASP.None; decimals: 6 }
 		Text { text: qsTr("Rejectable Quality Level (RQL / LTPD)") }
-		DoubleField { name: "rql"; label: qsTr(""); negativeValues: false; defaultValue: 0.15; min: 0; max: 1; inclusive: JASP.None; decimals: 6 }
+		DoubleField { name: "rql" + decideVar.segment; label: ""; negativeValues: false; defaultValue: 0.15; min: 0; max: 1; inclusive: JASP.None; decimals: 6 }
 	}
 }

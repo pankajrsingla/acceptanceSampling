@@ -22,24 +22,24 @@ import JASP
 
 Group
 {
-	title: qsTr("Quality constraints")
+	title: qsTr("Quality Constraints")
 	property string suffix: ""
 	property bool include_limits: true
 	Group
 	{
 		columns: 2
 		Text { text: qsTr("Acceptable Quality Level (AQL)") }
-		DoubleField{ name: "aql" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None; decimals: 6 }
+		DoubleField{ name: "aql" + suffix; label: ""; defaultValue: 0.05; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None; decimals: 6 }
 		Text { text: qsTr("Rejectable Quality Level (RQL / LTPD)") }
-		DoubleField { name: "rql" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.15; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None; decimals: 6 }
+		DoubleField { name: "rql" + suffix; label: ""; defaultValue: 0.15; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None; decimals: 6 }
 	}
 
 	Group
 	{
 		columns: 2
-		Text { text: qsTr("Producer's Risk (\u03B1)") }
-		DoubleField{ name: "prod_risk" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.05; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None; decimals: 6 }
-		Text { text: qsTr("Consumer's Risk (\u03B2)") }
-		DoubleField { name: "cons_risk" + suffix; label: qsTr(""); negativeValues: false; defaultValue: 0.10; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None; decimals: 6 }
+		Text { text: qsTr("Producer's risk (\u03B1)") }
+		DoubleField{ name: "prod_risk" + suffix; label: ""; defaultValue: 0.05; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None; decimals: 6 }
+		Text { text: qsTr("Consumer's risk (\u03B2)") }
+		DoubleField { name: "cons_risk" + suffix; label: ""; defaultValue: 0.10; min: 0; max: 1; inclusive: include_limits ? JASP.MinMax : JASP.None; decimals: 6 }
 	}
 }

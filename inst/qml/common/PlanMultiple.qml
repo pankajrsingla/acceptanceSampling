@@ -21,14 +21,15 @@ import JASP.Controls 1.0
 
 Group
 {
+	property string suffix: "AnalyzeAttrMult"
 	IntegerField
 	{ 
-		name: "lotSizeMult"; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1
+		name: "lotSize" + suffix; label: qsTr("Lot size (N)"); defaultValue: 1000; min: 1
 	}
 
 	IntegerField
 	{
-		name: "numberOfStages"; label: qsTr("Number of stages"); id: numberOfStages; defaultValue: 2; min: 2; max: 100; onEditingFinished: stages.values = value
+		name: "numberOfStages" + suffix; label: qsTr("Number of stages"); id: numberOfStages; defaultValue: 2; min: 2; max: 100
 	}
 
 	ColumnLayout
@@ -44,10 +45,10 @@ Group
 
 		ComponentsList
 		{
-			name:								"stages"
+			name:								"stages" + suffix
 			id:									stages
 			addItemManually:					false
-			values:								numberOfStages.defaultValue
+			values:								numberOfStages.value
 
 			rowComponent: 						RowLayout
 			{
@@ -67,7 +68,7 @@ Group
 
 					IntegerField
 					{
-						name: 					"sampleSizeMult"
+						name: 					"sampleSize" + suffix
 						label: 					""
 						id:						sampleSizeMult
 						defaultValue:			30
@@ -84,7 +85,7 @@ Group
 					Layout.preferredWidth:		150 * preferencesModel.uiScale
 					IntegerField
 					{
-						name: 					"acceptNumberMult"
+						name: 					"acceptNumber" + suffix
 						label: 					""
 						defaultValue:			rowIndex * 3
 						min:					0
@@ -100,9 +101,9 @@ Group
 					Layout.preferredWidth:		150 * preferencesModel.uiScale
 					IntegerField
 					{
-						name: 					"rejectNumberMult"
+						name: 					"rejectNumber" + suffix
 						label: 					""
-						defaultValue:			(rowIndex + 1) == numberOfStages.value ? (rowIndex * 3 + 1) : (rowIndex * 3 + 2)
+						defaultValue:			(rowIndex + 1) == stages.values ? (rowIndex * 3 + 1) : (rowIndex * 3 + 2)
 						min:					1
 						placeholderText:		qsTr("r %d").arg(rowIndex + 1)
 						fieldWidth:				50 * preferencesModel.uiScale
